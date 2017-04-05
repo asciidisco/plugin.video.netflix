@@ -46,7 +46,10 @@ class MSLHttpRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
             self.send_response(400, 'No id')
         else:
             # Get the manifest with the given id
-            data = msl.load_manifest(int(params['id'][0]))
+            if 'nomanifest' in params and params['nomanifest'][0] == 'true':
+                data = msl.load_file(kodi_helper.msl_data_path, 'manifest.mpd')
+            else:
+                data = msl.load_manifest(int(params['id'][0]))
             self.send_response(200)
             self.send_header('Content-type', 'application/xml')
             self.end_headers()
