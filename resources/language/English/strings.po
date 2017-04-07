@@ -160,3 +160,7 @@ msgstr ""
 msgctxt "#30035"
 msgid "Inputstream Addon Settings..."
 msgstr ""
+
+msgctxt "#30036"
+msgid "Enable subtitles for this language code"
+msgstr ""

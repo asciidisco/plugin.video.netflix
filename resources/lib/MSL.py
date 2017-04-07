@@ -155,7 +155,7 @@ class MSL:
                 # Audio
                 'heaac-2-dash',
 
-                #subtiltes
+                #subtitles
                 'dfxp-ls-sdh',
                 #'simplesdh',
                 #'nflx-cmisc',
@@ -355,17 +355,39 @@ class MSL:
                 segment_base = ET.SubElement(rep, 'SegmentBase', indexRange="0-"+str(init_length), indexRangeExact="true")
                 ET.SubElement(segment_base, 'Initialization', range='0-'+str(init_length))
 
-        # Multiple Adaption Set for subtiles
+        # Multiple Adaption Set for subtitles
+
+        # Check if subtitles language code is enabled
+        sub_code = self.kodi_helper.get_subtitle_setting()
+        if sub_code is not '':
+            from utils import to_srt
+            import codecs, os, urllib, xbmc
+
+            path = xbmc.translatePath( "special://temp" ) 
+            filenames = next(os.walk(path))[2]
+            for i in filenames:
+                if "Netflix" in i:
+                    os.remove(os.path.join(path, i)) 
+
         for text_track in manifest['textTracks']:
             print text_track
             if 'downloadables' not in text_track or text_track['downloadables'] is None:
                 continue
-            subtiles_adaption_set = ET.SubElement(period, 'AdaptationSet',
+            subtitles_adaption_set = ET.SubElement(period, 'AdaptationSet',
                                                   lang=text_track['bcp47'],
                                                   contentType='text',
                                                   mimeType='text/ttml')
             for downloadable in text_track['downloadables']:
-                rep = ET.SubElement(subtiles_adaption_set, 'Representation',
+                if not text_track['isForced'] and text_track['bcp47'] == sub_code:
+                    sock = urllib.urlopen(self.__get_base_url(downloadable['urls']))
+                    dfxp = sock.read()
+                    sock.close()
+                    srtfile = xbmc.translatePath('special://temp/Netflix.%s.srt' % text_track['bcp47']).decode('utf-8')
+                    srt = codecs.open(srtfile, 'w', encoding='utf-8')
+                    srt.write(to_srt(dfxp.decode('utf-8')))
+                    srt.close
+            
+                rep = ET.SubElement(subtitles_adaption_set, 'Representation',
                                     bandwidth='0',
                                     nflxProfile=downloadable['contentProfile']
                                     )
@@ -373,11 +395,10 @@ class MSL:
                 ET.SubElement(rep, 'BaseURL').text = self.__get_base_url(downloadable['urls'])
 
 
-
-
-
         xml = ET.tostring(root, encoding='utf-8', method='xml')
         xml = xml.replace('\n', '').replace('\r', '')
+        if sub_code is not '':
+            self.save_file(self.kodi_helper.msl_data_path, 'manifest.mpd', xml)
         return xml
 
     def __get_base_url(self, urls):
