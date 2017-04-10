@@ -55,7 +55,7 @@ msgstr "Verificação para adultos falhou"
 
 msgctxt "#30007"
 msgid "Please Check your adult pin"
-msgstr "Por favor verifique seu"
+msgstr "Por favor verifique seu pin para conteúdo adulto"
 
 msgctxt "#30008"
 msgid "Login failed"
@@ -135,7 +135,7 @@ msgstr "Erro de Reprodução"
 
 msgctxt "#30029"
 msgid "Missing Inputstream addon"
-msgstr "Addon inputstream faltando"
+msgstr "Addon de inputstream faltando"
 
 msgctxt "#30030"
 msgid "Remove from library"
@@ -151,7 +151,7 @@ msgstr "Rastreamento"
 
 msgctxt "#30033"
 msgid "Use Dolby Sound"
-msgstr "Usar Doulby Sound"
+msgstr "Usar Dolby Sound"
 
 msgctxt "#30034"
 msgid "ESN (set automatically, can be changed manually)"
