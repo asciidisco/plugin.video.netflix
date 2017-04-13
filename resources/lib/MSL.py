@@ -9,6 +9,11 @@ import json
 import os
 import pprint
 import random
+
+from StringIO import StringIO
+
+from datetime import datetime
+import requests
 import zlib
 import time
 from StringIO import StringIO
@@ -156,9 +161,13 @@ class MSL(object):
 
                 # Audio
                 'heaac-2-dash',
-                'dfxp-ls-sdh',
+
+                #subtiltes
+                #'dfxp-ls-sdh',
                 'simplesdh',
-                'nflx-cmisc',
+                #'nflx-cmisc',
+
+                #unkown
                 'BIF240',
                 'BIF320'
             ],
@@ -374,13 +383,24 @@ class MSL(object):
                 ET.SubElement(rep, 'BaseURL').text = self.__get_base_url(
                     downloadable['urls'])
                 # Index range
-                segment_base = ET.SubElement(
-                    rep,
-                    'SegmentBase',
-                    indexRange="0-" + str(init_length),
-                    indexRangeExact="true")
-                ET.SubElement(segment_base, 'Initialization',
-                              range='0-' + str(init_length))
+
+                segment_base = ET.SubElement(rep, 'SegmentBase', indexRange="0-"+str(init_length), indexRangeExact="true")
+                ET.SubElement(segment_base, 'Initialization', range='0-'+str(init_length))
+
+        # Multiple Adaption Sets for subtiles
+        for text_track in manifest['textTracks']:
+            if 'downloadables' not in text_track or text_track['downloadables'] is None:
+                continue
+            subtiles_adaption_set = ET.SubElement(period, 'AdaptationSet',
+                                                  lang=text_track['bcp47'],
+                                                  codecs='stpp',
+                                                  contentType='text',
+                                                  mimeType='application/ttml+xml')
+            for downloadable in text_track['downloadables']:
+                rep = ET.SubElement(subtiles_adaption_set, 'Representation',
+                                    nflxProfile=downloadable['contentProfile']
+                                    )
+                ET.SubElement(rep, 'BaseURL').text = self.__get_base_url(downloadable['urls'])
 
         xml = ET.tostring(root, encoding='utf-8', method='xml')
         xml = xml.replace('\n', '').replace('\r', '')
@@ -602,8 +622,19 @@ class MSL(object):
         self.handshake_performed = True
 
     def __load_msl_data(self):
-        msl_data = json.JSONDecoder().decode(
-            self.load_file(self.data_path, 'msl_data.json'))
+        msl_data = json.JSONDecoder().decode(self.load_file(self.kodi_helper.msl_data_path, 'msl_data.json'))
+        #Check expire date of the token
+        master_token = json.JSONDecoder().decode(base64.standard_b64decode(msl_data['tokens']['mastertoken']['tokendata']))
+        valid_until = datetime.utcfromtimestamp(int(master_token['expiration']))
+        present = datetime.now()
+        difference = valid_until - present
+        difference = difference.total_seconds() / 60 / 60
+        # If token expires in less then 10 hours or is expires renew it
+        if difference < 10:
+            self.__load_rsa_keys()
+            self.__perform_key_handshake()
+            return
+
         self.__set_master_token(msl_data['tokens']['mastertoken'])
         self.encryption_key = base64.standard_b64decode(
             msl_data['encryption_key'])
