@@ -57,4 +57,3 @@ If something doesn't work for you, please:
 -----------------
 
 Licenced under The MIT License.
-Includes [pyjsparser](https://github.com/PiotrDabkowski/pyjsparser) by [Piotr Dabkowski](https://github.com/PiotrDabkowski)

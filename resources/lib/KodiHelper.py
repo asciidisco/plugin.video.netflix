@@ -3,304 +3,42 @@
 # Module: KodiHelper
 # Created on: 13.01.2017
 
+"""ADD ME"""
+
+from urllib import urlencode
+from uuid import uuid4
+from os import path
+import xbmc
 import xbmcplugin
 import xbmcgui
-import xbmc
-import json
-from os.path import join
-from urllib import urlencode
-from xbmcaddon import Addon
-from uuid import uuid4
+from KodiHelperUtils import Base, Settings, Dialogs, Cache
 from UniversalAnalytics import Tracker
-try:
-   import cPickle as pickle
-except:
-   import pickle
+from utils import get_item
+from resources.lib.KodiHelperUtils.Router import build_url
 
-class KodiHelper:
-    """Consumes all the configuration data from Kodi as well as turns data into lists of folders and videos"""
 
-    def __init__ (self, plugin_handle=None, base_url=None):
-        """Fetches all needed info from Kodi & configures the baseline of the plugin
+class KodiHelper(Base):
+    """Consumes all the configuration data from Kodi as well
+    as turns data into lists of folders and videos"""
 
-        Parameters
-        ----------
-        plugin_handle : :obj:`int`
-            Plugin handle
-
-        base_url : :obj:`str`
-            Plugin base url
+    def __init__(self, plugin_handle=None, base_url=''):
         """
-        addon = self.get_addon()
+        Fetches all needed info from Kodi
+        Configures the baseline of the plugin
+
+        :plugin_handle: Integer Plugin handle
+        :base_url: String Plugin base url
+        """
         self.plugin_handle = plugin_handle
         self.base_url = base_url
-        self.plugin = addon.getAddonInfo('name')
-        self.version = addon.getAddonInfo('version')
-        self.base_data_path = xbmc.translatePath(addon.getAddonInfo('profile'))
-        self.home_path = xbmc.translatePath('special://home')
-        self.plugin_path = addon.getAddonInfo('path')
-        self.cookie_path = self.base_data_path + 'COOKIE'
-        self.data_path = self.base_data_path + 'DATA'
-        self.config_path = join(self.base_data_path, 'config')
-        self.msl_data_path = xbmc.translatePath('special://profile/addon_data/service.msl').decode('utf-8') + '/'
-        self.verb_log = addon.getSetting('logging') == 'true'
-        self.default_fanart = addon.getAddonInfo('fanart')
         self.library = None
-        self.setup_memcache()
+        self.settings = Settings()
+        self.dialogs = Dialogs()
+        self.cache = Cache()
+        self.msl_server_cert = self.load_server_certificate()
+        super(KodiHelper, self).__init__()
 
-    def get_addon (self):
-        """Returns a fresh addon instance"""
-        return Addon()
-
-    def refresh (self):
-        """Refresh the current list"""
-        return xbmc.executebuiltin('Container.Refresh')
-
-    def show_rating_dialog (self):
-        """Asks the user for a movie rating
-
-        Returns
-        -------
-        :obj:`int`
-            Movie rating between 0 & 10
-        """
-        dlg = xbmcgui.Dialog()
-        return dlg.numeric(heading=self.get_local_string(string_id=30019) + ' ' + self.get_local_string(string_id=30022), type=0)
-
-    def show_search_term_dialog (self):
-        """Asks the user for a term to query the netflix search for
-
-        Returns
-        -------
-        :obj:`str`
-            Term to search for
-        """
-        dlg = xbmcgui.Dialog()
-        term = dlg.input(self.get_local_string(string_id=30003), type=xbmcgui.INPUT_ALPHANUM)
-        if len(term) == 0:
-            term = ' '
-        return term
-
-    def show_add_to_library_title_dialog (self, original_title):
-        """Asks the user for an alternative title for the show/movie that gets exported to the local library
-
-        Parameters
-        ----------
-        original_title : :obj:`str`
-            Original title of the show (as suggested by the addon)
-
-        Returns
-        -------
-        :obj:`str`
-            Title to persist
-        """
-        dlg = xbmcgui.Dialog()
-        return dlg.input(heading=self.get_local_string(string_id=30031), defaultt=original_title, type=xbmcgui.INPUT_ALPHANUM)
-
-    def show_password_dialog (self):
-        """Asks the user for its Netflix password
-
-        Returns
-        -------
-        :obj:`str`
-            Netflix password
-        """
-        dlg = xbmcgui.Dialog()
-        return dlg.input(self.get_local_string(string_id=30004), type=xbmcgui.INPUT_ALPHANUM, option=xbmcgui.ALPHANUM_HIDE_INPUT)
-
-    def show_email_dialog (self):
-        """Asks the user for its Netflix account email
-
-        Returns
-        -------
-        term : :obj:`str`
-            Netflix account email
-        """
-        dlg = xbmcgui.Dialog()
-        return dlg.input(self.get_local_string(string_id=30005), type=xbmcgui.INPUT_ALPHANUM)
-
-    def show_login_failed_notification (self):
-        """Shows notification that the login failed
-
-        Returns
-        -------
-        bool
-            Dialog shown
-        """
-        dialog = xbmcgui.Dialog()
-        dialog.notification(self.get_local_string(string_id=30008), self.get_local_string(string_id=30009), xbmcgui.NOTIFICATION_ERROR, 5000)
-        return True
-
-    def show_missing_inputstream_addon_notification (self):
-        """Shows notification that the inputstream addon couldn't be found
-
-        Returns
-        -------
-        bool
-            Dialog shown
-        """
-        dialog = xbmcgui.Dialog()
-        dialog.notification(self.get_local_string(string_id=30028), self.get_local_string(string_id=30029), xbmcgui.NOTIFICATION_ERROR, 5000)
-        return True
-
-    def show_no_search_results_notification (self):
-        """Shows notification that no search results could be found
-
-        Returns
-        -------
-        bool
-            Dialog shown
-        """
-        dialog = xbmcgui.Dialog()
-        dialog.notification(self.get_local_string(string_id=30011), self.get_local_string(string_id=30013))
-        return True
-
-    def show_no_seasons_notification (self):
-        """Shows notification that no seasons be found
-
-        Returns
-        -------
-        bool
-            Dialog shown
-        """
-        dialog = xbmcgui.Dialog()
-        dialog.notification(self.get_local_string(string_id=30010), self.get_local_string(string_id=30012))
-        return True
-
-    def set_setting (self, key, value):
-        """Public interface for the addons setSetting method
-
-        Returns
-        -------
-        bool
-            Setting could be set or not
-        """
-        return self.get_addon().setSetting(key, value)
-
-    def get_credentials (self):
-        """Returns the users stored credentials
-
-        Returns
-        -------
-        :obj:`dict` of :obj:`str`
-            The users stored account data
-        """
-        return {
-            'email': self.get_addon().getSetting('email'),
-            'password': self.get_addon().getSetting('password')
-        }
-
-    def get_dolby_setting(self):
-        """
-        Returns if the dolby sound is enabled
-        :return: True|False
-        """
-        return self.get_addon().getSetting('enable_dolby_sound') == 'true'
-
-    def get_custom_library_settings (self):
-        """Returns the settings in regards to the custom library folder(s)
-
-        Returns
-        -------
-        :obj:`dict` of :obj:`str`
-            The users library settings
-        """
-        return {
-            'enablelibraryfolder': self.get_addon().getSetting('enablelibraryfolder'),
-            'customlibraryfolder': self.get_addon().getSetting('customlibraryfolder')
-        }
-
-    def get_ssl_verification_setting (self):
-        """Returns the setting that describes if we should verify the ssl transport when loading data
-
-        Returns
-        -------
-        bool
-            Verify or not
-        """
-        return self.get_addon().getSetting('ssl_verification') == 'true'
-
-    def set_main_menu_selection (self, type):
-        """Persist the chosen main menu entry in memory
-
-        Parameters
-        ----------
-        type : :obj:`str`
-            Selected menu item
-        """
-        xbmcgui.Window(xbmcgui.getCurrentWindowId()).setProperty('main_menu_selection', type)
-
-    def get_main_menu_selection (self):
-        """Gets the persisted chosen main menu entry from memory
-
-        Returns
-        -------
-        :obj:`str`
-            The last chosen main menu entry
-        """
-        return xbmcgui.Window(xbmcgui.getCurrentWindowId()).getProperty('main_menu_selection')
-
-    def setup_memcache (self):
-        """Sets up the memory cache if not existant"""
-        cached_items = xbmcgui.Window(xbmcgui.getCurrentWindowId()).getProperty('memcache')
-        # no cache setup yet, create one
-        if len(cached_items) < 1:
-            xbmcgui.Window(xbmcgui.getCurrentWindowId()).setProperty('memcache', pickle.dumps({}))
-
-    def invalidate_memcache (self):
-        """Invalidates the memory cache"""
-        xbmcgui.Window(xbmcgui.getCurrentWindowId()).setProperty('memcache', pickle.dumps({}))
-
-    def has_cached_item (self, cache_id):
-        """Checks if the requested item is in memory cache
-
-        Parameters
-        ----------
-        cache_id : :obj:`str`
-            ID of the cache entry
-
-        Returns
-        -------
-        bool
-            Item is cached
-        """
-        cached_items = pickle.loads(xbmcgui.Window(xbmcgui.getCurrentWindowId()).getProperty('memcache'))
-        return cache_id in cached_items.keys()
-
-    def get_cached_item (self, cache_id):
-        """Returns an item from the in memory cache
-
-        Parameters
-        ----------
-        cache_id : :obj:`str`
-            ID of the cache entry
-
-        Returns
-        -------
-        mixed
-            Contents of the requested cache item or none
-        """
-        cached_items = pickle.loads(xbmcgui.Window(xbmcgui.getCurrentWindowId()).getProperty('memcache'))
-        if self.has_cached_item(cache_id) != True:
-            return None
-        return cached_items[cache_id]
-
-    def add_cached_item (self, cache_id, contents):
-        """Adds an item to the in memory cache
-
-        Parameters
-        ----------
-        cache_id : :obj:`str`
-            ID of the cache entry
-
-        contents : mixed
-            Cache entry contents
-        """
-        cached_items = pickle.loads(xbmcgui.Window(xbmcgui.getCurrentWindowId()).getProperty('memcache'))
-        cached_items.update({cache_id: contents})
-        xbmcgui.Window(xbmcgui.getCurrentWindowId()).setProperty('memcache', pickle.dumps(cached_items))
-
-    def build_profiles_listing (self, profiles, action, build_url):
+    def profiles_listing(self, profiles, action):
         """Builds the profiles list Kodi screen
 
         Parameters
@@ -310,109 +48,109 @@ class KodiHelper:
 
         action : :obj:`str`
             Action paramter to build the subsequent routes
-
-        build_url : :obj:`fn`
-            Function to build the subsequent routes
-
-        Returns
-        -------
-        bool
-            List could be build
         """
+        handle = self.plugin_handle
         for profile_id in profiles:
             profile = profiles[profile_id]
             url = build_url({'action': action, 'profile_id': profile_id})
-            li = xbmcgui.ListItem(label=profile['profileName'], iconImage=profile['avatar'])
-            li.setProperty('fanart_image', self.default_fanart)
-            xbmcplugin.addDirectoryItem(handle=self.plugin_handle, url=url, listitem=li, isFolder=True)
-            xbmcplugin.addSortMethod(handle=self.plugin_handle, sortMethod=xbmcplugin.SORT_METHOD_LABEL)
-        xbmcplugin.endOfDirectory(self.plugin_handle)
-        return True
+            listitem = xbmcgui.ListItem(
+                label=profile['profileName'], iconImage=profile['avatar'])
+            listitem.setProperty('fanart_image', self.get_fanart())
+            xbmcplugin.addDirectoryItem(
+                handle=handle, url=url, listitem=listitem, isFolder=True)
+            xbmcplugin.addSortMethod(
+                handle=handle, sortMethod=xbmcplugin.SORT_METHOD_LABEL)
+        xbmcplugin.endOfDirectory(handle=handle)
 
-    def build_main_menu_listing (self, video_list_ids, user_list_order, actions, build_url):
+    def main_menu_listing(self, list_ids, list_order, actions):
         """Builds the video lists (my list, continue watching, etc.) Kodi screen
 
         Parameters
         ----------
-        video_list_ids : :obj:`dict` of :obj:`str`
+        list_ids : :obj:`dict` of :obj:`str`
             List of video lists
 
-        user_list_order : :obj:`list` of :obj:`str`
-            Ordered user lists, to determine what should be displayed in the main menue
+        list_order : :obj:`list` of :obj:`str`
+            Ordered user lists
+            to determine what should be displayed in the main menue
 
         actions : :obj:`dict` of :obj:`str`
             Dictionary of actions to build subsequent routes
-
-        build_url : :obj:`fn`
-            Function to build the subsequent routes
 
         Returns
         -------
         bool
             List could be build
         """
-        preselect_items = []
-        for category in user_list_order:
-            for video_list_id in video_list_ids['user']:
-                if video_list_ids['user'][video_list_id]['name'] == category:
-                    label = video_list_ids['user'][video_list_id]['displayName']
-                    if category == 'netflixOriginals':
-                        label = label.capitalize()
-                    li = xbmcgui.ListItem(label=label)
-                    li.setProperty('fanart_image', self.default_fanart)
-                    # determine action route
-                    action = actions['default']
-                    if category in actions.keys():
-                        action = actions[category]
-                    # determine if the item should be selected
-                    preselect_items.append((False, True)[category == self.get_main_menu_selection()])
-                    url = build_url({'action': action, 'video_list_id': video_list_id, 'type': category})
-                    xbmcplugin.addDirectoryItem(handle=self.plugin_handle, url=url, listitem=li, isFolder=True)
+        preselect_items = self.__generate_categories(
+            list_ids=list_ids,
+            list_order=list_order,
+            actions=actions)
 
-        # add recommendations/genres as subfolders (save us some space on the home page)
+        # add recommendations/genres as subfolders (save us some space on the
+        # home page)
         i18n_ids = {
             'recommendations': self.get_local_string(30001),
             'genres': self.get_local_string(30010)
         }
-        for type in i18n_ids.keys():
+        for list_type in i18n_ids:
             # determine if the lists have contents
-            if len(video_list_ids[type]) > 0:
-                # determine action route
-                action = actions['default']
-                if type in actions.keys():
-                    action = actions[type]
+            if len(list_ids.get(list_type, '')) > 0:
                 # determine if the item should be selected
-                preselect_items.append((False, True)[type == self.get_main_menu_selection()])
-                li_rec = xbmcgui.ListItem(label=i18n_ids[type])
-                li_rec.setProperty('fanart_image', self.default_fanart)
-                url_rec = build_url({'action': action, 'type': type})
-                xbmcplugin.addDirectoryItem(handle=self.plugin_handle, url=url_rec, listitem=li_rec, isFolder=True)
+                preselect_items.append(
+                    list_type == self.cache.get_main_menu_selection())
+                listitem = xbmcgui.ListItem(label=i18n_ids[list_type])
+                listitem.setProperty('fanart_image', self.get_fanart())
+                action = actions.get(list_type, actions.get('default', ''))
+                url_rec = build_url({
+                    'action': action,
+                    'type': list_type
+                })
+                self.__add_dir(url=url_rec, item=listitem)
 
         # add search as subfolder
-        action = actions['default']
-        if 'search' in actions.keys():
-            action = actions[type]
-        li_rec = xbmcgui.ListItem(label=self.get_local_string(30011))
-        li_rec.setProperty('fanart_image', self.default_fanart)
-        url_rec = build_url({'action': action, 'type': 'search'})
-        xbmcplugin.addDirectoryItem(handle=self.plugin_handle, url=url_rec, listitem=li_rec, isFolder=True)
+        listitem = xbmcgui.ListItem(label=self.get_local_string(30011))
+        listitem.setProperty('fanart_image', self.get_fanart())
+        url_rec = build_url({
+            'action': actions.get('search', actions.get('default', '')),
+            'type': 'search'
+        })
+        self.__add_dir(url=url_rec, item=listitem)
 
-        # no srting & close
-        xbmcplugin.addSortMethod(handle=self.plugin_handle, sortMethod=xbmcplugin.SORT_METHOD_UNSORTED)
-        xbmcplugin.endOfDirectory(self.plugin_handle)
+        # no sorting & close
+        self.__add_sorting_options()
+        xbmcplugin.endOfDirectory(handle=self.plugin_handle)
 
-        # (re)select the previously selected main menu entry
-        idx = 1
-        for item in preselect_items:
-            idx += 1
-            preselected_list_item = idx if item else None
-        preselected_list_item = idx + 1 if self.get_main_menu_selection() == 'search' else preselected_list_item
-        if preselected_list_item != None:
-            xbmc.executebuiltin('ActivateWindowAndFocus(%s, %s)' % (str(xbmcgui.Window(xbmcgui.getCurrentWindowId()).getFocusId()), str(preselected_list_item)))
+        self.__select_menu_entry(preselect_items=preselect_items)
         return True
 
-    def build_video_listing (self, video_list, actions, type, build_url):
-        """Builds the video lists (my list, continue watching, etc.) contents Kodi screen
+    def __generate_categories(self, list_ids, list_order, actions):
+        """ADD ME"""
+        preselect_items = []
+        for category in list_order:
+            for video_list_id in list_ids.get('user', []):
+                video_list = list_ids.get(
+                    'user', {}).get(video_list_id, {})
+                if video_list.get('name', '') == category:
+                    label = video_list.get('displayName', '')
+                    if category == 'netflixOriginals':
+                        label = label.capitalize()
+                    listitem = xbmcgui.ListItem(label=label)
+                    listitem.setProperty('fanart_image', self.get_fanart())
+                    # determine if the item should be selected
+                    preselect_items.append(
+                        category == self.cache.get_main_menu_selection())
+                    action = actions.get(category, actions.get('default', ''))
+                    url = build_url({
+                        'action': action,
+                        'video_list_id': video_list_id,
+                        'type': category
+                    })
+                    self.__add_dir(url=url, item=listitem)
+        return preselect_items
+
+    def video_listing(self, video_list, actions):
+        """Builds the video lists (my list, continue watching, etc.)
 
         Parameters
         ----------
@@ -425,41 +163,47 @@ class KodiHelper:
         type : :obj:`str`
             None or 'queue' f.e. when it´s a special video lists
 
-        build_url : :obj:`fn`
-            Function to build the subsequent routes
-
         Returns
         -------
         bool
             List could be build
         """
+        handle = self.plugin_handle
         for video_list_id in video_list:
             video = video_list[video_list_id]
-            li = xbmcgui.ListItem(label=video['title'])
+            item = xbmcgui.ListItem(label=video.get('title', ''))
             # add some art to the item
-            li = self._generate_art_info(entry=video, li=li)
+            item = self.__generate_art_info(entry=video, item=item)
             # it´s a show, so we need a subfolder & route (for seasons)
-            isFolder = True
-            url = build_url({'action': actions[video['type']], 'show_id': video_list_id})
-            # lists can be mixed with shows & movies, therefor we need to check if its a movie, so play it right away
-            if video_list[video_list_id]['type'] == 'movie':
+            is_folder = True
+            url = build_url(
+                {'action': actions[video['type']], 'show_id': video_list_id})
+            # lists can be mixed with shows & movies
+            # therefor we need to check if its a movie
+            # so play it right away
+            if video['type'] == 'movie':
                 # it´s a movie, so we need no subfolder & a route to play it
-                isFolder = False
-                url = build_url({'action': 'play_video', 'video_id': video_list_id})
+                is_folder = False
+                url = build_url(
+                    {'action': 'play_video', 'video_id': video_list_id})
             # add list item info
-            li = self._generate_entry_info(entry=video, li=li)
-            li = self._generate_context_menu_items(entry=video, li=li)
-            xbmcplugin.addDirectoryItem(handle=self.plugin_handle, url=url, listitem=li, isFolder=isFolder)
+            item = self.__generate_entry_info(entry=video, item=item)
+            item = self.__generate_context_menu_items(entry=video, item=item)
+            self.__add_dir(url=url, item=item, folder=is_folder)
 
-        xbmcplugin.addSortMethod(handle=self.plugin_handle, sortMethod=xbmcplugin.SORT_METHOD_LABEL)
-        xbmcplugin.addSortMethod(handle=self.plugin_handle, sortMethod=xbmcplugin.SORT_METHOD_TITLE)
-        xbmcplugin.addSortMethod(handle=self.plugin_handle, sortMethod=xbmcplugin.SORT_METHOD_VIDEO_YEAR)
-        xbmcplugin.addSortMethod(handle=self.plugin_handle, sortMethod=xbmcplugin.SORT_METHOD_GENRE)
-        xbmcplugin.addSortMethod(handle=self.plugin_handle, sortMethod=xbmcplugin.SORT_METHOD_LASTPLAYED)
-        xbmcplugin.endOfDirectory(self.plugin_handle)
-        return True
+        xbmcplugin.addSortMethod(
+            handle=handle, sortMethod=xbmcplugin.SORT_METHOD_LABEL)
+        xbmcplugin.addSortMethod(
+            handle=handle, sortMethod=xbmcplugin.SORT_METHOD_TITLE)
+        xbmcplugin.addSortMethod(
+            handle=handle, sortMethod=xbmcplugin.SORT_METHOD_VIDEO_YEAR)
+        xbmcplugin.addSortMethod(
+            handle=handle, sortMethod=xbmcplugin.SORT_METHOD_GENRE)
+        xbmcplugin.addSortMethod(
+            handle=handle, sortMethod=xbmcplugin.SORT_METHOD_LASTPLAYED)
+        xbmcplugin.endOfDirectory(handle)
 
-    def build_search_result_listing (self, video_list, actions, build_url):
+    def search_result_listing(self, video_list, actions):
         """Builds the search results list Kodi screen
 
         Parameters
@@ -470,17 +214,17 @@ class KodiHelper:
         actions : :obj:`dict` of :obj:`str`
             Dictionary of actions to build subsequent routes
 
-        build_url : :obj:`fn`
-            Function to build the subsequent routes
-
         Returns
         -------
         bool
             List could be build
         """
-        return self.build_video_listing(video_list=video_list, actions=actions, type='search', build_url=build_url)
+        video_listing = self.video_listing(
+            video_list=video_list,
+            actions=actions)
+        return video_listing
 
-    def build_no_seasons_available (self):
+    def no_seasons(self):
         """Builds the season list screen if no seasons could be found
 
         Returns
@@ -488,62 +232,48 @@ class KodiHelper:
         bool
             List could be build
         """
-        self.show_no_seasons_notification()
+        self.dialogs.show_no_seasons_notify()
         xbmcplugin.endOfDirectory(self.plugin_handle)
-        return True
 
-    def build_no_search_results_available (self, build_url, action):
+    def no_search_results(self):
         """Builds the search results screen if no matches could be found
 
-        Parameters
-        ----------
-        action : :obj:`str`
-            Action paramter to build the subsequent routes
-
-        build_url : :obj:`fn`
-            Function to build the subsequent routes
-
         Returns
         -------
         bool
             List could be build
         """
-        self.show_no_search_results_notification()
+        self.dialogs.show_no_search_results_notify()
         return xbmcplugin.endOfDirectory(self.plugin_handle)
 
-    def build_user_sub_listing (self, video_list_ids, type, action, build_url):
-        """Builds the video lists screen for user subfolders (genres & recommendations)
+    def user_sub_listing(self, video_list_ids, action):
+        """
+        Builds the video lists screen for user subfolders
+        (genres & recommendations)
 
-        Parameters
-        ----------
-        video_list_ids : :obj:`dict` of :obj:`str`
-            List of video lists
+        :video_list_ids: Dictionary List of video lists
 
-        type : :obj:`str`
-            List type (genre or recommendation)
-
-        action : :obj:`str`
-            Action paramter to build the subsequent routes
-
-        build_url : :obj:`fn`
-            Function to build the subsequent routes
+        :action: String Action paramter to build the subsequent routes
 
         Returns
         -------
         bool
             List could be build
         """
+        handle = self.plugin_handle
         for video_list_id in video_list_ids:
-            li = xbmcgui.ListItem(video_list_ids[video_list_id]['displayName'])
-            li.setProperty('fanart_image', self.default_fanart)
+            listitem = xbmcgui.ListItem(
+                video_list_ids[video_list_id]['displayName'])
+            listitem.setProperty('fanart_image', self.get_fanart())
             url = build_url({'action': action, 'video_list_id': video_list_id})
-            xbmcplugin.addDirectoryItem(handle=self.plugin_handle, url=url, listitem=li, isFolder=True)
+            xbmcplugin.addDirectoryItem(
+                handle=handle, url=url, listitem=listitem, isFolder=True)
 
-        xbmcplugin.addSortMethod(handle=self.plugin_handle, sortMethod=xbmcplugin.SORT_METHOD_LABEL)
-        xbmcplugin.endOfDirectory(self.plugin_handle)
-        return True
+        xbmcplugin.addSortMethod(
+            handle=handle, sortMethod=xbmcplugin.SORT_METHOD_LABEL)
+        xbmcplugin.endOfDirectory(handle=handle)
 
-    def build_season_listing (self, seasons_sorted, season_list, build_url):
+    def season_listing(self, seasons_sorted, season_list):
         """Builds the season list screen for a show
 
         Parameters
@@ -554,36 +284,42 @@ class KodiHelper:
         season_list : :obj:`dict` of :obj:`str`
             List of season entries
 
-        build_url : :obj:`fn`
-            Function to build the subsequent routes
-
         Returns
         -------
         bool
             List could be build
         """
+        handle = self.plugin_handle
         for index in seasons_sorted:
             for season_id in season_list:
                 season = season_list[season_id]
-                if int(season['idx']) == index:
-                    li = xbmcgui.ListItem(label=season['text'])
+                if int(season.get('idx', 0)) == index:
+                    item = xbmcgui.ListItem(label=season.get('text', ''))
                     # add some art to the item
-                    li = self._generate_art_info(entry=season, li=li)
+                    item = self.__generate_art_info(entry=season, item=item)
                     # add list item info
-                    li = self._generate_entry_info(entry=season, li=li, base_info={'mediatype': 'season'})
-                    li = self._generate_context_menu_items(entry=season, li=li)
-                    url = build_url({'action': 'episode_list', 'season_id': season_id})
-                    xbmcplugin.addDirectoryItem(handle=self.plugin_handle, url=url, listitem=li, isFolder=True)
+                    info = {'mediatype': 'season'}
+                    item = self.__generate_entry_info(
+                        entry=season, item=item, info=info)
+                    item = self.__generate_context_menu_items(
+                        entry=season, item=item)
+                    url = build_url(
+                        {'action': 'episode_list', 'season_id': season_id})
+                    self.__add_dir(url=url, item=item)
 
-        xbmcplugin.addSortMethod(handle=self.plugin_handle, sortMethod=xbmcplugin.SORT_METHOD_NONE)
-        xbmcplugin.addSortMethod(handle=self.plugin_handle, sortMethod=xbmcplugin.SORT_METHOD_VIDEO_YEAR)
-        xbmcplugin.addSortMethod(handle=self.plugin_handle, sortMethod=xbmcplugin.SORT_METHOD_LABEL)
-        xbmcplugin.addSortMethod(handle=self.plugin_handle, sortMethod=xbmcplugin.SORT_METHOD_LASTPLAYED)
-        xbmcplugin.addSortMethod(handle=self.plugin_handle, sortMethod=xbmcplugin.SORT_METHOD_TITLE)
-        xbmcplugin.endOfDirectory(self.plugin_handle)
-        return True
+        xbmcplugin.addSortMethod(
+            handle=handle, sortMethod=xbmcplugin.SORT_METHOD_NONE)
+        xbmcplugin.addSortMethod(
+            handle=handle, sortMethod=xbmcplugin.SORT_METHOD_VIDEO_YEAR)
+        xbmcplugin.addSortMethod(
+            handle=handle, sortMethod=xbmcplugin.SORT_METHOD_LABEL)
+        xbmcplugin.addSortMethod(
+            handle=handle, sortMethod=xbmcplugin.SORT_METHOD_LASTPLAYED)
+        xbmcplugin.addSortMethod(
+            handle=handle, sortMethod=xbmcplugin.SORT_METHOD_TITLE)
+        xbmcplugin.endOfDirectory(handle=handle)
 
-    def build_episode_listing (self, episodes_sorted, episode_list, build_url):
+    def episode_listing(self, episodes_sorted, episode_list):
         """Builds the episode list screen for a season of a show
 
         Parameters
@@ -594,38 +330,50 @@ class KodiHelper:
         episode_list : :obj:`dict` of :obj:`str`
             List of episode entries
 
-        build_url : :obj:`fn`
-            Function to build the subsequent routes
-
         Returns
         -------
         bool
             List could be build
         """
+        handle = self.plugin_handle
         for index in episodes_sorted:
             for episode_id in episode_list:
                 episode = episode_list[episode_id]
-                if int(episode['episode']) == index:
-                    li = xbmcgui.ListItem(label=episode['title'])
+                if int(episode.get('episode', 0)) == index:
+                    item = xbmcgui.ListItem(label=episode.get('title', ''))
                     # add some art to the item
-                    li = self._generate_art_info(entry=episode, li=li)
+                    item = self.__generate_art_info(entry=episode, item=item)
                     # add list item info
-                    li = self._generate_entry_info(entry=episode, li=li, base_info={'mediatype': 'episode'})
-                    li = self._generate_context_menu_items(entry=episode, li=li)
-                    url = build_url({'action': 'play_video', 'video_id': episode_id, 'start_offset': episode['bookmark']})
-                    xbmcplugin.addDirectoryItem(handle=self.plugin_handle, url=url, listitem=li, isFolder=False)
+                    info = {'mediatype': 'episode'}
+                    item = self.__generate_entry_info(
+                        entry=episode, item=item, info=info)
+                    item = self.__generate_context_menu_items(
+                        entry=episode, item=item)
+                    url_data = {
+                        'action': 'play_video',
+                        'video_id': episode_id,
+                        'start_offset': episode.get('bookmark')
+                    }
+                    url = build_url(url_data)
+                    self.__add_dir(url=url, item=item, folder=False)
 
-        xbmcplugin.addSortMethod(handle=self.plugin_handle, sortMethod=xbmcplugin.SORT_METHOD_EPISODE)
-        xbmcplugin.addSortMethod(handle=self.plugin_handle, sortMethod=xbmcplugin.SORT_METHOD_NONE)
-        xbmcplugin.addSortMethod(handle=self.plugin_handle, sortMethod=xbmcplugin.SORT_METHOD_VIDEO_YEAR)
-        xbmcplugin.addSortMethod(handle=self.plugin_handle, sortMethod=xbmcplugin.SORT_METHOD_LABEL)
-        xbmcplugin.addSortMethod(handle=self.plugin_handle, sortMethod=xbmcplugin.SORT_METHOD_LASTPLAYED)
-        xbmcplugin.addSortMethod(handle=self.plugin_handle, sortMethod=xbmcplugin.SORT_METHOD_TITLE)
-        xbmcplugin.addSortMethod(handle=self.plugin_handle, sortMethod=xbmcplugin.SORT_METHOD_DURATION)
-        xbmcplugin.endOfDirectory(self.plugin_handle)
-        return True
+        xbmcplugin.addSortMethod(
+            handle=handle, sortMethod=xbmcplugin.SORT_METHOD_EPISODE)
+        xbmcplugin.addSortMethod(
+            handle=handle, sortMethod=xbmcplugin.SORT_METHOD_NONE)
+        xbmcplugin.addSortMethod(
+            handle=handle, sortMethod=xbmcplugin.SORT_METHOD_VIDEO_YEAR)
+        xbmcplugin.addSortMethod(
+            handle=handle, sortMethod=xbmcplugin.SORT_METHOD_LABEL)
+        xbmcplugin.addSortMethod(
+            handle=handle, sortMethod=xbmcplugin.SORT_METHOD_LASTPLAYED)
+        xbmcplugin.addSortMethod(
+            handle=handle, sortMethod=xbmcplugin.SORT_METHOD_TITLE)
+        xbmcplugin.addSortMethod(
+            handle=handle, sortMethod=xbmcplugin.SORT_METHOD_DURATION)
+        xbmcplugin.endOfDirectory(handle=handle)
 
-    def play_item (self, esn, video_id, start_offset=-1):
+    def play_item(self, esn, video_id, start_offset=-1):
         """Plays a video
 
         Parameters
@@ -644,15 +392,16 @@ class KodiHelper:
         bool
             List could be build
         """
+        handle = self.plugin_handle
         addon = self.get_addon()
         inputstream_addon = self.get_inputstream_addon()
-        if inputstream_addon == None:
-            self.show_missing_inputstream_addon_notification()
+        if inputstream_addon is None:
+            self.dialogs.show_missing_inputstream_notify()
             self.log(msg='Inputstream addon not found')
             return False
 
         # track play event
-        self.track_event('playVideo')
+        self.__track_event('playVideo')
 
         # check esn in settings
         settings_esn = str(addon.getSetting('esn'))
@@ -660,20 +409,40 @@ class KodiHelper:
             addon.setSetting('esn', str(esn))
 
         # inputstream addon properties
-        msl_service_url = 'http://localhost:' + str(addon.getSetting('msl_service_port'))
-        play_item = xbmcgui.ListItem(path=msl_service_url + '/manifest?id=' + video_id)
-        play_item.setProperty(inputstream_addon + '.license_type', 'com.widevine.alpha')
+        msl_service_location = 'http://127.0.0.1:' + \
+            str(addon.getSetting('msl_service_port'))
+        msl_service_url = msl_service_location + \
+            '/license?id=' + video_id + '||b{SSM}!b{SID}|'
+        play_item = xbmcgui.ListItem(
+            path=msl_service_url + '/manifest?id=' + video_id)
+        play_item.setProperty(inputstream_addon +
+                              '.license_type', 'com.widevine.alpha')
         play_item.setProperty(inputstream_addon + '.manifest_type', 'mpd')
-        play_item.setProperty(inputstream_addon + '.license_key', msl_service_url + '/license?id=' + video_id + '||b{SSM}!b{SID}|')
-        play_item.setProperty(inputstream_addon + '.server_certificate', 'Cr0CCAMSEOVEukALwQ8307Y2+LVP+0MYh/HPkwUijgIwggEKAoIBAQDm875btoWUbGqQD8eAGuBlGY+Pxo8YF1LQR+Ex0pDONMet8EHslcZRBKNQ/09RZFTP0vrYimyYiBmk9GG+S0wB3CRITgweNE15cD33MQYyS3zpBd4z+sCJam2+jj1ZA4uijE2dxGC+gRBRnw9WoPyw7D8RuhGSJ95OEtzg3Ho+mEsxuE5xg9LM4+Zuro/9msz2bFgJUjQUVHo5j+k4qLWu4ObugFmc9DLIAohL58UR5k0XnvizulOHbMMxdzna9lwTw/4SALadEV/CZXBmswUtBgATDKNqjXwokohncpdsWSauH6vfS6FXwizQoZJ9TdjSGC60rUB2t+aYDm74cIuxAgMBAAE6EHRlc3QubmV0ZmxpeC5jb20SgAOE0y8yWw2Win6M2/bw7+aqVuQPwzS/YG5ySYvwCGQd0Dltr3hpik98WijUODUr6PxMn1ZYXOLo3eED6xYGM7Riza8XskRdCfF8xjj7L7/THPbixyn4mULsttSmWFhexzXnSeKqQHuoKmerqu0nu39iW3pcxDV/K7E6aaSr5ID0SCi7KRcL9BCUCz1g9c43sNj46BhMCWJSm0mx1XFDcoKZWhpj5FAgU4Q4e6f+S8eX39nf6D6SJRb4ap7Znzn7preIvmS93xWjm75I6UBVQGo6pn4qWNCgLYlGGCQCUm5tg566j+/g5jvYZkTJvbiZFwtjMW5njbSRwB3W4CrKoyxw4qsJNSaZRTKAvSjTKdqVDXV/U5HK7SaBA6iJ981/aforXbd2vZlRXO/2S+Maa2mHULzsD+S5l4/YGpSt7PnkCe25F+nAovtl/ogZgjMeEdFyd/9YMYjOS4krYmwp3yJ7m9ZzYCQ6I8RQN4x/yLlHG5RH/+WNLNUs6JAZ0fFdCmw=')
+        play_item.setProperty(inputstream_addon +
+                              '.license_key', msl_service_url)
+        play_item.setProperty(inputstream_addon +
+                              '.server_certificate', self.msl_server_cert)
         play_item.setProperty('inputstreamaddon', inputstream_addon)
 
         # check if we have a bookmark e.g. start offset position
         if int(start_offset) > 0:
             play_item.setProperty('StartOffset', str(start_offset) + '.0')
-        return xbmcplugin.setResolvedUrl(self.plugin_handle, True, listitem=play_item)
+        xbmcplugin.setResolvedUrl(
+            handle=handle,
+            succeeded=True,
+            listitem=play_item)
 
-    def _generate_art_info (self, entry, li):
+    def set_library(self, library):
+        """Adds an instance of the Library class
+
+        Parameters
+        ----------
+        library : :obj:`Library`
+            instance of the Library class
+        """
+        self.library = library
+
+    def __generate_art_info(self, entry, item):
         """Adds the art info from an entry to a Kodi list item
 
         Parameters
@@ -681,7 +450,7 @@ class KodiHelper:
         entry : :obj:`dict` of :obj:`str`
             Entry that should be turned into a list item
 
-        li : :obj:`XMBC.ListItem`
+        item : :obj:`XMBC.ListItem`
             Kodi list item instance
 
         Returns
@@ -689,7 +458,7 @@ class KodiHelper:
         :obj:`XMBC.ListItem`
             Kodi list item instance
         """
-        art = {'fanart': self.default_fanart}
+        art = {'fanart': self.get_fanart()}
         if 'boxarts' in dict(entry).keys():
             art.update({
                 'poster': entry['boxarts']['big'],
@@ -697,21 +466,21 @@ class KodiHelper:
                 'thumb': entry['boxarts']['small'],
                 'fanart': entry['boxarts']['big']
             })
-        if 'interesting_moment' in dict(entry).keys():
+        if 'interesting_moment' in entry.keys():
             art.update({
                 'poster': entry['interesting_moment'],
                 'fanart': entry['interesting_moment']
             })
-        if 'thumb' in dict(entry).keys():
+        if 'thumb' in entry.keys():
             art.update({'thumb': entry['thumb']})
-        if 'fanart' in dict(entry).keys():
+        if 'fanart' in entry.keys():
             art.update({'fanart': entry['fanart']})
-        if 'poster' in dict(entry).keys():
+        if 'poster' in entry.keys():
             art.update({'poster': entry['poster']})
-        li.setArt(art)
-        return li
+        item.setArt(art)
+        return item
 
-    def _generate_entry_info (self, entry, li, base_info={}):
+    def __generate_entry_info(self, entry, item, info=None):
         """Adds the item info from an entry to a Kodi list item
 
         Parameters
@@ -719,10 +488,10 @@ class KodiHelper:
         entry : :obj:`dict` of :obj:`str`
             Entry that should be turned into a list item
 
-        li : :obj:`XMBC.ListItem`
+        item : :obj:`XMBC.ListItem`
             Kodi list item instance
 
-        base_info : :obj:`dict` of :obj:`str`
+        info : :obj:`dict` of :obj:`str`
             Additional info that overrules the entry info
 
         Returns
@@ -730,63 +499,72 @@ class KodiHelper:
         :obj:`XMBC.ListItem`
             Kodi list item instance
         """
-        infos = base_info
-        entry_keys = entry.keys()
-        if 'cast' in entry_keys and len(entry['cast']) > 0:
-            infos.update({'cast': entry['cast']})
-        if 'creators' in entry_keys and len(entry['creators']) > 0:
-            infos.update({'writer': entry['creators'][0]})
-        if 'directors' in entry_keys and len(entry['directors']) > 0:
-            infos.update({'director': entry['directors'][0]})
-        if 'genres' in entry_keys and len(entry['genres']) > 0:
-            infos.update({'genre': entry['genres'][0]})
-        if 'maturity' in entry_keys:
-            if 'mpaa' in entry_keys:
+        infos = info if info is not None else {}
+        ikeys = entry.keys()
+        infos.update(get_item(item=entry, ikeys=ikeys, iname='cast'))
+        infos.update(get_item(item=entry, ikeys=ikeys,
+                              iname='writer', api_name='creators'))
+        infos.update(get_item(item=entry, ikeys=ikeys,
+                              iname='director', api_name='directors'))
+        infos.update(get_item(item=entry, ikeys=ikeys,
+                              iname='genre', api_name='genres'))
+        infos.update(get_item(item=entry, ikeys=ikeys,
+                              iname='plot', api_name='synopsis'))
+        infos.update(get_item(item=entry, ikeys=ikeys, iname='plot'))
+        infos.update(get_item(item=entry, ikeys=ikeys,
+                              iname='duration', api_name='runtime'))
+        infos.update(get_item(item=entry, ikeys=ikeys, iname='duration'))
+        infos.update(get_item(item=entry, ikeys=ikeys,
+                              iname='season', api_name='seasons_label'))
+        infos.update(get_item(item=entry, ikeys=ikeys, iname='season'))
+        infos.update(get_item(item=entry, ikeys=ikeys, iname='title'))
+        infos.update(get_item(item=entry, ikeys=ikeys, iname='year'))
+        infos.update(get_item(item=entry, ikeys=ikeys,
+                              iname='episode', api_name='index'))
+        infos.update(get_item(item=entry, ikeys=ikeys, iname='episode'))
+        if 'maturity' in ikeys:
+            if 'mpaa' in ikeys:
                 infos.update({'mpaa': entry['mpaa']})
             else:
-                infos.update({'mpaa': str(entry['maturity']['board']) + '-' + str(entry['maturity']['value'])})
-        if 'rating' in entry_keys:
+                board = str(entry.get('maturity', {}).get('board', ''))
+                maturity = str(entry.get('maturity', {}).get('value', ''))
+                infos.update({'mpaa': board + '-' + maturity})
+        if 'rating' in ikeys:
             infos.update({'rating': int(entry['rating']) * 2})
-        if 'synopsis' in entry_keys:
-            infos.update({'plot': entry['synopsis']})
-        if 'plot' in entry_keys:
-            infos.update({'plot': entry['plot']})
-        if 'runtime' in entry_keys:
-            infos.update({'duration': entry['runtime']})
-        if 'duration' in entry_keys:
-            infos.update({'duration': entry['duration']})
-        if 'seasons_label' in entry_keys:
-            infos.update({'season': entry['seasons_label']})
-        if 'season' in entry_keys:
-            infos.update({'season': entry['season']})
-        if 'title' in entry_keys:
-            infos.update({'title': entry['title']})
-        if 'type' in entry_keys:
-            if entry['type'] == 'movie' or entry['type'] == 'episode':
-                li.setProperty('IsPlayable', 'true')
-        if 'mediatype' in entry_keys:
-            if entry['mediatype'] == 'movie' or entry['mediatype'] == 'episode':
-                li.setProperty('IsPlayable', 'true')
-                infos.update({'mediatype': entry['mediatype']})
-        if 'watched' in entry_keys:
+        if 'mediatype' in ikeys or 'type' in ikeys:
+            mediatype = entry.get('type', entry.get('mediatype', ''))
+            if mediatype == 'movie' or mediatype == 'episode':
+                item.setProperty('IsPlayable', 'true')
+                infos.update({'mediatype': mediatype})
+        if 'watched' in ikeys:
             infos.update({'playcount': (1, 0)[entry['watched']]})
-        if 'index' in entry_keys:
-            infos.update({'episode': entry['index']})
-        if 'episode' in entry_keys:
-            infos.update({'episode': entry['episode']})
-        if 'year' in entry_keys:
-            infos.update({'year': entry['year']})
-        if 'quality' in entry_keys:
+        if 'quality' in ikeys:
             quality = {'width': '960', 'height': '540'}
             if entry['quality'] == '720':
                 quality = {'width': '1280', 'height': '720'}
-            if entry['quality'] == '1080':
+            elif entry['quality'] == '1080':
                 quality = {'width': '1920', 'height': '1080'}
-            li.addStreamInfo('video', quality)
-        li.setInfo('video', infos)
-        return li
+            else:
+                self.log(msg='No video quality info found')
+            item.addStreamInfo('video', quality)
+        item.setInfo('video', infos)
+        return item
 
-    def _generate_context_menu_items (self, entry, li):
+    def __select_menu_entry(self, preselect_items):
+        """(re)select the previously selected main menu entry"""
+        idx = 1
+        for item in preselect_items:
+            idx += 1
+            preselected_list_item = idx if item else None
+        is_search = self.cache.get_main_menu_selection() == 'search'
+        preselected_list_item = idx + 1 if is_search else preselected_list_item
+        if preselected_list_item is not None:
+            focus_id = str(self.window.getFocusId())
+            selected_item = str(preselected_list_item)
+            xbmc.executebuiltin('ActivateWindowAndFocus(%s, %s)' %
+                                (focus_id, selected_item))
+
+    def __generate_context_menu_items(self, entry, item):
         """Adds context menue items to a Kodi list item
 
         Parameters
@@ -794,7 +572,7 @@ class KodiHelper:
         entry : :obj:`dict` of :obj:`str`
             Entry that should be turned into a list item
 
-        li : :obj:`XMBC.ListItem`
+        listitem : :obj:`XMBC.ListItem`
             Kodi list item instance
         Returns
         -------
@@ -806,130 +584,119 @@ class KodiHelper:
         entry_keys = entry.keys()
 
         # action item templates
-        encoded_title = urlencode({'title': entry['title'].encode('utf-8')}) if 'title' in entry else ''
-        url_tmpl = 'XBMC.RunPlugin(' + self.base_url + '?action=%action%&id=' + str(entry['id']) + '&' + encoded_title + ')'
+        encoded_title = urlencode(
+            {'title': entry.get('title', '').encode('utf-8')})
+        _id = str(entry.get('id', ''))
+        url_tmpl = 'XBMC.RunPlugin(%base_url%?action=%action%&id=%id%&%title%)'
+        url_tmpl = url_tmpl.replace('%base_url%', self.base_url)
+        url_tmpl = url_tmpl.replace('%title%', encoded_title)
+        url_tmpl = url_tmpl.replace('%id%', _id)
         actions = [
             ['export_to_library', self.get_local_string(30018), 'export'],
             ['remove_from_library', self.get_local_string(30030), 'remove'],
             ['rate_on_netflix', self.get_local_string(30019), 'rating'],
-            ['remove_from_my_list', self.get_local_string(30020), 'remove_from_list'],
-            ['add_to_my_list', self.get_local_string(30021), 'add_to_list']
+            ['remove_my_list', self.get_local_string(
+                30020), 'remove_from_list'],
+            ['add_my_list', self.get_local_string(30021), 'add_to_list']
         ]
 
         # build concrete action items
         for action_item in actions:
-            action.update({action_item[0]: [action_item[1], url_tmpl.replace('%action%', action_item[2])]})
+            url_tmpl = url_tmpl.replace('%action%', action_item[2])
+            action.update({action_item[0]: [action_item[1], url_tmpl]})
 
-        # add or remove the movie/show/season/episode from & to the users "My List"
+        # add or remove the movie/show/season/episode
+        # from the users "My List"
+        remove = action.get('remove_my_list')
+        add = action.get('add_my_list')
         if 'in_my_list' in entry_keys:
-            items.append(action['remove_from_my_list']) if entry['in_my_list'] else items.append(action['add_to_my_list'])
+            my_list = remove if entry.get('in_my_list', False) else add
+            items.append(my_list)
         elif 'queue' in entry_keys:
-            items.append(action['remove_from_my_list']) if entry['queue'] else items.append(action['add_to_my_list'])
+            queue = remove if entry.get('queue', False) else add
+            items.append(queue)
         elif 'my_list' in entry_keys:
-            items.append(action['remove_from_my_list']) if entry['my_list'] else items.append(action['add_to_my_list'])
+            my_list = remove if entry.get('my_list', False) else add
+            items.append(my_list)
         # rate the movie/show/season/episode on Netflix
-        items.append(action['rate_on_netflix'])
+        items.append(action.get('rate_on_netflix'))
 
-        # add possibility to export this movie/show/season/episode to a static/local library (and to remove it)
-        if 'type' in entry_keys:
-            # add/remove movie
-            if entry['type'] == 'movie':
-                action_type = 'remove_from_library' if self.library.movie_exists(title=entry['title'], year=entry['year']) else 'export_to_library'
-                items.append(action[action_type])
-            # add/remove show
-            if entry['type'] == 'show' and 'title' in entry_keys:
-                action_type = 'remove_from_library' if self.library.show_exists(title=entry['title']) else 'export_to_library'
-                items.append(action[action_type])
+        # add possibility to export this movie/show/season/episode
+        # to a static/local library (and to remove it)
+        items = self.__add_export_context(
+            entry=entry, ekeys=entry_keys, items=items, action=action)
 
         # add it to the item
-        li.addContextMenuItems(items)
-        return li
+        item.addContextMenuItems(items)
+        return item
 
-    def log (self, msg, level=xbmc.LOGDEBUG):
-        """Adds a log entry to the Kodi log
-
-        Parameters
-        ----------
-        msg : :obj:`str`
-            Entry that should be turned into a list item
-
-        level : :obj:`int`
-            Kodi log level
-        """
-        if isinstance(msg, unicode):
-            msg = msg.encode('utf-8')
-        xbmc.log('[%s] %s' % (self.plugin, msg.__str__()), level)
-
-    def get_local_string (self, string_id):
-        """Returns the localized version of a string
-
-        Parameters
-        ----------
-        string_id : :obj:`int`
-            ID of the string that shoudl be fetched
-
-        Returns
-        -------
-        :obj:`str`
-            Requested string or empty string
-        """
-        src = xbmc if string_id < 30000 else self.get_addon()
-        locString = src.getLocalizedString(string_id)
-        if isinstance(locString, unicode):
-            locString = locString.encode('utf-8')
-        return locString
-
-    def get_inputstream_addon (self):
-        """Checks if the inputstream addon is installed & enabled.
-           Returns the type of the inputstream addon used or None if not found
-
-        Returns
-        -------
-        :obj:`str` or None
-            Inputstream addon or None
-        """
-        type = 'inputstream.adaptive'
-        payload = {
-            'jsonrpc': '2.0',
-            'id': 1,
-            'method': 'Addons.GetAddonDetails',
-            'params': {
-                'addonid': type,
-                'properties': ['enabled']
-            }
-        }
-        response = xbmc.executeJSONRPC(json.dumps(payload))
-        data = json.loads(response)
-        if not 'error' in data.keys():
-            if data['result']['addon']['enabled'] == True:
-                return type
-        return None
-
-    def set_library (self, library):
-        """Adds an instance of the Library class
-
-        Parameters
-        ----------
-        library : :obj:`Library`
-            instance of the Library class
-        """
-        self.library = library
-
-    def track_event(self, event):
+    def __track_event(self, event):
         """
         Send a tracking event if tracking is enabled
         :param event: the string idetifier of the event
         :return: None
         """
-        addon = self.get_addon()
         # Check if tracking is enabled
-        enable_tracking = (addon.getSetting('enable_tracking') == 'true')
+        enable_tracking = (self.settings.get_setting(
+            'enable_tracking') == 'true')
         if enable_tracking:
-            #Get or Create Tracking id
-            tracking_id = addon.getSetting('tracking_id')
-            if tracking_id is '':
+            # Get or Create Tracking id
+            _tracking_id = self.settings.get_setting('tracking_id')
+            if _tracking_id is '':
                 tracking_id = str(uuid4())
-                addon.setSetting('tracking_id', tracking_id)
+                self.settings.set_setting('tracking_id', tracking_id)
+            else:
+                tracking_id = str(_tracking_id)
             # Send the tracking event
             tracker = Tracker.create('UA-46081640-5', client_id=tracking_id)
             tracker.send('event', event)
+
+    def __add_dir(self, url, item, folder=True):
+        """ADD ME"""
+        handle = self.plugin_handle
+        xbmcplugin.addDirectoryItem(
+            handle=handle, url=url, listitem=item, isFolder=folder)
+
+    def __add_sorting_options(self, options=None):
+        """ADD ME"""
+        options = [
+            xbmcplugin.SORT_METHOD_UNSORTED] if options is None else options
+        for option in options:
+            xbmcplugin.addSortMethod(
+                handle=self.plugin_handle, sortMethod=option)
+
+    def __add_export_context(self, entry, ekeys, items, action):
+        """ADD ME"""
+        if 'type' in ekeys:
+            item_type = entry.get('type', '')
+            title = entry.get('title', '')
+            year = entry.get('year', 1969)
+            # add/remove movie
+            remove = 'remove_from_library'
+            add = 'export_to_library'
+            if item_type == 'movie':
+                movie_exists = self.library.movie_exists(
+                    title=title, year=year)
+                action_type = remove if movie_exists else add
+                items.append(action.get(action_type))
+            # add/remove show
+            if item_type == 'show':
+                show_exists = self.library.show_exists(title=title)
+                action_type = remove if show_exists else add
+                items.append(action.get(action_type))
+        return items
+
+    @staticmethod
+    def load_server_certificate():
+        """Reads the msl server certificate from a text file‚
+
+        Returns
+        -------
+        :obj:`str`
+            Base64 encodes server certificate
+        """
+        root = __file__
+        directory = path.dirname(path.realpath(root)).replace('lib', 'data')
+        filename = 'server_certificate.txt'
+        pathname = path.join(directory, filename)
+        return open(pathname).read()

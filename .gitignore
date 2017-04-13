@@ -2,3 +2,5 @@
 *.pyo
 *.pyc
 .idea
+.coverage
+report/

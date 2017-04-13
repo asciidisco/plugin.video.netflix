@@ -1,0 +1,2 @@
+[flake8]
+exclude = .git,__pycache__,resources/lib/UniversalAnalytics,resources/test,resources/lib/MSL.py,resources/lib/MSLHttpRequestHandler.py,

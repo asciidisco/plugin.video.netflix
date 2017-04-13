@@ -3,15 +3,17 @@
 # Module: LibraryExporter
 # Created on: 13.01.2017
 
+"""ADD ME"""
+
 import os
 from shutil import rmtree
-from utils import noop
 try:
-   import cPickle as pickle
-except:
-   import pickle
+    import cPickle as pickle
+except ImportError:
+    import pickle
 
-class Library:
+
+class Library(object):
     """Exports Netflix shows & movies to a local library folder"""
 
     series_label = 'shows'
@@ -21,9 +23,12 @@ class Library:
     """str: Label to identify movies"""
 
     db_filename = 'lib.ndb'
-    """str: (File)Name of the store for the database dump that contains all shows/movies added to the library"""
+    """
+    str: (File)Name of the store for the database dump
+    that contains all shows/movies added to the library
+    """
 
-    def __init__ (self, root_folder, library_settings, log_fn=noop):
+    def __init__(self, root_folder, library_settings, log_fn=None):
         """Takes the instances & configuration options needed to drive the plugin
 
         Parameters
@@ -40,37 +45,28 @@ class Library:
         log_fn : :obj:`fn`
              optional log function
         """
+        enable_custom_library_folder = library_settings['enablelibraryfolder']
+
         self.base_data_path = root_folder
-        self.enable_custom_library_folder = library_settings['enablelibraryfolder']
         self.custom_library_folder = library_settings['customlibraryfolder']
         self.db_filepath = os.path.join(self.base_data_path, self.db_filename)
-        self.log = log_fn
+        self.log = log_fn if log_fn is not None else lambda x: None
 
         # check for local library folder & set up the paths
-        lib_path = self.base_data_path if self.enable_custom_library_folder != 'true' else self.custom_library_folder
+        lib_path = self.base_data_path
+        if enable_custom_library_folder != 'true':
+            lib_path = self.custom_library_folder
         self.movie_path = os.path.join(lib_path, self.movies_label)
         self.tvshow_path = os.path.join(lib_path, self.series_label)
 
         # check if we need to setup the base folder structure & do so if needed
-        self.setup_local_netflix_library(source={
+        self.setup_local_library(source={
             self.movies_label: self.movie_path,
             self.series_label: self.tvshow_path
         })
 
         # load the local db
-        self.db = self._load_local_db(filename=self.db_filepath)
-
-    def setup_local_netflix_library (self, source):
-        """Sets up the basic directories
-
-        Parameters
-        ----------
-        source : :obj:`dict` of :obj:`str`
-            Dicitionary with directories to be created
-        """
-        for label in source:
-            if not os.path.exists(source[label]):
-                os.makedirs(source[label])
+        self.database = self._load_local_db(filename=self.db_filepath)
 
     def write_strm_file(self, path, url):
         """Writes the stream file that Kodi can use to integrate it into the DB
@@ -83,11 +79,12 @@ class Library:
         url : :obj:`str`
             Stream url
         """
-        with open(path, 'w+') as f:
-            f.write(url)
-            f.close()
+        self.log(msg='Writing strm file:' + path)
+        with open(path, 'w+') as file_handle:
+            file_handle.write(url)
+            file_handle.close()
 
-    def _load_local_db (self, filename):
+    def _load_local_db(self, filename):
         """Loads the local db file and parses it, creates one if not existent
 
         Parameters
@@ -104,17 +101,14 @@ class Library:
         if not os.path.isfile(filename):
             data = {self.movies_label: {}, self.series_label: {}}
             self.log('Setup local library DB')
-            self._update_local_db(filename=filename, db=data)
+            self._update_local_db(filename=filename, database=data)
             return data
 
-        with open(filename) as f:
-            data = pickle.load(f)
-            if data:
-                return data
-            else:
-                return {}
+        with open(filename) as file_handle:
+            data = pickle.load(file_handle)
+            return {} if not data else data
 
-    def _update_local_db (self, filename, db):
+    def _update_local_db(self, filename, database):
         """Updates the local db file with new data
 
         Parameters
@@ -130,14 +124,15 @@ class Library:
         bool
             Update has been successfully executed
         """
+        self.log(msg='Updating local Database:' + filename)
         if not os.path.isdir(os.path.dirname(filename)):
             return False
-        with open(filename, 'w') as f:
-            f.truncate()
-            pickle.dump(db, f)
+        with open(filename, 'w') as file_handle:
+            file_handle.truncate()
+            pickle.dump(database, file_handle)
         return True
 
-    def movie_exists (self, title, year):
+    def movie_exists(self, title, year):
         """Checks if a movie is already present in the local DB
 
         Parameters
@@ -154,9 +149,9 @@ class Library:
             Movie exists in DB
         """
         movie_meta = '%s (%d)' % (title, year)
-        return movie_meta in self.db[self.movies_label]
+        return movie_meta in self.database[self.movies_label]
 
-    def show_exists (self, title):
+    def show_exists(self, title):
         """Checks if a show is present in the local DB
 
         Parameters
@@ -170,9 +165,9 @@ class Library:
             Show exists in DB
         """
         show_meta = '%s' % (title)
-        return show_meta in self.db[self.series_label]
+        return show_meta in self.database[self.series_label]
 
-    def season_exists (self, title, season):
+    def season_exists(self, title, season):
         """Checks if a season is present in the local DB
 
         Parameters
@@ -188,12 +183,12 @@ class Library:
         bool
             Season of show exists in DB
         """
-        if self.show_exists(title) == False:
+        if self.show_exists(title) is False:
             return False
-        show_entry = self.db[self.series_label][title]
+        show_entry = self.database[self.series_label][title]
         return season in show_entry['seasons']
 
-    def episode_exists (self, title, season, episode):
+    def episode_exists(self, title, season, episode):
         """Checks if an episode if a show is present in the local DB
 
         Parameters
@@ -212,33 +207,23 @@ class Library:
         bool
             Episode of show exists in DB
         """
-        if self.show_exists(title) == False:
+        if self.show_exists(title) is False:
             return False
-        show_entry = self.db[self.series_label][title]
+        show_entry = self.database[self.series_label][title]
         episode_entry = 'S%02dE%02d' % (season, episode)
         return episode_entry in show_entry['episodes']
 
-    def add_movie (self, title, alt_title, year, video_id, build_url):
-        """Adds a movie to the local db, generates & persists the strm file
-
-        Parameters
-        ----------
-        title : :obj:`str`
-            Title of the show
-
-        alt_title : :obj:`str`
-            Alternative title given by the user
-
-        year : :obj:`int`
-            Release year of the show
-
-        video_id : :obj:`str`
-            ID of the video to be played
-
-        build_url : :obj:`fn`
-            Function to generate the stream url
+    def add_movie(self, alt_title, video, video_id, build_url):
         """
+        Adds a movie to the local db, generates & persists the strm file
 
+        :alt_title: String Alternative title given by the user
+        :video: Dict of String Video info
+        :video_id: String ID of the video to be played
+        :build_url: Function Function to generate the stream url
+        """
+        title = video.get('title', '')
+        year = int(video.get('year', 1969))
         movie_meta = '%s (%d)' % (title, year)
         folder = alt_title
         dirname = os.path.join(self.movie_path, folder)
@@ -247,16 +232,19 @@ class Library:
             return
         if not os.path.exists(dirname):
             os.makedirs(dirname)
-        if self.movie_exists(title=title, year=year) == False:
-            self.db[self.movies_label][movie_meta] = {'alt_title': alt_title}
-            self._update_local_db(filename=self.db_filepath, db=self.db)
-        self.write_strm_file(path=filename, url=build_url({'action': 'play_video', 'video_id': video_id}))
+        if self.movie_exists(title=title, year=year) is False:
+            self.database[self.movies_label][movie_meta] = {
+                'alt_title': alt_title}
+            self._update_local_db(
+                filename=self.db_filepath, database=self.database)
+        url = build_url({'action': 'play_video', 'video_id': video_id})
+        self.write_strm_file(path=filename, url=url)
 
-    def add_show (self, title, alt_title, episodes, build_url):
+    def add_show(self, title, alt_title, episodes, build_url):
         """Adds a show to the local db, generates & persists the strm files
 
-        Note: Can also used to store complete seasons or single episodes, it all depends on
-        what is present in the episodes dictionary
+        Note: Can also used to store complete seasons or single episodes,
+        it all depends on what is present in the episodes dictionary
 
         Parameters
         ----------
@@ -277,14 +265,20 @@ class Library:
         show_dir = os.path.join(self.tvshow_path, folder)
         if not os.path.exists(show_dir):
             os.makedirs(show_dir)
-        if self.show_exists(title) == False:
-            self.db[self.series_label][show_meta] = {'seasons': [], 'episodes': [], 'alt_title': alt_title}
+        if self.show_exists(title) is False:
+            self.database[self.series_label][show_meta] = {
+                'seasons': [],
+                'episodes': [],
+                'alt_title': alt_title
+            }
         for episode in episodes:
-            self._add_episode(show_dir=show_dir, title=title, season=episode['season'], episode=episode['episode'], video_id=episode['id'], build_url=build_url)
-        self._update_local_db(filename=self.db_filepath, db=self.db)
+            self._add_episode(show_dir=show_dir, title=title,
+                              episode=episode, build_url=build_url)
+        self._update_local_db(filename=self.db_filepath,
+                              database=self.database)
         return show_dir
 
-    def _add_episode (self, title, show_dir, season, episode, video_id, build_url):
+    def _add_episode(self, title, show_dir, episode, build_url):
         """Adds a single episode to the local DB, generates & persists the strm file
 
         Parameters
@@ -307,26 +301,33 @@ class Library:
         build_url : :obj:`fn`
             Function to generate the stream url
         """
-        season = int(season)
-        episode = int(episode)
+        season = int(episode.get('season'))
+        video_id = episode.get('id')
+        _episode = int(episode.get('episode'))
 
         # add season
-        if self.season_exists(title=title, season=season) == False:
-            self.db[self.series_label][title]['seasons'].append(season)
+        if self.season_exists(title=title, season=season) is False:
+            self.database[self.series_label][title]['seasons'].append(season)
 
         # add episode
-        episode_meta = 'S%02dE%02d' % (season, episode)
-        if self.episode_exists(title=title, season=season, episode=episode) == False:
-            self.db[self.series_label][title]['episodes'].append(episode_meta)
+        episode_meta = 'S%02dE%02d' % (season, _episode)
+        episode_exists = self.episode_exists(
+            title=title,
+            season=season,
+            episode=_episode)
+        if episode_exists is False:
+            self.database[self.series_label][title]['episodes'].append(
+                episode_meta)
 
         # create strm file
         filename = episode_meta + '.strm'
         filepath = os.path.join(show_dir, filename)
         if os.path.exists(filepath):
             return
-        self.write_strm_file(path=filepath, url=build_url({'action': 'play_video', 'video_id': video_id}))
+        url = build_url({'action': 'play_video', 'video_id': video_id})
+        self.write_strm_file(path=filepath, url=url)
 
-    def remove_movie (self, title, year):
+    def remove_movie(self, title, year):
         """Removes the DB entry & the strm file for the movie given
 
         Parameters
@@ -343,16 +344,17 @@ class Library:
             Delete successfull
         """
         movie_meta = '%s (%d)' % (title, year)
-        folder = self.db[self.movies_label][movie_meta]['alt_title']
-        del self.db[self.movies_label][movie_meta]
-        self._update_local_db(filename=self.db_filepath, db=self.db)
+        folder = self.database[self.movies_label][movie_meta]['alt_title']
+        del self.database[self.movies_label][movie_meta]
+        self._update_local_db(filename=self.db_filepath,
+                              database=self.database)
         dirname = os.path.join(self.movie_path, folder)
         if os.path.exists(dirname):
             rmtree(dirname)
             return True
         return False
 
-    def remove_show (self, title):
+    def remove_show(self, title):
         """Removes the DB entry & the strm files for the show given
 
         Parameters
@@ -365,16 +367,17 @@ class Library:
         bool
             Delete successfull
         """
-        folder = self.db[self.series_label][title]['alt_title']
-        del self.db[self.series_label][title]
-        self._update_local_db(filename=self.db_filepath, db=self.db)
+        folder = self.database[self.series_label][title]['alt_title']
+        del self.database[self.series_label][title]
+        self._update_local_db(filename=self.db_filepath,
+                              database=self.database)
         show_dir = os.path.join(self.tvshow_path, folder)
         if os.path.exists(show_dir):
             rmtree(show_dir)
             return True
         return False
 
-    def remove_season (self, title, season):
+    def remove_season(self, title, season):
         """Removes the DB entry & the strm files for a season of a show given
 
         Parameters
@@ -394,23 +397,29 @@ class Library:
         season_list = []
         episodes_list = []
         show_meta = '%s' % (title)
-        for season_entry in self.db[self.series_label][show_meta]['seasons']:
+        series = self.database.get(self.series_label, {})
+        seasons = series.get(show_meta, {}).get('seasons', [])
+        for season_entry in seasons:
             if season_entry != season:
                 season_list.append(season_entry)
-        self.db[self.series_label][show_meta]['seasons'] = season_list
-        show_dir = os.path.join(self.tvshow_path, self.db[self.series_label][show_meta]['alt_title'])
-        if os.path.exists(show_dir):
-            show_files = [f for f in os.listdir(show_dir) if os.path.isfile(os.path.join(show_dir, f))]
+        self.database[self.series_label][show_meta]['seasons'] = season_list
+        show_name = self.database[self.series_label][show_meta]['alt_title']
+        sdir = os.path.join(self.tvshow_path, show_name)
+        if os.path.exists(sdir):
+            show_files = [f for f in os.listdir(
+                sdir) if os.path.isfile(os.path.join(sdir, f))]
             for filename in show_files:
                 if 'S%02dE' % (season) in filename:
-                    os.remove(os.path.join(show_dir, filename))
+                    os.remove(os.path.join(sdir, filename))
                 else:
                     episodes_list.append(filename.replace('.strm', ''))
-            self.db[self.series_label][show_meta]['episodes'] = episodes_list
-        self._update_local_db(filename=self.db_filepath, db=self.db)
+            _series = self.database[self.series_label]
+            _series[show_meta]['episodes'] = episodes_list
+        self._update_local_db(filename=self.db_filepath,
+                              database=self.database)
         return True
 
-    def remove_episode (self, title, season, episode):
+    def remove_episode(self, title, season, episode):
         """Removes the DB entry & the strm files for an episode of a show given
 
         Parameters
@@ -432,12 +441,26 @@ class Library:
         episodes_list = []
         show_meta = '%s' % (title)
         episode_meta = 'S%02dE%02d' % (season, episode)
-        show_dir = os.path.join(self.tvshow_path, self.db[self.series_label][show_meta]['alt_title'])
+        show_title = self.database[self.series_label][show_meta]['alt_title']
+        show_dir = os.path.join(self.tvshow_path, show_title)
         if os.path.exists(os.path.join(show_dir, episode_meta + '.strm')):
             os.remove(os.path.join(show_dir, episode_meta + '.strm'))
-        for episode_entry in self.db[self.series_label][show_meta]['episodes']:
+        series = self.database.get(self.series_label, {})
+        episodes = series.get(show_meta, {}).get('episodes', [])
+        for episode_entry in episodes:
             if episode_meta != episode_entry:
                 episodes_list.append(episode_entry)
-        self.db[self.series_label][show_meta]['episodes'] = episodes_list
-        self._update_local_db(filename=self.db_filepath, db=self.db)
+        self.database[self.series_label][show_meta]['episodes'] = episodes_list
+        self._update_local_db(filename=self.db_filepath,
+                              database=self.database)
         return True
+
+    @staticmethod
+    def setup_local_library(source):
+        """
+        Sets up the basic directories
+        :source: Dict of String Dicitionary with directories to be created
+        """
+        for label in source:
+            if not os.path.exists(source[label]):
+                os.makedirs(source[label])

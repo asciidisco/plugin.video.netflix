@@ -3,35 +3,43 @@
 # Module: default
 # Created on: 13.01.2017
 
+"""ADD ME"""
+
 import sys
 from resources.lib.KodiHelper import KodiHelper
 from resources.lib.Navigation import Navigation
 from resources.lib.Library import Library
+from resources.lib.KodiHelperUtils.Router import run
 
 # Setup plugin
-plugin_handle = int(sys.argv[1])
-base_url = sys.argv[0]
+PLUGIN_HANDLE = int(sys.argv[1])
+BASE_URL = sys.argv[0]
 
 # init plugin libs
-kodi_helper = KodiHelper(
-    plugin_handle=plugin_handle,
-    base_url=base_url
+KODI_HELPER = KodiHelper(
+    plugin_handle=PLUGIN_HANDLE,
+    base_url=BASE_URL
 )
-library = Library(
-    root_folder=kodi_helper.base_data_path,
-    library_settings=kodi_helper.get_custom_library_settings(),
-    log_fn=kodi_helper.log
+LIBRARY = Library(
+    root_folder=KODI_HELPER.get_base_data_path(),
+    library_settings=KODI_HELPER.settings.get_custom_library_settings(),
+    log_fn=KODI_HELPER.log
 )
-navigation = Navigation(
-    kodi_helper=kodi_helper,
-    library=library,
-    base_url=base_url,
-    log_fn=kodi_helper.log
+NAVIGATION = Navigation(
+    kodi_helper=KODI_HELPER,
+    library=LIBRARY,
+    log_fn=KODI_HELPER.log
 )
-kodi_helper.set_library(library=library)
+KODI_HELPER.set_library(library=LIBRARY)
 
 if __name__ == '__main__':
     # Call the router function and pass the plugin call parameters to it.
-    # We use string slicing to trim the leading '?' from the plugin call paramstring
-    kodi_helper.log('Started (Version ' + kodi_helper.version + ')')
-    navigation.router(paramstring=sys.argv[2][1:])
+    # We use string slicing to trim the
+    # leading '?' from the plugin call paramstring
+    STARTUP_MSG = 'Started (Version ' + KODI_HELPER.get_plugin_version() + ')'
+    KODI_HELPER.log(msg=STARTUP_MSG)
+    run(
+        paramstring=sys.argv[2][1:],
+        class_item=Navigation,
+        class_inst=NAVIGATION,
+        base_url=BASE_URL)
