@@ -21,8 +21,9 @@ lint:
 	pylint $(MODULES) --output-format=colorized
 
 test:
-	nosetests $(TEST_DIR) -s --cover-package=resources.lib.MSL --cover-package=resources.lib.NetflixSession --cover-package=resources.lib.Navigation --cover-package=resources.lib.utils --cover-package=resources.lib.Library --cover-package=resources.lib.KodiHelper --cover-package=resources.lib.KodiHelperUtils --cover-erase --with-coverage --cover-html --cover-branches --cover-html-dir=$(REPORT_DIR)/coverage
+	nosetests $(TEST_DIR) -s --cover-package=resources.lib.MSL --cover-package=resources.lib.NetflixSession --cover-package=resources.lib.Navigation --cover-package=resources.lib.utils --cover-package=resources.lib.Library --cover-package=resources.lib.KodiHelper --cover-package=resources.lib.KodiHelperUtils --cover-package=resources.lib.NetflixSessionUtils --cover-erase --with-coverage --cover-html --cover-branches --cover-html-dir=$(REPORT_DIR)/coverage
 	rm -rf ./_tmp
+
 doc:
 	pydoc 
 

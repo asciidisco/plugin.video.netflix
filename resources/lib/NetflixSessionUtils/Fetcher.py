@@ -19,7 +19,7 @@ class Fetcher(Core):
 
     def __init__(self, session, verify_ssl=True, log_fn=None):
         """ADD ME"""
-        super(Fetcher, self).__init__(session=self.session,
+        super(Fetcher, self).__init__(session=session,
                                       verify_ssl=verify_ssl, log_fn=log_fn)
 
     def fetch_browse_list_contents(self):
