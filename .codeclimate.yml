@@ -1,0 +1,3 @@
+exclude_paths:
+  - "resources/test/"
+  - "resources/lib/UniversalAnalytics/"

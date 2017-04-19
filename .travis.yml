@@ -1,0 +1,23 @@
+language: python
+
+python:
+  - "2.7"
+
+before_script:
+  - pip install -r requirements.txt
+script:
+  - make lint
+  - make test
+  - make doc
+after_sucess:
+  - CODECLIMATE_REPO_TOKEN=<CODECLIMATE_TOKEN> codeclimate-test-reporter
+
+addons:
+  apt:
+    packages:
+      - make
+
+notifications:
+  email:
+    on_success: change
+    on_failure: always
