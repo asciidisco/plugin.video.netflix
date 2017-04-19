@@ -50,7 +50,7 @@ class Library(object):
         self.base_data_path = root_folder
         self.custom_library_folder = library_settings['customlibraryfolder']
         self.db_filepath = os.path.join(self.base_data_path, self.db_filename)
-        self.log = log_fn if log_fn is not None else lambda x: None
+        self.log = log_fn if log_fn is not None else lambda msg: None
 
         # check for local library folder & set up the paths
         lib_path = self.base_data_path

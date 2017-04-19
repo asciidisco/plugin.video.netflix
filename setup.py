@@ -14,19 +14,19 @@ def read(fname):
 
 
 setup(
-    name='an_example_pypi_project',
-    version='0.0.4',
-    author='Andrew Carter',
-    author_email='andrewjcarter@gmail.com',
-    description='An demonstration of how to create, document, and publish',
-    license='BSD',
-    keywords='example documentation tutorial',
-    url='http://packages.python.org/an_example_pypi_project',
-    packages=['an_example_pypi_project', 'tests'],
+    name='plugin.video.netflix',
+    version='0.12.0',
+    author='jojo + libdev + asciidisco',
+    author_email='public@asciidisco.com',
+    description='Inputstream based Netflix plugin for Kodi',
+    license='MIT',
+    keywords='kodi netflix inputstream widevine',
+    url='https://github.com/asciidisco/plugin.video.netflix',
+    packages=['plugin.video.netflix', 'resources/test'],
     long_description=read('README.md'),
     classifiers=[
         'Development Status :: 3 - Alpha',
-        'Topic :: Utilities',
-        'License :: OSI Approved :: BSD License',
+        'Topic :: Kodi Video Plugin - Netflix',
+        'License :: MIT License',
     ],
 )
