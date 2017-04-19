@@ -3,61 +3,56 @@
 # Module: MSL
 # Created on: 26.01.2017
 
+"""ADD ME"""
+
 import base64
 import gzip
 import json
 import os
-import pprint
 import random
-
-from StringIO import StringIO
-
-from datetime import datetime
-import requests
 import zlib
 import time
-from StringIO import StringIO
 import xml.etree.ElementTree as ET
-
-import requests
+from StringIO import StringIO
+from datetime import datetime
 from Cryptodome.PublicKey import RSA
 from Cryptodome.Cipher import PKCS1_OAEP
 from Cryptodome.Cipher import AES
 from Cryptodome.Random import get_random_bytes
 from Cryptodome.Hash import HMAC, SHA256
 from Cryptodome.Util import Padding
+import requests
 
-pp = pprint.PrettyPrinter(indent=4)
+CADMIUM_URL = 'http://www.netflix.com/api/msl/NFCDCH-LX/cadmium'
+ENDPOINTS = {
+    'manifest': CADMIUM_URL + '/manifest',
+    'license': CADMIUM_URL + '/license'
+}
 
 
 def base64key_decode(payload):
-    l = len(payload) % 4
-    if l == 2:
+    """ADD ME"""
+    length = len(payload) % 4
+    if length == 2:
         payload += '=='
-    elif l == 3:
+    elif length == 3:
         payload += '='
-    elif l != 0:
+    elif length != 0:
         raise ValueError('Invalid base64 string')
     return base64.urlsafe_b64decode(payload.encode('utf-8'))
 
 
 class MSL(object):
-    # Is a handshake already performed and the keys loaded
-    handshake_performed = False
-    last_drm_context = ''
-    last_playback_context = ''
+    """ADD ME"""
+
     # esn = "NFCDCH-LX-CQE0NU6PA5714R25VPLXVU2A193T36"
     esn = "WWW-BROWSE-D7GW1G4NPXGR1F0X1H3EQGY3V1F5WE"
     # esn = "NFCDIE-02-DCH84Q2EK3N6VFVQJ0NLRQ27498N0F"
     current_message_id = 0
     session = requests.session()
-    rndm = random.SystemRandom()
+    sequence_number = None
+    mastertoken = None
     tokens = []
-    cadmium_url = 'http://www.netflix.com/api/msl/NFCDCH-LX/cadmium'
-    endpoints = {
-        'manifest': cadmium_url + '/manifest',
-        'license': cadmium_url + '/license'
-    }
 
     def __init__(self, kodi_helper):
         """
@@ -65,17 +60,22 @@ class MSL(object):
         If they exist it will load the existing keys
         """
         self.kodi_helper = kodi_helper
-        self.data_path = self.kodi_helper.get_base_data_path()
+        self._keys = dict(
+            encryption=None,
+            sign=None)
+        self.contexts = dict(
+            last_playback='',
+            last_drm='')
+        data_path = self.kodi_helper.get_base_data_path()
         try:
-            os.mkdir(self.data_path)
+            os.mkdir(data_path)
         except OSError:
             pass
 
-        if self.file_exists(self.data_path, 'msl_data.json'):
+        if self.file_exists(data_path, 'msl_data.json'):
             self.kodi_helper.log(msg='MSL Data exists. Use old Tokens.')
             self.__load_msl_data()
-            self.handshake_performed = True
-        elif self.file_exists(self.data_path, 'rsa_key.bin'):
+        elif self.file_exists(data_path, 'rsa_key.bin'):
             self.kodi_helper.log(msg='RSA Keys do already exist load old ones')
             self.__load_rsa_keys()
             self.__perform_key_handshake()
@@ -162,12 +162,12 @@ class MSL(object):
                 # Audio
                 'heaac-2-dash',
 
-                #subtiltes
-                #'dfxp-ls-sdh',
+                # subtiltes
+                # 'dfxp-ls-sdh',
                 'simplesdh',
-                #'nflx-cmisc',
+                # 'nflx-cmisc',
 
-                #unkown
+                # unkown
                 'BIF240',
                 'BIF320'
             ],
@@ -194,7 +194,7 @@ class MSL(object):
             manifest_request_data['profiles'].append('ddplus-5.1-dash')
 
         request_data = self.__generate_msl_request_data(manifest_request_data)
-        resp = self.session.post(self.endpoints['manifest'], request_data)
+        resp = self.session.post(ENDPOINTS['manifest'], request_data)
 
         try:
             # if the json() does not fail we have an error because the manifest
@@ -225,8 +225,8 @@ class MSL(object):
             'clientVersion': '4.0004.899.011',
             'uiVersion': 'akira',
             'languages': ['de-DE'],
-            'playbackContextId': self.last_playback_context,
-            'drmContextIds': [self.last_drm_context],
+            'playbackContextId': self.contexts.get('last_playback'),
+            'drmContextIds': [self.contexts.get('last_drm')],
             'challenges': [{
                 'dataBase64': challenge,
                 'sessionId': sid
@@ -237,7 +237,7 @@ class MSL(object):
         }
         request_data = self.__generate_msl_request_data(license_request_data)
 
-        resp = self.session.post(self.endpoints['license'], request_data)
+        resp = self.session.post(ENDPOINTS['license'], request_data)
 
         try:
             # If is valid json the request for the licnese failed
@@ -260,8 +260,10 @@ class MSL(object):
         encryption_envelope = json.JSONDecoder().decode(
             base64.standard_b64decode(payloadchunk['payload']))
         # Decrypt the text
-        cipher = AES.new(self.encryption_key, AES.MODE_CBC,
-                         base64.standard_b64decode(encryption_envelope['iv']))
+        cipher = AES.new(
+            self._keys.get('encryption'),
+            AES.MODE_CBC,
+            base64.standard_b64decode(encryption_envelope['iv']))
         plaintext = cipher.decrypt(base64.standard_b64decode(
             encryption_envelope['ciphertext']))
         # unpad the plaintext
@@ -280,12 +282,12 @@ class MSL(object):
         return json.JSONDecoder().decode(data)
 
     def __tranform_to_dash(self, manifest):
-
-        self.save_file(self.data_path, 'manifest.json', json.dumps(manifest))
+        data_path = self.kodi_helper.get_base_data_path()
+        self.save_file(data_path, 'manifest.json', json.dumps(manifest))
         manifest = manifest['result']['viewables'][0]
 
-        self.last_playback_context = manifest['playbackContextId']
-        self.last_drm_context = manifest['drmContextId']
+        self.contexts['last_playback'] = manifest['playbackContextId']
+        self.contexts['last_drm'] = manifest['drmContextId']
 
         # Check for pssh
         pssh = ''
@@ -305,6 +307,27 @@ class MSL(object):
         period = ET.SubElement(root, 'Period', start='PT0S', duration=duration)
 
         # One Adaption Set for Video
+        self.__add_video_adaption_set(
+            manifest=manifest,
+            period=period,
+            init_length=init_length,
+            pssh=pssh)
+
+        # multiple Adaption Set for audio
+        self.__add_audio_adaption_set(
+            manifest=manifest,
+            period=period,
+            init_length=init_length)
+
+        # multiple Adaption Sets for subtitles
+        self.__add_subtitle_adaption_set(manifest=manifest, period=period)
+
+        xml = ET.tostring(root, encoding='utf-8', method='xml')
+        xml = xml.replace('\n', '').replace('\r', '')
+        return xml
+
+    def __add_video_adaption_set(self, manifest, period, init_length, pssh):
+        """One Adaption Sets for video"""
         for video_track in manifest['videoTracks']:
             video_adaption_set = ET.SubElement(
                 period,
@@ -320,7 +343,6 @@ class MSL(object):
                 ET.SubElement(protection, 'cenc:pssh').text = pssh
 
             for downloadable in video_track['downloadables']:
-
                 codec = 'h264'
                 if 'hevc' in downloadable['contentProfile']:
                     codec = 'hevc'
@@ -353,20 +375,23 @@ class MSL(object):
                 ET.SubElement(segment_base, 'Initialization',
                               range='0-' + str(init_length))
 
-        # Multiple Adaption Set for audio
+    def __add_audio_adaption_set(self, manifest, period, init_length):
+        """Multiple Adaption Sets for audio"""
         for audio_track in manifest['audioTracks']:
-            audio_adaption_set = ET.SubElement(period, 'AdaptationSet',
-                                               lang=audio_track['bcp47'],
-                                               contentType='audio',
-                                               mimeType='audio/mp4')
+            audio_adaption_set = ET.SubElement(
+                period,
+                'AdaptationSet',
+                lang=audio_track['bcp47'],
+                contentType='audio',
+                mimeType='audio/mp4')
             for downloadable in audio_track['downloadables']:
                 codec = 'aac'
-                print downloadable
+                self.kodi_helper.log(msg=downloadable)
                 is_20 = downloadable.get('contentProfile') == 'ddplus-2.0-dash'
                 is_51 = downloadable.get('contentProfile') == 'ddplus-5.1-dash'
                 if is_20 or is_51:
                     codec = 'ec-3'
-                print "codec is: " + codec
+                self.kodi_helper.log(msg='codec is: ' + codec)
                 rep = ET.SubElement(audio_adaption_set, 'Representation',
                                     codecs=codec,
                                     bandwidth=str(
@@ -384,57 +409,36 @@ class MSL(object):
                     downloadable['urls'])
                 # Index range
 
-                segment_base = ET.SubElement(rep, 'SegmentBase', indexRange="0-"+str(init_length), indexRangeExact="true")
-                ET.SubElement(segment_base, 'Initialization', range='0-'+str(init_length))
+                segment_base = ET.SubElement(
+                    rep,
+                    'SegmentBase',
+                    indexRange="0-" + str(init_length),
+                    indexRangeExact="true")
+                ET.SubElement(
+                    segment_base,
+                    'Initialization',
+                    range='0-' + str(init_length))
 
-        # Multiple Adaption Sets for subtiles
-        for text_track in manifest['textTracks']:
-            if 'downloadables' not in text_track or text_track['downloadables'] is None:
+    def __add_subtitle_adaption_set(self, manifest, period):
+        """Multiple Adaption Sets for subtitles"""
+        for text_track in manifest.get('textTracks'):
+            _in_text_track = 'downloadables' not in text_track
+            if _in_text_track or text_track['downloadables'] is None:
                 continue
-            subtiles_adaption_set = ET.SubElement(period, 'AdaptationSet',
-                                                  lang=text_track['bcp47'],
-                                                  codecs='stpp',
-                                                  contentType='text',
-                                                  mimeType='application/ttml+xml')
-            for downloadable in text_track['downloadables']:
-                rep = ET.SubElement(subtiles_adaption_set, 'Representation',
-                                    nflxProfile=downloadable['contentProfile']
-                                    )
-                ET.SubElement(rep, 'BaseURL').text = self.__get_base_url(downloadable['urls'])
-
-        xml = ET.tostring(root, encoding='utf-8', method='xml')
-        xml = xml.replace('\n', '').replace('\r', '')
-        return xml
-
-    def __get_base_url(self, urls):
-        for key in urls:
-            return urls[key]
-
-    def __parse_chunked_msl_response(self, message):
-        i = 0
-        opencount = 0
-        closecount = 0
-        header = ""
-        payloads = []
-        old_end = 0
-
-        while i < len(message):
-            if message[i] == '{':
-                opencount = opencount + 1
-            if message[i] == '}':
-                closecount = closecount + 1
-            if opencount == closecount:
-                if header == "":
-                    header = message[:i]
-                    old_end = i + 1
-                else:
-                    payloads.append(message[old_end:i + 1])
-            i += 1
-
-        return {
-            'header': header,
-            'payloads': payloads
-        }
+            subtiles_adaption_set = ET.SubElement(
+                period,
+                'AdaptationSet',
+                lang=text_track.get('bcp47'),
+                codecs='stpp',
+                contentType='text',
+                mimeType='application/ttml+xml')
+            for downloadable in text_track.get('downloadables'):
+                rep = ET.SubElement(
+                    subtiles_adaption_set,
+                    'Representation',
+                    nflxProfile=downloadable.get('contentProfile'))
+                ET.SubElement(rep, 'BaseURL').text = self.__get_base_url(
+                    downloadable['urls'])
 
     def __generate_msl_request_data(self, data):
         header_encryption_envelope = self.__encrypt(
@@ -473,19 +477,12 @@ class MSL(object):
         request_data = json.dumps(header) + json.dumps(first_payload_chunk)
         return request_data
 
-    def __compress_data(self, data):
-        # GZIP THE DATA
-        out = StringIO()
-        with gzip.GzipFile(fileobj=out, mode="w") as file_handle:
-            file_handle.write(data)
-        return base64.standard_b64encode(out.getvalue())
-
     def __generate_msl_header(self, handshake=None, key_req=None, algo='GZIP'):
         """
         Function that generates a MSL header dict
         :return: The base64 encoded JSON String of the header
         """
-        self.current_message_id = self.rndm.randint(0, pow(2, 52))
+        self.current_message_id = random.SystemRandom().randint(0, pow(2, 52))
 
         header_data = {
             'sender': self.esn,
@@ -540,17 +537,20 @@ class MSL(object):
         :param plaintext:
         :return: Serialized JSON String of the encryption Envelope
         """
-        iv = get_random_bytes(16)
+        start_bytes = get_random_bytes(16)
         encryption_envelope = {
             'ciphertext': '',
             'keyid': self.esn + '_' + str(self.sequence_number),
             'sha256': 'AA==',
-            'iv': base64.standard_b64encode(iv)
+            'iv': base64.standard_b64encode(start_bytes)
         }
         # Padd the plaintext
         plaintext = Padding.pad(plaintext, 16)
         # Encrypt the text
-        cipher = AES.new(self.encryption_key, AES.MODE_CBC, iv)
+        cipher = AES.new(
+            self._keys.get('encryption'),
+            AES.MODE_CBC,
+            start_bytes)
         ciphertext = cipher.encrypt(plaintext)
         encryption_envelope['ciphertext'] = base64.standard_b64encode(
             ciphertext)
@@ -563,7 +563,7 @@ class MSL(object):
         :param text:
         :return: Base64 encoded signature
         """
-        signature = HMAC.new(self.sign_key, text, SHA256).digest()
+        signature = HMAC.new(self._keys.get('sign'), text, SHA256).digest()
         return base64.standard_b64encode(signature)
 
     def __perform_key_handshake(self):
@@ -585,7 +585,7 @@ class MSL(object):
         self.kodi_helper.log(msg=json.dumps(request))
 
         resp = self.session.post(
-            self.endpoints['manifest'], json.dumps(request, sort_keys=True))
+            ENDPOINTS['manifest'], json.dumps(request, sort_keys=True))
         if resp.status_code == 200:
             resp = resp.json()
             if 'errordata' in resp:
@@ -611,21 +611,24 @@ class MSL(object):
         # Decrypt encryption key
         encryption_key_data = json.JSONDecoder().decode(
             cipher_rsa.decrypt(encrypted_encryption_key))
-        self.encryption_key = base64key_decode(encryption_key_data['k'])
+        self._keys['encryption'] = base64key_decode(encryption_key_data['k'])
 
         # Decrypt sign key
         sign_key_data = json.JSONDecoder().decode(
             cipher_rsa.decrypt(encrypted_sign_key))
-        self.sign_key = base64key_decode(sign_key_data['k'])
+        self._keys['sign'] = base64key_decode(sign_key_data['k'])
 
         self.__save_msl_data()
-        self.handshake_performed = True
 
     def __load_msl_data(self):
-        msl_data = json.JSONDecoder().decode(self.load_file(self.kodi_helper.msl_data_path, 'msl_data.json'))
-        #Check expire date of the token
-        master_token = json.JSONDecoder().decode(base64.standard_b64decode(msl_data['tokens']['mastertoken']['tokendata']))
-        valid_until = datetime.utcfromtimestamp(int(master_token['expiration']))
+        data_path = self.kodi_helper.get_base_data_path()
+        msl_data = json.JSONDecoder().decode(
+            self.load_file(data_path, 'msl_data.json'))
+        # Check expire date of the token
+        master_token = json.JSONDecoder().decode(base64.standard_b64decode(
+            msl_data['tokens']['mastertoken']['tokendata']))
+        valid_until = datetime.utcfromtimestamp(
+            int(master_token['expiration']))
         present = datetime.now()
         difference = valid_until - present
         difference = difference.total_seconds() / 60 / 60
@@ -636,24 +639,26 @@ class MSL(object):
             return
 
         self.__set_master_token(msl_data['tokens']['mastertoken'])
-        self.encryption_key = base64.standard_b64decode(
+        self._keys['encryption'] = base64.standard_b64decode(
             msl_data['encryption_key'])
-        self.sign_key = base64.standard_b64decode(msl_data['sign_key'])
+        self._keys['sign'] = base64.standard_b64decode(msl_data['sign_key'])
 
     def __save_msl_data(self):
         """
         Saves the keys and tokens in json file
         :return:
         """
+        data_path = self.kodi_helper.get_base_data_path()
         data = {
-            "encryption_key": base64.standard_b64encode(self.encryption_key),
-            'sign_key': base64.standard_b64encode(self.sign_key),
+            "encryption_key": base64.standard_b64encode(
+                self._keys.get('encryption')),
+            'sign_key': base64.standard_b64encode(self._keys.get('sign')),
             'tokens': {
                 'mastertoken': self.mastertoken
             }
         }
         serialized_data = json.JSONEncoder().encode(data)
-        self.save_file(self.data_path, 'msl_data.json', serialized_data)
+        self.save_file(data_path, 'msl_data.json', serialized_data)
 
     def __set_master_token(self, master_token):
         self.mastertoken = master_token
@@ -662,14 +667,56 @@ class MSL(object):
         self.sequence_number = _payload.get('sequencenumber')
 
     def __load_rsa_keys(self):
-        loaded_key = self.load_file(self.data_path, 'rsa_key.bin')
+        data_path = self.kodi_helper.get_base_data_path()
+        loaded_key = self.load_file(data_path, 'rsa_key.bin')
         self.rsa_key = RSA.importKey(loaded_key)
 
     def __save_rsa_keys(self):
+        data_path = self.kodi_helper.get_base_data_path()
         self.kodi_helper.log(msg='Save RSA Keys')
         # Get the DER Base64 of the keys
         encrypted_key = self.rsa_key.exportKey()
-        self.save_file(self.data_path, 'rsa_key.bin', encrypted_key)
+        self.save_file(data_path, 'rsa_key.bin', encrypted_key)
+
+    @staticmethod
+    def __compress_data(data):
+        # GZIP THE DATA
+        out = StringIO()
+        with gzip.GzipFile(fileobj=out, mode="w") as file_handle:
+            file_handle.write(data)
+        return base64.standard_b64encode(out.getvalue())
+
+    @staticmethod
+    def __parse_chunked_msl_response(message):
+        i = 0
+        opencount = 0
+        closecount = 0
+        header = ""
+        payloads = []
+        old_end = 0
+
+        while i < len(message):
+            if message[i] == '{':
+                opencount = opencount + 1
+            if message[i] == '}':
+                closecount = closecount + 1
+            if opencount == closecount:
+                if header == "":
+                    header = message[:i]
+                    old_end = i + 1
+                else:
+                    payloads.append(message[old_end:i + 1])
+            i += 1
+
+        return {
+            'header': header,
+            'payloads': payloads
+        }
+
+    @staticmethod
+    def __get_base_url(urls):
+        for key in urls:
+            return urls[key]
 
     @staticmethod
     def file_exists(msl_data_path, filename):

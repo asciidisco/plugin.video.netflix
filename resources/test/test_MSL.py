@@ -2,11 +2,14 @@ import sys
 from os import path
 sys.path.append(path.dirname(path.dirname(path.dirname(path.abspath(__file__)))))
 
+import unittest
 from resources.lib.MSL import MSL
-from resources.lib.KodiHelper import KodiHelper
+from mocks.KodiHelper import KodiHelperMock
 
 
-def test_msl_dummy():
-    """ADD ME"""
-    msl = MSL(kodi_helper=KodiHelper())
-    assert True is True
+class MSLTestCase(unittest.TestCase):
+
+    def test_msl_dummy(self):
+        """ADD ME"""
+        msl = MSL(kodi_helper=KodiHelperMock())
+        assert True is True

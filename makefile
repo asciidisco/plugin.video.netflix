@@ -1,7 +1,7 @@
 DOCS_DIR=./docs
 REPORT_DIR=./report
 TEST_DIR=./resources/test
-MODULES=addon service NetflixSession KodiHelper Library NetflixSessionUtils Navigation NetflixHttpRequestHandler NetflixHttpSubRessourceHandler MSLHttpRequestHandler utils
+MODULES=addon service NetflixSession KodiHelper MSL Library NetflixSessionUtils Navigation NetflixHttpRequestHandler NetflixHttpSubRessourceHandler MSLHttpRequestHandler utils
 
 clean-pyc:
 	find . -name '*.pyc' -exec rm {} +
@@ -22,7 +22,7 @@ lint:
 
 test:
 	nosetests $(TEST_DIR) -s --cover-package=resources.lib.MSL --cover-package=resources.lib.NetflixSession --cover-package=resources.lib.Navigation --cover-package=resources.lib.utils --cover-package=resources.lib.Library --cover-package=resources.lib.KodiHelper --cover-package=resources.lib.KodiHelperUtils --cover-erase --with-coverage --cover-html --cover-branches --cover-html-dir=$(REPORT_DIR)/coverage
-
+	rm -rf ./_tmp
 doc:
 	pydoc 
 
@@ -38,4 +38,4 @@ help:
 	@echo "    test"
 	@echo "        Run unit tests"
 	@echo "    doc"
-	@echo "        Generates pyDocs"	
+	@echo "        Generates sphinx docs"	
