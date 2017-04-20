@@ -72,7 +72,7 @@ def parse_video_list_ids(response_data):
     # check if the list items are hidden behind a `value` sub key
     # this is the case when we fetch the lists via POST, not via a GET
     # preflight request
-    if response_data.get('value', None):
+    if response_data.get('value') is not None:
         response_data = response_data.get('value')
 
     # subcatogorize the lists by their context

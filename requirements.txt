@@ -10,3 +10,5 @@ asteroid==1.4.9
 Kodistubs==2.0.0
 Sphinx==1.5.5
 sphinx_rtd_theme=0.2.4
+httpretty=0.8.14
+mock=1.0.1

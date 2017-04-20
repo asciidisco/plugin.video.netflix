@@ -19,8 +19,10 @@ class Fetcher(Core):
 
     def __init__(self, session, verify_ssl=True, log_fn=None):
         """ADD ME"""
-        super(Fetcher, self).__init__(session=session,
-                                      verify_ssl=verify_ssl, log_fn=log_fn)
+        super(Fetcher, self).__init__(
+            session=session,
+            verify_ssl=verify_ssl,
+            log_fn=log_fn)
 
     def fetch_browse_list_contents(self):
         """
@@ -211,7 +213,8 @@ class Fetcher(Core):
             ['interestingMoment', '_665x375', 'jpg'],
             ['artWorkByType', 'BILLBOARD', '_1280x720', 'jpg']
         ]
-        paths = [chain(list_template, sub_path) for sub_path in sub_paths]
+        paths = [list(chain(list_template, sub_path))
+                 for sub_path in sub_paths]
         response = self.path_request(paths=paths)
         return process_response(response=response, component='Video list')
 
@@ -248,7 +251,10 @@ class Fetcher(Core):
             ['interestingMoment', '_665x375', 'jpg'],
             ['artWorkByType', 'BILLBOARD', '_1280x720', 'jpg']
         ]
-        paths = [chain(lists, chain(['videos', video_id], sub_paths))
+        paths = [list(
+            chain(
+                lists, list(
+                    chain(['videos', video_id], sub_paths))))
                  for video_id in video_ids]
         response = self.path_request(paths=paths)
         _ret = process_response(
@@ -274,7 +280,7 @@ class Fetcher(Core):
         component_url = self.get_api_url_for(component='metadata')
         return process_response(response=response, component=component_url)
 
-    def fetch_show_information(self, show_id):
+    def fetch_show_information(self, show_id, show_type):
         """Fetches the JSON which contains the detailed contents of a show
 
         Parameters
@@ -282,7 +288,7 @@ class Fetcher(Core):
         show_id : :obj:`str`
             Unique show id to query Netflix for
 
-        type : :obj:`str`
+        show_type : :obj:`str`
             Can be 'movie' or 'show'
 
         Returns
@@ -291,7 +297,7 @@ class Fetcher(Core):
             Raw Netflix API call response or api call error
         """
         # check if we have a show or a movie, the request made depends on this
-        if type == 'show':
+        if show_type == 'show':
             paths = [
                 ['videos', show_id, [
                     'requestId', 'regularSynopsis', 'evidence']],
@@ -334,7 +340,8 @@ class Fetcher(Core):
             ['storyarts', '_1632x873', 'jpg'],
             ['interestingMoment', '_665x375', 'jpg']
         ]
-        paths = [chain(list_template, sub_path) for sub_path in sub_paths]
+        paths = [list(chain(list_template, sub_path))
+                 for sub_path in sub_paths]
         response = self.path_request(paths=paths)
         return process_response(response=response, component='Seasons')
 
@@ -395,7 +402,8 @@ class Fetcher(Core):
             ['episodes', pagination_template, 'boxarts', '_342x192', 'jpg'],
             ['episodes', pagination_template, 'boxarts', '_1280x720', 'jpg']
         ]
-        paths = [chain(list_template, sub_path) for sub_path in sub_paths]
+        paths = [list(chain(list_template, sub_path))
+                 for sub_path in sub_paths]
         response = self.path_request(paths=paths)
         _ret = process_response(
             response=response,

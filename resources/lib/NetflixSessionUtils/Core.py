@@ -65,40 +65,9 @@ class Core(object):
 
     def __init__(self, session, verify_ssl=True, log_fn=None):
         """ADD ME"""
-        self.log = log_fn if log_fn is not None else lambda x: None
+        self.log = log_fn if log_fn is not None else lambda msg: None
         self.session = session
         self.verify_ssl = verify_ssl
-
-    def update_my_list(self, video_id, operation):
-        """Tiny helper to add & remove items from "my list"
-
-        Parameters
-        ----------
-        video_id : :obj:`str`
-            ID of the show/movie to be added
-
-        operation : :obj:`str`
-            Either "add" or "remove"
-
-        Returns
-        -------
-        bool
-            Operation successfull
-        """
-        headers = {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json, text/javascript, */*',
-        }
-
-        payload = dumps({
-            'operation': operation,
-            'videoId': int(video_id),
-            'authURL': self.user_data.get('authURL', None)
-        })
-
-        response = self.fetch(component='update_my_list',
-                              headers=headers, data=payload)
-        return response.status_code == 200
 
     def save_data(self, filename):
         """Tiny helper that stores session data from the session in a given file
@@ -259,13 +228,14 @@ class Core(object):
         items = self.page_items if items is None else items
         account_info = {}
         # find <script/> tag witch contains the 'reactContext' globals
-        react_context = recompile('reactContext(.*);').findall(content)
+        react_context = recompile('reactContext(?s)(.*);').findall(content)
         # iterate over all wanted item keys & try to fetch them
         for item in items:
             match = recompile(
-                '"' + item + '":"(.+?)"').findall(react_context[0])
+                '"' + item + '":(.*?)"(.+?)"').findall(react_context[0])
             if len(match) > 0:
-                account_info.update({item: match[0].decode('string_escape')})
+                _match = match[0][1]
+                account_info.update({item: _match.decode('string_escape')})
         # verify the data based on the authURL
         if verfify_auth_data(data=account_info) is not False:
             self.log(msg='Parsing inline data parsing successfull')
@@ -294,8 +264,7 @@ class Core(object):
         })
 
         params = {
-            'model': self.user_data.get('gpsModel', ''),
-            'withSize': False
+            'model': self.user_data.get('gpsModel', '')
         }
 
         _ret = self.fetch(
@@ -309,8 +278,12 @@ class Core(object):
     def get_avatars(content):
         """ADD ME"""
         avatars = {}
-        _avatars = recompile('"avatars":(.*),"profiles').findall(content)
-        _avatars_parsed = loads(_avatars[0]).get('nf')
+        # find everything between the avatars and the profiles property
+        _pattern = '"avatars":(?s)(.*)"profiles":'
+        _avatars = recompile(_pattern).findall(content)
+        # replace the last comma we found with nothing
+        _avatar_string = _avatars[0][::-1].replace(',', '', 1)[::-1]
+        _avatars_parsed = loads(_avatar_string).get('nf')
         for _ava_key in _avatars_parsed:
             if 'size' not in _ava_key:
                 _images = _avatars_parsed[_ava_key].get('images', {})
@@ -322,8 +295,12 @@ class Core(object):
     def get_profiles(content):
         """ADD ME"""
         profiles = {}
-        _profiles = recompile('"profiles":(.*),"profilesList').findall(content)
-        _profiles_parsed = loads(_profiles[0])
+        # find everything between the profiles and the profiles_list property
+        _pattern = '"profiles":(?s)(.*)"profilesList'
+        _profiles = recompile(_pattern).findall(content)
+        # replace the last comma we found with nothing
+        _profiles_string = _profiles[0][::-1].replace(',', '', 1)[::-1]
+        _profiles_parsed = loads(_profiles_string)
         for guid in _profiles_parsed:
             if 'size' not in guid:
                 profiles.update({

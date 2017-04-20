@@ -320,3 +320,34 @@ class NetflixSession(Fetcher):
         res = self.fetch(component=component, params=params,
                          headers=headers, data=payload)
         return res.status_code == 200
+
+    def update_my_list(self, video_id, operation):
+        """Tiny helper to add & remove items from "my list"
+
+        Parameters
+        ----------
+        video_id : :obj:`str`
+            ID of the show/movie to be added
+
+        operation : :obj:`str`
+            Either "add" or "remove"
+
+        Returns
+        -------
+        bool
+            Operation successfull
+        """
+        headers = {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json, text/javascript, */*',
+        }
+
+        payload = dumps({
+            'operation': operation,
+            'videoId': int(video_id),
+            'authURL': self.user_data.get('authURL', None)
+        })
+
+        response = self.fetch(component='update_my_list',
+                              headers=headers, data=payload)
+        return response.status_code == 200
