@@ -41,8 +41,13 @@ class NetflixHttpRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         (we only need this, as we only do GET requests internally)
         """
         url = urlparse(self.path)
-        params = parse_qs(url.query)
-        _method = params.get('method', [None])[0]
+        params = dict()
+        _params = parse_qs(url.query)
+        # convert params lists to single values
+        # no idea why `parse_qs` does this
+        for _param_key in _params:
+            params.update({_param_key: _params.get(_param_key, [''])[0]})
+        _method = params.get('method')
 
         # not method given
         if _method is None:

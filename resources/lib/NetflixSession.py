@@ -11,7 +11,6 @@ from requests import session
 from NetflixSessionUtils import Fetcher
 from utils import get_ua_for_current_platform
 from utils import generate_account_hash
-from utils import process_response
 
 
 class NetflixSession(Fetcher):
@@ -49,7 +48,8 @@ class NetflixSession(Fetcher):
         'API_BASE_URL',
         'esn',
         'gpsModel',
-        'countryOfSignup'
+        'countryOfSignup',
+        'membershipStatus'
     ]
     """:obj:`list`:
     Data points that need to be extracted from the inline page data
@@ -66,7 +66,7 @@ class NetflixSession(Fetcher):
         """
         self.data_path = data_path
         self.verify_ssl = verify_ssl
-        self.log = log_fn if log_fn is not None else lambda x: None
+        self.log = log_fn if log_fn is not None else lambda msg: None
         self.user_data = {}
         self.profiles = {}
 
@@ -98,12 +98,10 @@ class NetflixSession(Fetcher):
         account_hash = generate_account_hash(account=account)
         if self.load_data(filename=self.data_path + '_' + account_hash):
             # fetch the profiles api (to verify the user)
-            self.profiles = self.fetch(component='profiles_list')
-            # check if the cookie is still valid
-            for profile in self.profiles:
-                known_user = profile.get('firstName', 'unknown') != 'unknown'
-                multi_profile = len(self.profiles) > 1
-                return known_user or multi_profile
+            profiles = self.fetch(component='profiles')
+            user_data, _ = self.extract_inline_page_data(
+                content=profiles.text)
+            return user_data.get('membershipStatus') == 'CURRENT_MEMBER'
         return False
 
     def logout(self):
@@ -134,7 +132,8 @@ class NetflixSession(Fetcher):
             User could be logged in or not
         """
         page = self.fetch(component='profiles')
-        self.user_data = self.extract_inline_page_data(content=page.text)
+        user_data, profiles = self.extract_inline_page_data(
+            content=page.text)
         login_payload = {
             'email': account['email'],
             'password': account['password'],
@@ -143,25 +142,23 @@ class NetflixSession(Fetcher):
             'mode': 'login',
             'action': 'loginAction',
             'withFields': 'email,password,rememberMe,nextPage',
-            'authURL': self.user_data.get('authURL'),
+            'authURL': user_data.get('authURL'),
             'nextPage': ''
         }
 
         # perform the login
         login_response = self.fetch(component='login', data=login_payload)
-        self.user_data = self.extract_inline_page_data(
+        user_data, profiles = self.extract_inline_page_data(
             content=login_response.text)
-        # account_hash = generate_account_hash(account=account)
-        self.log(self.user_data)
-        self.log(login_response.text)
+        self.user_data = user_data
+        self.profiles = profiles
+        account_hash = generate_account_hash(account=account)
         # we know that the login was successfull if we find ???
-        # if self.user_data.get('pageName', 'login') != 'login':
-        # parse the needed inline information
-        # store cookies for later requests
-        #   self.save_data(filename=self.data_path + '_' + account_hash)
-        #  return True
-        # return False
-        return True
+        if self.user_data.get('membershipStatus') == 'CURRENT_MEMBER':
+            # store cookies for later requests
+            self.save_data(filename=self.data_path + '_' + account_hash)
+            return True
+        return False
 
     def refresh_session_data(self, account):
         """Reload the session data (profiles, user_data, api_data)
@@ -173,11 +170,11 @@ class NetflixSession(Fetcher):
         """
         # load the profiles/manage page (to verify the user)
         html_contents = self.fetch(component='profiles')
-        # load the profiles api endpoint
-        self.profiles = self.fetch(component='profiles-list')
         # parse out the needed inline information
-        self.user_data = self.extract_inline_page_data(
+        user_data, profiles = self.extract_inline_page_data(
             content=html_contents.text)
+        self.user_data = user_data
+        self.profiles = profiles
         account_hash = generate_account_hash(account=account)
         self.save_data(filename=self.data_path + '_' + account_hash)
 
@@ -239,11 +236,11 @@ class NetflixSession(Fetcher):
         }
         response = self.fetch(component='adult_pin', params=payload)
         component_url = self.get_api_url_for(component='adult_pin')
-        pin_response = process_response(
+        pin_response = self.process_response(
             response=response, component=component_url)
         keys = pin_response.keys()
         self.log(keys)
-        self.log(response)
+        self.log(pin_response)
         return False
 
     def add_to_list(self, video_id):

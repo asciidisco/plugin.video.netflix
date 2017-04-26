@@ -201,9 +201,6 @@ class Core(object):
             res = req.get(url=url, verify=verify,
                           params=params, headers=headers)
         else:
-            self.log(url)
-            self.log(params)
-            self.log(data)
             res = req.post(url=url, verify=verify, params=params,
                            headers=headers, data=data)
         end = time()
@@ -226,7 +223,8 @@ class Core(object):
         """
         self.log(msg='Parsing inline data...')
         items = self.page_items if items is None else items
-        account_info = {}
+        user_data = {}
+        content = content.decode('string_escape')
         # find <script/> tag witch contains the 'reactContext' globals
         react_context = recompile('reactContext(?s)(.*);').findall(content)
         # iterate over all wanted item keys & try to fetch them
@@ -235,13 +233,20 @@ class Core(object):
                 '"' + item + '":(.*?)"(.+?)"').findall(react_context[0])
             if len(match) > 0:
                 _match = match[0][1]
-                account_info.update({item: _match.decode('string_escape')})
+                user_data.update({item: _match})
+        # fetch profiles & avatars
+        profiles = self.get_profiles(content=content)
+        # get guid of active user
+        for guid in profiles:
+            if profiles[guid].get('isActive', False) is True:
+                user_data['guid'] = guid
+
         # verify the data based on the authURL
-        if verfify_auth_data(data=account_info) is not False:
+        if verfify_auth_data(data=user_data) is not False:
             self.log(msg='Parsing inline data parsing successfull')
-            return account_info
+            return (user_data, profiles)
         self.log(msg='Parsing inline data failed')
-        return account_info
+        return (user_data, profiles)
 
     def path_request(self, paths):
         """
@@ -274,36 +279,80 @@ class Core(object):
             data=data)
         return _ret
 
+    def get_profiles(self, content):
+        """ADD ME"""
+        profiles = {}
+        # find everything between the profiles and the profiles_list property
+        _pattern = '"profiles":(.*?)"profilesList'
+        _profiles = recompile(_pattern).findall(content)
+        # replace the last comma we found with nothing
+        if len(_profiles):
+            _profiles_string = _profiles[0][::-1].replace(',', '', 1)[::-1]
+            # check if the last character is a closing bracket
+            if _profiles_string[len(_profiles_string)-1] != '}':
+                # if not, fix that
+                _closing_pos = _profiles_string.rfind('}')+1
+                _profiles_string = _profiles_string[:_closing_pos]
+            _profiles_parsed = loads(_profiles_string)
+            avatars = self.get_avatars(content=content)
+            for guid in _profiles_parsed:
+                if 'size' not in guid:
+                    _profile = _profiles_parsed[guid].get('summary')
+                    _name = _profile.get('avatarName')
+                    _profile['avatar'] = avatars.get(_name)
+                    profiles.update({guid: _profile})
+        return profiles
+
     @staticmethod
     def get_avatars(content):
         """ADD ME"""
         avatars = {}
         # find everything between the avatars and the profiles property
-        _pattern = '"avatars":(?s)(.*)"profiles":'
+        _pattern = '"avatars":(.*?)(.*)"profiles":'
         _avatars = recompile(_pattern).findall(content)
         # replace the last comma we found with nothing
-        _avatar_string = _avatars[0][::-1].replace(',', '', 1)[::-1]
-        _avatars_parsed = loads(_avatar_string).get('nf')
-        for _ava_key in _avatars_parsed:
-            if 'size' not in _ava_key:
-                _images = _avatars_parsed[_ava_key].get('images', {})
-                _url = _images.get('byWidth', {}).get('320', {}).get('value')
-                avatars.update({_ava_key: _url})
+        if len(_avatars):
+            index = 1 if len(_avatars[0][0]) == 0 else 0
+            _avatar_string = _avatars[0][index][::-1].replace(',', '', 1)[::-1]
+            _avatars_parsed = loads(_avatar_string).get('nf')
+            for _ava_key in _avatars_parsed:
+                if 'size' not in _ava_key:
+                    _images = _avatars_parsed[_ava_key].get('images', {})
+                    _image = _images.get('byWidth', {}).get('320', {})
+                    _url = _image.get('value')
+                    avatars.update({_ava_key: _url})
         return avatars
 
     @staticmethod
-    def get_profiles(content):
-        """ADD ME"""
-        profiles = {}
-        # find everything between the profiles and the profiles_list property
-        _pattern = '"profiles":(?s)(.*)"profilesList'
-        _profiles = recompile(_pattern).findall(content)
-        # replace the last comma we found with nothing
-        _profiles_string = _profiles[0][::-1].replace(',', '', 1)[::-1]
-        _profiles_parsed = loads(_profiles_string)
-        for guid in _profiles_parsed:
-            if 'size' not in guid:
-                profiles.update({
-                    guid: _profiles_parsed[guid].get('summary')
-                })
-        return profiles
+    def process_response(response, component):
+        """Tiny helper to check responses for API requests
+
+        Parameters
+        ----------
+        response : :obj:`requests.response`
+            Response from a requests instance
+
+        component : :obj:`str`
+            Component endpoint
+
+        Returns
+        -------
+        :obj:`dict` of :obj:`dict` of :obj:`str` or :obj:`dict` of :obj:`str`
+            Raw Netflix API call response or api call error
+        """
+        # check if we are not authorized to make this call
+        if response.status_code == 401:
+            return {
+                'error': True,
+                'message': 'Session invalid',
+                'code': 401
+            }
+        # check if somethign else failed
+        if response.status_code != 200:
+            return {
+                'error': True,
+                'message': 'API call for "' + component + '" failed',
+                'code': response.status_code
+            }
+        # return the parsed response and everything is fine
+        return response.json()

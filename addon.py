@@ -42,4 +42,5 @@ if __name__ == '__main__':
         paramstring=sys.argv[2][1:],
         class_item=Navigation,
         class_inst=NAVIGATION,
-        base_url=BASE_URL)
+        base_url=BASE_URL,
+        log_fn=KODI_HELPER.log)

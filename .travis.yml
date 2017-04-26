@@ -8,7 +8,7 @@ before_script:
 script:
   - make lint
   - make test
-  - make doc
+  - make html
 after_sucess:
   - CODECLIMATE_REPO_TOKEN=<CODECLIMATE_TOKEN> codeclimate-test-reporter
 

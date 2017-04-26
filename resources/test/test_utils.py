@@ -5,7 +5,7 @@ sys.path.append(path.dirname(path.dirname(path.dirname(path.abspath(__file__))))
 import unittest
 from resources.lib.utils import *
 from mocks.LoggerMocks import TestLoggerWithArgs, TestLoggerWithCredentialArgs, TestLoggerWithNoArgs
-from mocks.MinimalClassMocks import MockClass, Error_resp_401, Error_resp_500, Success_resp
+from mocks.MinimalClassMocks import MockClass
 
 
 class UtilfileTestCase(unittest.TestCase):
@@ -21,24 +21,6 @@ class UtilfileTestCase(unittest.TestCase):
         assert verfify_auth_data({'authURL': 'abc'}) == False
         assert verfify_auth_data({'authURL': 'abcdefghjdhfjkasdfdjsgds vjdksghjskagh fiefhewiofhpew fiowehfiowehf fiowehfiowehf=/jkhfjksdhfsdajfhsdjkfhdjfhdsj jkfhjdkfhdsalfdjsl'}) == False
         assert verfify_auth_data({'authURL': 'abcdefghjdhfjkasdfdjsgdsvjdksghjskagh'}) == True
-
-    def test_process_response(self):
-        """Confirm that responses from the API get processed correctly based on their status_code"""
-        error_401 = {
-            'error': True,
-            'message': 'Session invalid',
-            'code': 401
-        }
-        error_non_401 = {
-            'error': True,
-            'message': 'API call for "test" failed',
-            'code': 500
-        }
-        succ_200 = {'foo': 'bar'}
-
-        assert process_response(response=Error_resp_401(), component='test') == error_401
-        assert process_response(response=Error_resp_500(), component='test') == error_non_401
-        assert process_response(response=Success_resp(), component='test') == succ_200
 
     def test_get_ua_for_current_platform(self):
         """Does get the UA for the current/e.g. some platform"""

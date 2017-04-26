@@ -1,8 +1,7 @@
 """ADD ME"""
-from inspect import getargspec
 from urlparse import parse_qsl
 from urllib import urlencode
-from resources.lib.utils import get_class_methods
+from resources.lib.utils import get_class_methods, get_true_argspec
 
 
 class RouteDataStorage(object):
@@ -52,12 +51,14 @@ def build_url(query):
     return DATA_STORAGE.base_url + '?' + urlencode(query)
 
 
-def run(paramstring, class_item, class_inst, base_url=''):
+def run(paramstring, class_item, class_inst, base_url='', log_fn=None):
     """
     ADD ME
 
     :base_url: String Base url
     """
+    log = log_fn if log_fn is not None else lambda msg: None
+    log(msg='Router called with: ' + base_url + '?' + paramstring)
     DATA_STORAGE.base_url = base_url
     params = __parse_paramters(paramstring)
     options = class_inst.before_routing_action(params=params)
@@ -67,8 +68,9 @@ def run(paramstring, class_item, class_inst, base_url=''):
     route_method = __get_matched_route(
         params=params,
         class_methods=class_methods)
+    log(msg='Found routable method: ' + route_method)
     _callable = getattr(class_inst, route_method)
-    _argument_spec = getargspec(_callable)
+    _argument_spec = get_true_argspec(_callable)
     params['options'] = options
     matches = {k: params[k]
                for k in params.viewkeys() & set(_argument_spec.args)}

@@ -7,9 +7,19 @@ import unittest
 import mock
 from requests.cookies import RequestsCookieJar
 from resources.lib.NetflixSessionUtils.Core import Core
+from mocks.MinimalClassMocks import MockClass, Error_resp_401, Error_resp_500, Success_resp
+
 
 class Session(object):
+    """ADD ME"""
     cookies = RequestsCookieJar()
+
+def get_fixture_html(file):
+    """ADD ME"""
+    file_handle = open(path.dirname(path.abspath(__file__)) + '/fixtures/'+ file)
+    fixture = file_handle.read().decode('string_escape')
+    return fixture
+
 
 class NetflixSessionUtilsCoreTestCase(unittest.TestCase):
     """ADD ME"""
@@ -130,7 +140,7 @@ class NetflixSessionUtilsCoreTestCase(unittest.TestCase):
 
     def test_extract_inline_page_data_fail(self):
         """ADD ME"""
-        fixture_html = open(path.dirname(path.abspath(__file__)) + '/fixtures/avatar_fetch_index.html').read().decode('string_escape')
+        fixture_html = get_fixture_html('logged_in.min.html')
         core = Core(session={})
         page_items = [
             'authURLI',
@@ -142,18 +152,22 @@ class NetflixSessionUtilsCoreTestCase(unittest.TestCase):
             'gpsModel',
             'countryOfSignup'
         ]
-        assert core.extract_inline_page_data(content=fixture_html, items=page_items) == {
+        user_data, _ = core.extract_inline_page_data(
+            content=fixture_html,
+            items=page_items)
+        self.assertEqual(user_data, {
             'gpsModel': 'harris',
             'countryOfSignup': 'DE',
             'API_ROOT': 'https://www.netflix.com/api',
-            'esn': 'NFCDCH-MC-DGJ8G5J1T57JY3A5NYKQ56XTHMLXQR',
+            'esn': 'NFCDCH-MC-DGLPFZ95W1UMN40J7J2H18GNWDAX0P',
             'ICHNAEA_ROOT': '/ichnaea',
-            'BUILD_IDENTIFIER': '5b441c4b',
-            'API_BASE_URL': '/shakti'}
+            'BUILD_IDENTIFIER': '1df66551',
+            'guid': u'ZDDNPO5JSVGUHB4FGNI6UKKBSM',
+            'API_BASE_URL': '/shakti'})
 
     def test_extract_inline_page_data(self):
         """ADD ME"""
-        fixture_html = open(path.dirname(path.abspath(__file__)) + '/fixtures/avatar_fetch_index.html').read().decode('string_escape')
+        fixture_html = get_fixture_html('logged_in.min.html')
         core = Core(session={})
         page_items = [
             'authURL',
@@ -165,20 +179,28 @@ class NetflixSessionUtilsCoreTestCase(unittest.TestCase):
             'gpsModel',
             'countryOfSignup'
         ]
-        assert core.extract_inline_page_data(content=fixture_html, items=page_items) == {
-            'authURL': '1492689381314.dqAJ9u798N25CemPADEU2yHd6qw=',
+        user_data, profiles = core.extract_inline_page_data(
+            content=fixture_html,
+            items=page_items)
+
+        self.assertEqual(user_data, {
+            'authURL': '1492769247591.xB7yUJn1o6OVINZAihtzYMwQzro=',
             'gpsModel': 'harris',
             'countryOfSignup': 'DE',
             'API_ROOT': 'https://www.netflix.com/api',
-            'esn': 'NFCDCH-MC-DGJ8G5J1T57JY3A5NYKQ56XTHMLXQR',
+            'esn': 'NFCDCH-MC-DGLPFZ95W1UMN40J7J2H18GNWDAX0P',
             'ICHNAEA_ROOT': '/ichnaea',
-            'BUILD_IDENTIFIER': '5b441c4b',
-            'API_BASE_URL': '/shakti'}
+            'BUILD_IDENTIFIER': '1df66551',
+            'guid': u'ZDDNPO5JSVGUHB4FGNI6UKKBSM',
+            'API_BASE_URL': '/shakti'})
+ 
+        guids = profiles.keys()
+        _guids = ['NHOT6SPRQZHCHJB2NRI5O5YLUV', 'VRTYZRD7H5AC7KHY7ZCUO65QIE', 'ZDDNPO5JSVGUHB4FGNI6UKKBSM', '5YHLLUGDSVCALCDFJX2N422P34']
+        self.assertEqual(guids, _guids)
 
     def test_get_avatars(self):
         """ADD ME"""
-        fixture_html = open(
-            path.dirname(path.abspath(__file__)) + '/fixtures/avatar_fetch_index.html').read().decode('string_escape')
+        fixture_html = get_fixture_html('logged_in.min.html')
         assert Core.get_avatars(content=fixture_html) == dict(
             icon27='https://secure.netflix.com/ffe/profiles/avatars_v2/320x320/PICON_027.png',
             icon26='https://secure.netflix.com/ffe/profiles/avatars_v2/320x320/PICON_026.png',
@@ -187,5 +209,26 @@ class NetflixSessionUtilsCoreTestCase(unittest.TestCase):
 
     def test_get_profiles(self):
         """ADD ME"""
-        fixture_html = open(path.dirname(path.abspath(__file__)) + '/fixtures/avatar_fetch_index.html').read().decode('string_escape')
-        assert Core.get_profiles(content=fixture_html).keys() == ['5YHLDFGHRSVCALCDFJX2N422P34', 'VRTYZRQ375FDGSDFKHY7ZCUO65QIE', 'NHOT6SPRDFHT5664JB2NRI5O5YOWE', 'ZDDNPO5JSGTHHHB4WTKI6UKKBSM']
+        fixture_html = get_fixture_html('logged_in.min.html')
+        core = Core(session={})
+        guids = core.get_profiles(content=fixture_html).keys()
+        _guids = ['NHOT6SPRQZHCHJB2NRI5O5YLUV', 'VRTYZRD7H5AC7KHY7ZCUO65QIE', 'ZDDNPO5JSVGUHB4FGNI6UKKBSM', '5YHLLUGDSVCALCDFJX2N422P34']
+        self.assertEqual(guids, _guids)
+
+    def test_process_response(self):
+        """Confirm that responses from the API get processed correctly based on their status_code"""
+        error_401 = {
+            'error': True,
+            'message': 'Session invalid',
+            'code': 401
+        }
+        error_non_401 = {
+            'error': True,
+            'message': 'API call for "test" failed',
+            'code': 500
+        }
+        succ_200 = {'foo': 'bar'}
+
+        self.assertEqual(Core.process_response(response=Error_resp_401(), component='test'), error_401)
+        self.assertEqual(Core.process_response(response=Error_resp_500(), component='test'), error_non_401)
+        self.assertEqual(Core.process_response(response=Success_resp(), component='test'), succ_200)

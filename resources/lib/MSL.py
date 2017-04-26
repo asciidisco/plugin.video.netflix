@@ -189,7 +189,7 @@ class MSL(object):
         }
 
         # Check if dolby sound is enabled and add to profles
-        if self.kodi_helper.get_dolby_setting():
+        if self.kodi_helper.settings.get_dolby_setting():
             manifest_request_data['profiles'].append('ddplus-2.0-dash')
             manifest_request_data['profiles'].append('ddplus-5.1-dash')
 

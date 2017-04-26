@@ -23,7 +23,7 @@ class NetflixSessionUtilsFetcherTestCase(unittest.TestCase):
         assert resp.text == 'Foo'
 
     @httpretty.activate
-    def test_fetch_video_list_ids_via_get(self):
+    def test_fetch_video_list_ids_preflight(self):
         """ADD ME"""
         httpretty.register_uri(httpretty.GET, 'http://www.netflix.com/api/abc/preflight', body='{"foo": "bar"}', status=200)
         nx_session = requests.session()
@@ -34,7 +34,7 @@ class NetflixSessionUtilsFetcherTestCase(unittest.TestCase):
             'API_BASE_URL': '',
             'BUILD_IDENTIFIER': 'abc'
         }
-        resp = fetcher.fetch_video_list_ids_via_get()
+        resp = fetcher.fetch_video_list_ids_preflight()
         assert resp == {'foo': 'bar'}
 
     @httpretty.activate
@@ -113,7 +113,7 @@ class NetflixSessionUtilsFetcherTestCase(unittest.TestCase):
         assert resp == {'foo': 'bar'}
 
     @httpretty.activate
-    def test_fetch_show_information_for_show(self):
+    def test_fetch_video_information_for_show(self):
         """ADD ME"""
         httpretty.register_uri(httpretty.POST, 'http://www.netflix.com/api/abc/pathEvaluator', body='{"foo": "bar"}', status=200)
         nx_session = requests.session()
@@ -124,11 +124,11 @@ class NetflixSessionUtilsFetcherTestCase(unittest.TestCase):
             'API_BASE_URL': '',
             'BUILD_IDENTIFIER': 'abc'
         }
-        resp = fetcher.fetch_show_information(show_id='1234', show_type='show')
+        resp = fetcher.fetch_video_information(video_id='1234', show_type='show')
         assert resp == {'foo': 'bar'}
 
     @httpretty.activate
-    def test_fetch_show_information_for_movie(self):
+    def test_fetch_video_information_for_movie(self):
         """ADD ME"""
         httpretty.register_uri(httpretty.POST, 'http://www.netflix.com/api/abc/pathEvaluator', body='{"foo": "bar"}', status=200)
         nx_session = requests.session()
@@ -139,7 +139,7 @@ class NetflixSessionUtilsFetcherTestCase(unittest.TestCase):
             'API_BASE_URL': '',
             'BUILD_IDENTIFIER': 'abc'
         }
-        resp = fetcher.fetch_show_information(show_id='1234', show_type='movie')
+        resp = fetcher.fetch_video_information(video_id='1234', show_type='movie')
         assert resp == {'foo': 'bar'}
 
     @httpretty.activate

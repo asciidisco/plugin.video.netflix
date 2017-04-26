@@ -5,6 +5,12 @@
 
 """ADD ME"""
 
+from resources.lib.NetflixSessionUtils.parser import (
+    parse_video_list_ids,
+    parse_video_list,
+    parse_seasons,
+    parse_episodes_by_season)
+
 
 class NetflixHttpSubRessourceHandler(object):
     """
@@ -41,7 +47,7 @@ class NetflixHttpSubRessourceHandler(object):
         """
         mail = self.credentials.get('email', '')
         password = self.credentials.get('password', '')
-        if mail == '' and password == '':
+        if mail != '' and password != '':
             if self.netflix_session.is_logged_in(account=self.credentials):
                 self.netflix_session.refresh_session_data(
                     account=self.credentials)
@@ -108,7 +114,7 @@ class NetflixHttpSubRessourceHandler(object):
         :obj:`dict` of :obj:`str`
             List of profiles
         """
-        return self.profiles
+        return self.netflix_session.profiles
 
     def get_esn(self):
         """ESN getter function
@@ -118,7 +124,7 @@ class NetflixHttpSubRessourceHandler(object):
         :obj:`str`
             Exracted ESN
         """
-        return self.netflix_session.esn
+        return self.netflix_session.user_data.get('esn')
 
     def fetch_video_list_ids(self, params):
         """Video list ids proxy function (caches video lists)
@@ -135,7 +141,7 @@ class NetflixHttpSubRessourceHandler(object):
         """
         session = self.netflix_session
         guid = session.user_data.get('guid')
-        cached_list = self.video_list_cache.get(params.get('guid', guid), None)
+        cached_list = self.video_list_cache.get(params.get('guid', guid))
         if cached_list is not None:
             self.kodi_helper.log(
                 'Serving cached list for user: ' + params.get('guid', guid))
@@ -144,7 +150,7 @@ class NetflixHttpSubRessourceHandler(object):
 
         if 'error' in video_list_ids_raw:
             return video_list_ids_raw
-        return session.parse_video_list_ids(response_data=video_list_ids_raw)
+        return parse_video_list_ids(response_data=video_list_ids_raw)
 
     def fetch_video_list(self, params):
         """Video list proxy function
@@ -160,13 +166,13 @@ class NetflixHttpSubRessourceHandler(object):
             Transformed response of the remote call
         """
         session = self.netflix_session
-        list_id = params.get('list_id', [''])[0]
-        raw_video_list = session.fetch_video_list(list_id=list_id)
+        raw_video_list = session.fetch_video_list(
+            list_id=params.get('list_id'))
         if 'error' in raw_video_list:
             return raw_video_list
         # parse the video list ids
         if 'videos' in raw_video_list.get('value', {}).keys():
-            return session.parse_video_list(response_data=raw_video_list)
+            return parse_video_list(response_data=raw_video_list)
         return []
 
     def fetch_episodes_by_season(self, params):
@@ -184,10 +190,10 @@ class NetflixHttpSubRessourceHandler(object):
         """
         session = self.netflix_session
         episodes = session.fetch_episodes_by_season(
-            season_id=params.get('season_id', [''])[0])
+            season_id=params.get('season_id'))
         if 'error' in episodes:
             return episodes
-        return session.parse_episodes_by_season(response_data=episodes)
+        return parse_episodes_by_season(response_data=episodes)
 
     def fetch_seasons_for_show(self, params):
         """Season for show proxy function
@@ -203,16 +209,15 @@ class NetflixHttpSubRessourceHandler(object):
             Transformed response of the remote call
         """
         session = self.netflix_session
-        show_id = params.get('show_id', [''])[0]
         raw_season_list = session.fetch_seasons_for_show(
-            id=show_id)
+            show_id=params.get('show_id'))
         if 'error' in raw_season_list:
             return raw_season_list
-        # check if we have sesons, announced shows that are not available yet
+        # check if we have seasons, announced shows that are not available yet
         # have none
         if 'seasons' not in raw_season_list.get('value', {}):
             return []
-        return session.parse_seasons(id=show_id, response_data=raw_season_list)
+        return parse_seasons(response_data=raw_season_list)
 
     def rate_video(self, params):
         """Video rating proxy function
@@ -244,8 +249,8 @@ class NetflixHttpSubRessourceHandler(object):
         :obj:`Requests.Response`
             Response of the remote call
         """
-        video_id = params.get('video_id', [''])[0]
-        return self.netflix_session.remove_from_list(video_id=video_id)
+        return self.netflix_session.remove_from_list(
+            video_id=params.get('video_id'))
 
     def add_to_list(self, params):
         """Add to my list proxy function
@@ -260,8 +265,8 @@ class NetflixHttpSubRessourceHandler(object):
         :obj:`Requests.Response`
             Response of the remote call
         """
-        video_id = params.get('video_id', [''])[0]
-        return self.netflix_session.add_to_list(video_id=video_id)
+        return self.netflix_session.add_to_list(
+            video_id=params.get('video_id'))
 
     def fetch_metadata(self, params):
         """Metadata proxy function
@@ -276,8 +281,8 @@ class NetflixHttpSubRessourceHandler(object):
         :obj:`Requests.Response`
             Response of the remote call
         """
-        video_id = params.get('video_id', [''])[0]
-        return self.netflix_session.fetch_metadata(id=video_id)
+        return self.netflix_session.fetch_metadata(
+            video_id=params.get('video_id'))
 
     def switch_profile(self, params):
         """Switch profile proxy function
@@ -292,10 +297,9 @@ class NetflixHttpSubRessourceHandler(object):
         :obj:`Requests.Response`
             Response of the remote call
         """
-        session = self.netflix_session
-        profile_id = params.get('profile_id', [''])[0]
-        account = self.credentials
-        return session.switch_profile(profile_id=profile_id, account=account)
+        return self.netflix_session.switch_profile(
+            profile_id=params.get('profile_id'),
+            account=self.credentials)
 
     def get_user_data(self):
         """User data getter function
@@ -326,8 +330,8 @@ class NetflixHttpSubRessourceHandler(object):
             Transformed response of the remote call
         """
         session = self.netflix_session
-        term = params.get('term', [''])[0]
-        raw_search_results = session.fetch_search_results(search_str=term)
+        raw_search_results = session.fetch_search_results(
+            search_str=params.get('term'))
         # check for any errors
         if 'error' in raw_search_results:
             return raw_search_results

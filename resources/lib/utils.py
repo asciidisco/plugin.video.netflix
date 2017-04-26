@@ -7,6 +7,7 @@
 
 from functools import wraps
 from types import FunctionType
+from inspect import getargspec
 from base64 import urlsafe_b64encode
 from platform import platform as ul_platform
 
@@ -102,46 +103,13 @@ def get_ua_for_current_platform():
     return get_ua_for_platform(uid=ul_platform())
 
 
-def process_response(response, component):
-    """Tiny helper to check responses for API requests
-
-    Parameters
-    ----------
-    response : :obj:`requests.response`
-        Response from a requests instance
-
-    component : :obj:`str`
-        Component endpoint
-
-    Returns
-    -------
-    :obj:`dict` of :obj:`dict` of :obj:`str` or :obj:`dict` of :obj:`str`
-        Raw Netflix API call response or api call error
-    """
-    # check if we are not authorized to make this call
-    if response.status_code == 401:
-        return {
-            'error': True,
-            'message': 'Session invalid',
-            'code': 401
-        }
-    # check if somethign else failed
-    if response.status_code != 200:
-        return {
-            'error': True,
-            'message': 'API call for "' + component + '" failed',
-            'code': response.status_code
-        }
-    # return the parsed response and everything is fine
-    return response.json()
-
-
 def get_item(ikeys, item, iname, api_name=None):
     """ADD ME"""
     api_name = iname if api_name is None else api_name
-    if isinstance(item.get(api_name), list):
-        item[api_name] = item.get(api_name)[0]
-    if api_name in ikeys and len(item.get(api_name)) > 0:
+    _item = item.get(api_name)
+    if isinstance(_item, (list, tuple)):
+        _item = '' if len(_item) == 0 else _item[0]
+    if api_name in ikeys and _item is not None:
         return {iname: item.get(api_name)}
     return {}
 
@@ -150,3 +118,22 @@ def get_class_methods(class_item=None):
     """ADD ME"""
     _type = FunctionType
     return [x for x, y in class_item.__dict__.items() if isinstance(y, _type)]
+
+
+def get_true_argspec(method):
+    """
+    Drills through layers of decorators attempting to locate
+    the actual argspec for the method.
+    """
+
+    argspec = getargspec(method)
+    args = argspec[0]
+    if args and args[0] == 'self':
+        return argspec
+    if hasattr(method, '__func__'):
+        method = method.__func__
+    if not hasattr(method, 'func_closure') or method.func_closure is None:
+        raise Exception("No closure for method.")
+
+    method = method.func_closure[0].cell_contents
+    return get_true_argspec(method)

@@ -6,7 +6,7 @@
 """Tranforms Netflix API responses into easily digestable
 Data structures that Kodi can cope with."""
 
-VIDEO_LIST_KEYS = ['user', 'genres', 'recommendations']
+VIDEO_LIST_KEYS = ['user', 'genres', 'recommendations', 'rec_genres']
 """:obj:`list` of :obj:`str`
 Divide the users video lists into 3 different categories (for easier digestion)
 """
@@ -15,13 +15,9 @@ Divide the users video lists into 3 different categories (for easier digestion)
 def parse_video_list_ids(response_data):
     """Parse the list of video ids e.g. rip out the parts we need
 
-    Parameters
-    ----------
     response_data : :obj:`dict` of :obj:`str`
         Parsed response JSON from the 'fetch_video_list_ids' call
 
-    Returns
-    -------
     :obj:`dict` of :obj:`dict`
         Video list ids in the format:
 
@@ -67,7 +63,12 @@ def parse_video_list_ids(response_data):
     # prepare the return dictionary
     video_list_ids = {}
     for key in VIDEO_LIST_KEYS:
-        video_list_ids[key] = {'recommendations': {}, 'genres': {}, 'user': {}}
+        video_list_ids[key] = {
+            'recommendations': {},
+            'genres': {},
+            'user': {},
+            'rec_genres': {}
+        }
 
     # check if the list items are hidden behind a `value` sub key
     # this is the case when we fetch the lists via POST, not via a GET
@@ -79,29 +80,33 @@ def parse_video_list_ids(response_data):
     video_lists = response_data.get('lists', {})
     for video_list_id in video_lists.keys():
         video_list = video_lists[video_list_id]
-        context = video_list.get('context', False)
-        if context is not False:
+        context = video_list.get('context')
+        if context is not None:
             cvt_item = parse_video_list_ids_entry(
                 video_id=video_list_id, entry=video_list)
             if context == 'genre':
-                video_list_ids.get('genres').update(cvt_item)
+                video_list_ids.get('rec_genres').update(cvt_item)
             elif context == 'similars' or context == 'becauseYouAdded':
                 video_list_ids.get('recommendations').update(cvt_item)
             else:
                 video_list_ids.get('user').update(cvt_item)
+
+    # add static genres
+    _genres = parse_genres(dict(value=response_data))
+    for _genre in _genres:
+        video_list_ids.get('genres').update({
+            _genre.get('id'): _genre.get('label')
+        })
+
     return video_list_ids
 
 
 def parse_video_list_ids_entry(video_id, entry):
     """Parses a video id entry
 
-    Parameters
-    ----------
     response_data : :obj:`dict` of :obj:`str`
         Dictionary entry from the 'fetch_video_list_ids' call
 
-    Returns
-    -------
     video_id : :obj:`str`
         Unique id of the video list
 
@@ -131,13 +136,9 @@ def parse_search_results(response_data):
     """Parse the list of search results
         and extend it with detailed show informations
 
-    Parameters
-    ----------
     response_data : :obj:`dict` of :obj:`str`
         Parsed response JSON from the `fetch_search_results` call
 
-    Returns
-    -------
     :obj:`dict` of :obj:`dict` of :obj:`str`
         Search results in the format:
 
@@ -177,16 +178,12 @@ def parse_search_results(response_data):
 def parse_show_list_entry(list_id, entry):
     """Parse a show entry e.g. rip out the parts we need
 
-    Parameters
-    ----------
     response_data : :obj:`dict` of :obj:`str`
         Dictionary entry from the 'fetch_show_information' call
 
     id : :obj:`str`
         Unique id of the video list
 
-    Returns
-    -------
     entry : :obj:`dict` of :obj:`dict` of :obj:`str`
         Show list entry in the format:
 
@@ -214,13 +211,9 @@ def parse_show_list_entry(list_id, entry):
 def parse_video_list(response_data):
     """Parse a list of videos
 
-    Parameters
-    ----------
     response_data : :obj:`dict` of :obj:`str`
         Parsed response JSON from the `fetch_video_list` call
 
-    Returns
-    -------
     :obj:`dict` of :obj:`dict`
         Video list in the format:
 
@@ -339,8 +332,6 @@ def parse_video_list(response_data):
 def parse_video_list_entry(video_id, list_id, video, persons, genres):
     """Parse a video list entry
 
-    Parameters
-    ----------
     id : :obj:`str`
         Unique id of the video
 
@@ -356,8 +347,6 @@ def parse_video_list_entry(video_id, list_id, video, persons, genres):
     persons : :obj:`dict` of :obj:`dict` of :obj:`str`
         List of genres with reference ids
 
-    Returns
-    -------
     entry : :obj:`dict` of :obj:`dict` of :obj:`str`
         Video list entry in the format:
 
@@ -489,16 +478,12 @@ def parse_maturity_for_video(video):
 def parse_creators_for_video(video, persons):
     """Matches ids with person names to generate a list of creators
 
-    Parameters
-    ----------
     video : :obj:`dict` of :obj:`str`
         Dictionary entry for one video entry
 
     persons : :obj:`dict` of :obj:`str`
         Raw resposne of all persons delivered by the API call
 
-    Returns
-    -------
     :obj:`list` of :obj:`str`
         List of creators
     """
@@ -507,8 +492,8 @@ def parse_creators_for_video(video, persons):
         if person_key != 'summary':
             for creator_key in video.get('creators').keys():
                 if creator_key != 'summary':
-                    creators = video.get('creators', {})
-                    if creators.get(creator_key, ['', ''])[1] == person_key:
+                    _creators = video.get('creators', {})
+                    if _creators.get(creator_key, ['', ''])[1] == person_key:
                         creators.append(persons.get(
                             person_key, {}).get('name', ''))
     return creators
@@ -517,16 +502,12 @@ def parse_creators_for_video(video, persons):
 def parse_directors_for_video(video, persons):
     """Matches ids with person names to generate a list of directors
 
-    Parameters
-    ----------
     video : :obj:`dict` of :obj:`str`
         Dictionary entry for one video entry
 
     persons : :obj:`dict` of :obj:`str`
         Raw resposne of all persons delivered by the API call
 
-    Returns
-    -------
     :obj:`list` of :obj:`str`
         List of directors
     """
@@ -535,8 +516,8 @@ def parse_directors_for_video(video, persons):
         if person_key != 'summary':
             for director_key in video.get('directors', {}).keys():
                 if director_key != 'summary':
-                    directors = video.get('directors', {})
-                    if directors.get(director_key, ['', ''])[1] == person_key:
+                    _directors = video.get('directors', {})
+                    if _directors.get(director_key, ['', ''])[1] == person_key:
                         directors.append(persons.get(
                             person_key, {}).get('name', ''))
     return directors
@@ -545,16 +526,12 @@ def parse_directors_for_video(video, persons):
 def parse_cast_for_video(video, persons):
     """Matches ids with person names to generate a list of cast members
 
-    Parameters
-    ----------
     video : :obj:`dict` of :obj:`str`
         Dictionary entry for one video entry
 
     persons : :obj:`dict` of :obj:`str`
         Raw resposne of all persons delivered by the API call
 
-    Returns
-    -------
     :obj:`list` of :obj:`str`
         List of cast members
     """
@@ -573,16 +550,12 @@ def parse_cast_for_video(video, persons):
 def parse_genres_for_video(video, genres):
     """Matches ids with genre names to generate a list of genres for a video
 
-    Parameters
-    ----------
     video : :obj:`dict` of :obj:`str`
         Dictionary entry for one video entry
 
     genres : :obj:`dict` of :obj:`str`
         Raw resposne of all genres delivered by the API call
 
-    Returns
-    -------
     :obj:`list` of :obj:`str`
         List of genres
     """
@@ -602,13 +575,9 @@ def parse_tags_for_video(video):
     """Parses a nested list of tags
     removes the not needed meta information & returns a raw string list
 
-    Parameters
-    ----------
     video : :obj:`dict` of :obj:`str`
         Dictionary entry for one video entry
 
-    Returns
-    -------
     :obj:`list` of :obj:`str`
         List of tags
     """
@@ -639,13 +608,9 @@ def parse_season_information(video):
 def parse_quality_for_video(video):
     """Transforms Netflix quality information in video resolution info
 
-    Parameters
-    ----------
     video : :obj:`dict` of :obj:`str`
         Dictionary entry for one video entry
 
-    Returns
-    -------
     :obj:`str`
         Quality of the video
     """
@@ -660,13 +625,9 @@ def parse_quality_for_video(video):
 def parse_runtime_for_video(video):
     """Checks if the video is a movie & returns the runtime if given
 
-    Parameters
-    ----------
     video : :obj:`dict` of :obj:`str`
         Dictionary entry for one video entry
 
-    Returns
-    -------
     :obj:`str`
         Runtime of the video (in seconds)
     """
@@ -677,13 +638,9 @@ def parse_runtime_for_video(video):
 def parse_netflix_list_id(video_list):
     """Parse a video list and extract the list id
 
-    Parameters
-    ----------
     video_list : :obj:`dict` of :obj:`str`
         Netflix video list
 
-    Returns
-    -------
     entry : :obj:`str` or None
         Netflix list id
     """
@@ -696,16 +653,12 @@ def parse_netflix_list_id(video_list):
 def parse_show_information(show_id, response_data):
     """Parse extended show information (synopsis, seasons, etc.)
 
-    Parameters
-    ----------
     id : :obj:`str`
         Video id
 
     response_data : :obj:`dict` of :obj:`str`
         Parsed response JSON from the `fetch_show_information` call
 
-    Returns
-    -------
     entry : :obj:`dict` of :obj:`str`
     Show information in the format:
         {
@@ -730,13 +683,9 @@ def parse_show_information(show_id, response_data):
 def parse_seasons(response_data):
     """Parse a list of seasons for a given show
 
-    Parameters
-    ----------
     response_data : :obj:`dict` of :obj:`str`
         Parsed response JSON from the 'fetch_seasons_for_show' call
 
-    Returns
-    -------
     entry : :obj:`dict` of :obj:`dict` of :obj:`str`
     Season information in the format:
         {
@@ -774,13 +723,9 @@ def parse_seasons(response_data):
 def parse_season_entry(season, videos):
     """Parse a season list entry e.g. rip out the parts we need
 
-    Parameters
-    ----------
     season : :obj:`dict` of :obj:`str`
         Season entry from the `fetch_seasons_for_show` call
 
-    Returns
-    -------
     entry : :obj:`dict` of :obj:`dict` of :obj:`str`
         Season list entry in the format:
 
@@ -797,6 +742,11 @@ def parse_season_entry(season, videos):
             }
         }
     """
+    print 'SEASON'
+    print season
+    print 'VIDEOS'
+    print videos
+
     # get art video key
     video_key = ''
     for key in videos.keys():
@@ -808,7 +758,7 @@ def parse_season_entry(season, videos):
             sort_key = int(videos.get(video_key).get(
                 'seasonList', []).get(idx, ['', ''])[1])
             sorting[sort_key] = int(idx)
-    summary = sorting.get('summary', {})
+    summary = season.get('summary', {})
     video = videos.get(video_key, {})
 
     # art
@@ -836,13 +786,9 @@ def parse_season_entry(season, videos):
 def parse_episodes_by_season(response_data):
     """Parse episodes for a given season/episode list
 
-    Parameters
-    ----------
     response_data : :obj:`dict` of :obj:`str`
         Parsed response JSON from the `fetch_seasons_for_show` call
 
-    Returns
-    -------
     entry : :obj:`dict` of :obj:`dict` of :obj:`str`
     Season information in the format:
 
@@ -909,13 +855,9 @@ def parse_episodes_by_season(response_data):
 def parse_episode(episode, genres=None):
     """Parse episode from an list of episodes by season
 
-    Parameters
-    ----------
     episode : :obj:`dict` of :obj:`str`
         Episode entry from the 'fetch_episodes_by_season' call
 
-    Returns
-    -------
     entry : :obj:`dict` of :obj:`dict` of :obj:`str`
     Episode information in the format:
 
@@ -956,9 +898,9 @@ def parse_episode(episode, genres=None):
     fanart = episode.get('interestingMoment', {}).get(
         '_1280x720', {}).get('jpg', {})
     if user_rating.get('average', None) is not None:
-        rating = user_rating.get('average', 0)
+        _user_rating = user_rating.get('average', 0)
     else:
-        rating = user_rating.get('predicted', 0)
+        _user_rating = user_rating.get('predicted', 0)
     mpaa = str(rating.get('board', '')) + ' ' + str(rating.get('value', ''))
 
     return {
@@ -974,7 +916,7 @@ def parse_episode(episode, genres=None):
             'mpaa': mpaa,
             'maturity': maturity,
             'playcount': (0, 1)[episode.get('watched', True)],
-            'rating': rating,
+            'rating': _user_rating,
             'thumb': info.get('interestingMoments', {}).get('url', ''),
             'fanart': fanart.get('url', ''),
             'poster': boart.get('_1280x720', {}).get('jpg', {}).get('url', ''),
@@ -984,3 +926,12 @@ def parse_episode(episode, genres=None):
             'bookmark': episode.get('bookmarkPosition', 0)
         }
     }
+
+
+def parse_genres(response_data):
+    """ADD ME"""
+    raw_genres = response_data.get('value', {}).get('genres', {})
+    return [
+        dict(id=_id, label=raw_genres[_id].get('menuName'))
+        for _id in raw_genres
+    ]

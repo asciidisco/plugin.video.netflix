@@ -13,7 +13,7 @@ import xbmcplugin
 import xbmcgui
 from KodiHelperUtils import Base, Settings, Dialogs, Cache
 from UniversalAnalytics import Tracker
-from utils import get_item
+from utils import get_item, log
 from resources.lib.KodiHelperUtils.Router import build_url
 
 
@@ -38,6 +38,7 @@ class KodiHelper(Base):
         self.msl_server_cert = self.load_server_certificate()
         super(KodiHelper, self).__init__()
 
+    @log
     def profiles_listing(self, profiles, action):
         """Builds the profiles list Kodi screen
 
@@ -50,17 +51,21 @@ class KodiHelper(Base):
             Action paramter to build the subsequent routes
         """
         handle = self.plugin_handle
+        preselect_items = []
         for profile_id in profiles:
             profile = profiles[profile_id]
             url = build_url({'action': action, 'profile_id': profile_id})
             listitem = xbmcgui.ListItem(
-                label=profile['profileName'], iconImage=profile['avatar'])
+                label=profile.get('profileName'),
+                iconImage=profile.get('avatar'))
             listitem.setProperty('fanart_image', self.get_fanart())
             xbmcplugin.addDirectoryItem(
                 handle=handle, url=url, listitem=listitem, isFolder=True)
             xbmcplugin.addSortMethod(
                 handle=handle, sortMethod=xbmcplugin.SORT_METHOD_LABEL)
+            preselect_items.append(profile.get('isActive'))
         xbmcplugin.endOfDirectory(handle=handle)
+        self.__select_menu_entry(preselect_items=preselect_items)
 
     def main_menu_listing(self, list_ids, list_order, actions):
         """Builds the video lists (my list, continue watching, etc.) Kodi screen
@@ -91,7 +96,8 @@ class KodiHelper(Base):
         # home page)
         i18n_ids = {
             'recommendations': self.get_local_string(30001),
-            'genres': self.get_local_string(30010)
+            'genres': self.get_local_string(30010),
+            'rec_genres': self.get_local_string(30036)
         }
         for list_type in i18n_ids:
             # determine if the lists have contents
@@ -104,7 +110,7 @@ class KodiHelper(Base):
                 action = actions.get(list_type, actions.get('default', ''))
                 url_rec = build_url({
                     'action': action,
-                    'type': list_type
+                    'list_type': list_type
                 })
                 self.__add_dir(url=url_rec, item=listitem)
 
@@ -113,7 +119,7 @@ class KodiHelper(Base):
         listitem.setProperty('fanart_image', self.get_fanart())
         url_rec = build_url({
             'action': actions.get('search', actions.get('default', '')),
-            'type': 'search'
+            'list_type': 'search'
         })
         self.__add_dir(url=url_rec, item=listitem)
 
@@ -121,7 +127,11 @@ class KodiHelper(Base):
         self.__add_sorting_options()
         xbmcplugin.endOfDirectory(handle=self.plugin_handle)
 
-        self.__select_menu_entry(preselect_items=preselect_items)
+        main_menue_selection = self.cache.get_main_menu_selection()
+        increment = 1 if main_menue_selection == 'search' else 0
+        self.__select_menu_entry(
+            preselect_items=preselect_items,
+            increment=increment)
         return True
 
     def __generate_categories(self, list_ids, list_order, actions):
@@ -143,8 +153,7 @@ class KodiHelper(Base):
                     action = actions.get(category, actions.get('default', ''))
                     url = build_url({
                         'action': action,
-                        'video_list_id': video_list_id,
-                        'type': category
+                        'video_list_id': video_list_id
                     })
                     self.__add_dir(url=url, item=listitem)
         return preselect_items
@@ -550,19 +559,20 @@ class KodiHelper(Base):
         item.setInfo('video', infos)
         return item
 
-    def __select_menu_entry(self, preselect_items):
-        """(re)select the previously selected main menu entry"""
+    @staticmethod
+    def __select_menu_entry(preselect_items, increment=0):
+        """(re)select the menu entry"""
+        _selected_item = None
         idx = 1
         for item in preselect_items:
             idx += 1
-            preselected_list_item = idx if item else None
-        is_search = self.cache.get_main_menu_selection() == 'search'
-        preselected_list_item = idx + 1 if is_search else preselected_list_item
-        if preselected_list_item is not None:
-            focus_id = str(self.window.getFocusId())
-            selected_item = str(preselected_list_item)
+            _selected_item = idx if item else _selected_item
+        if _selected_item is not None:
+            _selected_item = _selected_item + increment
+            dialog_id = str(xbmcgui.getCurrentWindowId())
+            selected_item = str(_selected_item)
             xbmc.executebuiltin('ActivateWindowAndFocus(%s, %s)' %
-                                (focus_id, selected_item))
+                                (dialog_id, selected_item))
 
     def __generate_context_menu_items(self, entry, item):
         """Adds context menue items to a Kodi list item

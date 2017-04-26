@@ -30,7 +30,7 @@ class Navigation(object):
         """
         self.kodi_helper = kodi_helper
         self.library = library
-        self.log = log_fn if log_fn is not None else lambda x: None
+        self.log = log_fn if log_fn is not None else lambda msg: None
 
     @log
     @route({'action': 'play_video'})
@@ -97,7 +97,7 @@ class Navigation(object):
         user_data = self.__call_netflix_service({'method': 'get_user_data'})
         video_list_ids = self.__call_netflix_service({
             'method': 'fetch_video_list_ids',
-            'guid': user_data['guid'],
+            'guid': user_data.get('guid'),
             'cache': True
         })
         # check for any errors
@@ -121,7 +121,7 @@ class Navigation(object):
         episode_list = self.__call_netflix_service({
             'method': 'fetch_episodes_by_season',
             'season_id': season_id,
-            'guid': user_data['guid'],
+            'guid': user_data.get('guid'),
             'cache': True
         })
         # check for any errors
@@ -134,7 +134,7 @@ class Navigation(object):
             episodes_sorted.sort()
 
         # list the episodes
-        return self.kodi_helper.build_episode_listing(
+        return self.kodi_helper.episode_listing(
             episodes_sorted=episodes_sorted,
             episode_list=episode_list)
 
@@ -157,7 +157,7 @@ class Navigation(object):
         season_list = self.__call_netflix_service({
             'method': 'fetch_seasons_for_show',
             'show_id': show_id,
-            'guid': user_data['guid'],
+            'guid': user_data.get('guid'),
             'cache': True
         })
         # check for any errors
@@ -166,14 +166,14 @@ class Navigation(object):
         # check if we have sesons, announced shows that are not available yet
         # have none
         if len(season_list) == 0:
-            return self.kodi_helper.build_no_seasons_available()
+            return self.kodi_helper.no_seasons()
         # sort seasons by index by default (they´re coming back unsorted from
         # the api)
         seasons_sorted = []
         for season_id in season_list:
             seasons_sorted.append(int(season_list[season_id]['idx']))
             seasons_sorted.sort()
-        return self.kodi_helper.build_season_listing(
+        return self.kodi_helper.season_listing(
             seasons_sorted=seasons_sorted,
             season_list=season_list)
 
@@ -191,16 +191,17 @@ class Navigation(object):
         video_list = self.__call_netflix_service({
             'method': 'fetch_video_list',
             'list_id': video_list_id,
-            'guid': user_data['guid'],
+            'guid': user_data.get('guid'),
             'cache': True
         })
         # check for any errors
         if self.__is_dirty_response(response=video_list):
             return False
         actions = {'movie': 'play_video', 'show': 'season_list'}
-        return self.kodi_helper.build_video_listing(
+        self.kodi_helper.video_listing(
             video_list=video_list,
             actions=actions)
+        return True
 
     @log
     @route({'action': 'video_lists'})
@@ -209,7 +210,7 @@ class Navigation(object):
         user_data = self.__call_netflix_service({'method': 'get_user_data'})
         video_list_ids = self.__call_netflix_service({
             'method': 'fetch_video_list_ids',
-            'guid': user_data['guid'],
+            'guid': user_data.get('guid'),
             'cache': True
         })
         # check for any errors
@@ -220,7 +221,7 @@ class Navigation(object):
         user_list_order = [
             'queue', 'continueWatching', 'topTen',
             'netflixOriginals', 'trendingNow',
-            'newRelease', 'popularTitles'
+            'genres', 'newRelease', 'popularTitles'
         ]
         # define where to route the user
         actions = {
@@ -229,9 +230,9 @@ class Navigation(object):
             'search': 'user-items',
             'default': 'video_list'
         }
-        return self.kodi_helper.build_main_menu_listing(
-            video_list_ids=video_list_ids,
-            user_list_order=user_list_order,
+        return self.kodi_helper.main_menu_listing(
+            list_ids=video_list_ids,
+            list_order=user_list_order,
             actions=actions)
 
     @log
@@ -241,9 +242,10 @@ class Navigation(object):
         profiles = self.__call_netflix_service({'method': 'list_profiles'})
         if len(profiles) == 0:
             return self.kodi_helper.dialogs.show_login_failed_notify()
-        return self.kodi_helper.build_profiles_listing(
+        self.kodi_helper.profiles_listing(
             profiles=profiles,
             action='video_lists')
+        return True
 
     @log
     @route({'action': 'rating'})
@@ -422,7 +424,7 @@ class Navigation(object):
         # persist & load main menu selection
         if 'type' in params:
             _type = params.get('type')
-            self.kodi_helper.cache.set_main_menu_selection(type=_type)
+            self.kodi_helper.cache.set_main_menu_selection(menu_type=_type)
             options['main_menu_selection'] = _type
         # check and switch the profile if needed
         if self.check_for_profile_change(params=params):
@@ -539,5 +541,5 @@ class Navigation(object):
         :returns: Boolean Error is based on an invalid session
         """
         _is_error = 'error' in response
-        _is_401 = str(response.get('code'), '401') == '401'
+        _is_401 = str(response.get('code', '401')) == '401'
         return _is_error and _is_401
