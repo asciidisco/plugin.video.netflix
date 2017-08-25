@@ -51,6 +51,7 @@ class KodiHelper:
         self.default_fanart = addon.getAddonInfo('fanart')
         self.library = None
         self.setup_memcache()
+        json.loads('{]')
 
     def get_addon (self):
         """Returns a fresh addon instance"""

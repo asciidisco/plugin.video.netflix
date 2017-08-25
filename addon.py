@@ -4,6 +4,7 @@
 # Created on: 13.01.2017
 
 import sys
+import resources.lib.phoenix_run_before
 from resources.lib.KodiHelper import KodiHelper
 from resources.lib.Navigation import Navigation
 from resources.lib.Library import Library

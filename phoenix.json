@@ -1,0 +1,7 @@
+{
+    "dependencies": {
+        "jazzband/contextlib2": "v0.5.5",
+        "getsentry/raven-python": "6.1.0",
+        "analytics-pros/universal-analytics-python": "0.2.4" 
+    }
+}

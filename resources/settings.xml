@@ -14,6 +14,7 @@
     <setting id="enable_dolby_sound" type="bool" label="30033" default="true"/>
     <setting id="ssl_verification" type="bool" label="30024" default="true"/>
     <setting id="enable_tracking" type="bool" label="30032" default="true"/>
+    <setting id="enable_error_reporting" type="bool" label="30036" default="true"/>    
     <setting id="esn" type="text" label="30034" value="" default=""/>
     <setting id="hidden_esn" visible="false" value="" />
     <setting id="tracking_id" value="" visible="false"/>
