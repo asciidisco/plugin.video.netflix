@@ -20,6 +20,18 @@ Note: The link to download the Widevine Libary for none ARM Systems can be found
 
 Please make sure to read the licence agreement that comes with it, so you know what you´re getting yourself into.
 
+
+### Ubuntu
+
+use following [gist](https://gist.github.com/ruario/3c873d43eb20553d5014bd4d29fe37f1) to install latest `widevine`
+Install Kodi inputstream-adaptive and copy libwidevinecdm.so to Kodi installation directory
+```bash
+sudo apt-get install kodi-inputstream-adaptive
+cp /opt/google/chrome/libwidevinecdm.so /home/$USER/.kodi/cdm/
+```
+Enable adaptive plugin in
+`System > Add-Ons > My Add-Ons > VideoPlayer InputStream > InputStream Adaptive`
+
 Installation & Updates
 ----------------------
 
