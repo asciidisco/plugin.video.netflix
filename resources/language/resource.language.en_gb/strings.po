@@ -267,3 +267,3231 @@ msgstr ""
 msgctxt "#30062"
 msgid "Enable/disable adult pin. Active:"
 msgstr ""
+
+
+msgctxt "#30066"
+msgid "Select Netflix locale:"
+msgstr ""
+
+# Locale strings 60000-60804
+# !!! LocaleMaps.py must be updated if changed !!!
+msgctxt "#60000"
+msgid "Afar"
+msgstr ""
+
+msgctxt "#60001"
+msgid "Afar-Djibouti"
+msgstr ""
+
+msgctxt "#60002"
+msgid "Afar-Eritrea"
+msgstr ""
+
+msgctxt "#60003"
+msgid "Afar-Ethiopia"
+msgstr ""
+
+msgctxt "#60004"
+msgid "Afrikaans"
+msgstr ""
+
+msgctxt "#60005"
+msgid "Afrikaans-Namibia"
+msgstr ""
+
+msgctxt "#60006"
+msgid "Afrikaans-South Africa"
+msgstr ""
+
+msgctxt "#60007"
+msgid "Aghem"
+msgstr ""
+
+msgctxt "#60008"
+msgid "Aghem-Cameroon"
+msgstr ""
+
+msgctxt "#60009"
+msgid "Akan"
+msgstr ""
+
+msgctxt "#60010"
+msgid "Akan-Ghana"
+msgstr ""
+
+msgctxt "#60011"
+msgid "Albanian"
+msgstr ""
+
+msgctxt "#60012"
+msgid "Albanian-Albania"
+msgstr ""
+
+msgctxt "#60013"
+msgid "Albanian-Macedonia, FYRO"
+msgstr ""
+
+msgctxt "#60014"
+msgid "Alsatian"
+msgstr ""
+
+msgctxt "#60015"
+msgid "Alsatian-France"
+msgstr ""
+
+msgctxt "#60016"
+msgid "Alsatian-Liechtenstein"
+msgstr ""
+
+msgctxt "#60017"
+msgid "Alsatian-Switzerland"
+msgstr ""
+
+msgctxt "#60018"
+msgid "Amharic"
+msgstr ""
+
+msgctxt "#60019"
+msgid "Amharic-Ethiopia"
+msgstr ""
+
+msgctxt "#60020"
+msgid "Arabic"
+msgstr ""
+
+msgctxt "#60021"
+msgid "Arabic-Algeria"
+msgstr ""
+
+msgctxt "#60022"
+msgid "Arabic-Bahrain"
+msgstr ""
+
+msgctxt "#60023"
+msgid "Arabic-Chad"
+msgstr ""
+
+msgctxt "#60024"
+msgid "Arabic-Comoros"
+msgstr ""
+
+msgctxt "#60025"
+msgid "Arabic-Djibouti"
+msgstr ""
+
+msgctxt "#60026"
+msgid "Arabic-Egypt"
+msgstr ""
+
+msgctxt "#60027"
+msgid "Arabic-Eritrea"
+msgstr ""
+
+msgctxt "#60028"
+msgid "Arabic-Iraq"
+msgstr ""
+
+msgctxt "#60029"
+msgid "Arabic-Israel"
+msgstr ""
+
+msgctxt "#60030"
+msgid "Arabic-Jordan"
+msgstr ""
+
+msgctxt "#60031"
+msgid "Arabic-Kuwait"
+msgstr ""
+
+msgctxt "#60032"
+msgid "Arabic-Lebanon"
+msgstr ""
+
+msgctxt "#60033"
+msgid "Arabic-Libya"
+msgstr ""
+
+msgctxt "#60034"
+msgid "Arabic-Mauritania"
+msgstr ""
+
+msgctxt "#60035"
+msgid "Arabic-Morocco"
+msgstr ""
+
+msgctxt "#60036"
+msgid "Arabic-Oman"
+msgstr ""
+
+msgctxt "#60037"
+msgid "Arabic-Palestinian Authority"
+msgstr ""
+
+msgctxt "#60038"
+msgid "Arabic-Qatar"
+msgstr ""
+
+msgctxt "#60039"
+msgid "Arabic-Saudi Arabia"
+msgstr ""
+
+msgctxt "#60040"
+msgid "Arabic-Somalia"
+msgstr ""
+
+msgctxt "#60041"
+msgid "Arabic-South Sudan"
+msgstr ""
+
+msgctxt "#60042"
+msgid "Arabic-Sudan"
+msgstr ""
+
+msgctxt "#60043"
+msgid "Arabic-Syria"
+msgstr ""
+
+msgctxt "#60044"
+msgid "Arabic-Tunisia"
+msgstr ""
+
+msgctxt "#60045"
+msgid "Arabic-U.A.E."
+msgstr ""
+
+msgctxt "#60046"
+msgid "Arabic-World"
+msgstr ""
+
+msgctxt "#60047"
+msgid "Arabic-Yemen"
+msgstr ""
+
+msgctxt "#60048"
+msgid "Armenian"
+msgstr ""
+
+msgctxt "#60049"
+msgid "Armenian-Armenia"
+msgstr ""
+
+msgctxt "#60050"
+msgid "Assamese"
+msgstr ""
+
+msgctxt "#60051"
+msgid "Assamese-India"
+msgstr ""
+
+msgctxt "#60052"
+msgid "Asturian"
+msgstr ""
+
+msgctxt "#60053"
+msgid "Asturian-Spain"
+msgstr ""
+
+msgctxt "#60054"
+msgid "Asu"
+msgstr ""
+
+msgctxt "#60055"
+msgid "Asu-Tanzania"
+msgstr ""
+
+msgctxt "#60056"
+msgid "Azerbaijani (Cyrillic)"
+msgstr ""
+
+msgctxt "#60057"
+msgid "Azerbaijani (Cyrillic)-Azerbaijan"
+msgstr ""
+
+msgctxt "#60058"
+msgid "Azerbaijani (Latin)"
+msgstr ""
+
+msgctxt "#60059"
+msgid "Azerbaijani (Latin) (Latn)"
+msgstr ""
+
+msgctxt "#60060"
+msgid "Azerbaijani (Latin)-Azerbaijan"
+msgstr ""
+
+msgctxt "#60061"
+msgid "Bafia"
+msgstr ""
+
+msgctxt "#60062"
+msgid "Bafia-Cameroon"
+msgstr ""
+
+msgctxt "#60063"
+msgid "Bamanankan"
+msgstr ""
+
+msgctxt "#60064"
+msgid "Bamanankan (Latin)-Mali"
+msgstr ""
+
+msgctxt "#60065"
+msgid "Bangla"
+msgstr ""
+
+msgctxt "#60066"
+msgid "Bangla-Bangladesh"
+msgstr ""
+
+msgctxt "#60067"
+msgid "Bangla-India"
+msgstr ""
+
+msgctxt "#60068"
+msgid "Basaa"
+msgstr ""
+
+msgctxt "#60069"
+msgid "Basaa-Cameroon"
+msgstr ""
+
+msgctxt "#60070"
+msgid "Bashkir"
+msgstr ""
+
+msgctxt "#60071"
+msgid "Bashkir-Russia"
+msgstr ""
+
+msgctxt "#60072"
+msgid "Basque"
+msgstr ""
+
+msgctxt "#60073"
+msgid "Basque-Spain"
+msgstr ""
+
+msgctxt "#60074"
+msgid "Belarusian"
+msgstr ""
+
+msgctxt "#60075"
+msgid "Belarusian-Belarus"
+msgstr ""
+
+msgctxt "#60076"
+msgid "Bemba"
+msgstr ""
+
+msgctxt "#60077"
+msgid "Bemba-Zambia"
+msgstr ""
+
+msgctxt "#60078"
+msgid "Bena"
+msgstr ""
+
+msgctxt "#60079"
+msgid "Bena-Tanzania"
+msgstr ""
+
+msgctxt "#60080"
+msgid "Blin"
+msgstr ""
+
+msgctxt "#60081"
+msgid "Blin-Eritrea"
+msgstr ""
+
+msgctxt "#60082"
+msgid "Bodo"
+msgstr ""
+
+msgctxt "#60083"
+msgid "Bodo-India"
+msgstr ""
+
+msgctxt "#60084"
+msgid "Bosnian (Cyrillic)"
+msgstr ""
+
+msgctxt "#60085"
+msgid "Bosnian (Cyrillic)-Bosnia and Herzegovina"
+msgstr ""
+
+msgctxt "#60086"
+msgid "Bosnian (Latin) (Latn)"
+msgstr ""
+
+msgctxt "#60087"
+msgid "Bosnian (Latin)"
+msgstr ""
+
+msgctxt "#60088"
+msgid "Bosnian (Latin)-Bosnia and Herzegovina"
+msgstr ""
+
+msgctxt "#60089"
+msgid "Breton"
+msgstr ""
+
+msgctxt "#60090"
+msgid "Breton-France"
+msgstr ""
+
+msgctxt "#60091"
+msgid "Bulgarian"
+msgstr ""
+
+msgctxt "#60092"
+msgid "Bulgarian-Bulgaria"
+msgstr ""
+
+msgctxt "#60093"
+msgid "Burmese"
+msgstr ""
+
+msgctxt "#60094"
+msgid "Burmese-Myanmar"
+msgstr ""
+
+msgctxt "#60095"
+msgid "Catalan"
+msgstr ""
+
+msgctxt "#60096"
+msgid "Catalan-Andorra"
+msgstr ""
+
+msgctxt "#60097"
+msgid "Catalan-France"
+msgstr ""
+
+msgctxt "#60098"
+msgid "Catalan-Italy"
+msgstr ""
+
+msgctxt "#60099"
+msgid "Catalan-Spain"
+msgstr ""
+
+msgctxt "#60100"
+msgid "Central Atlas Tamazight (Latin)-Morocco"
+msgstr ""
+
+msgctxt "#60101"
+msgid "Central Kurdish"
+msgstr ""
+
+msgctxt "#60102"
+msgid "Central Kurdish (Arab)"
+msgstr ""
+
+msgctxt "#60103"
+msgid "Central Kurdish-Iraq"
+msgstr ""
+
+msgctxt "#60104"
+msgid "Chechen-Russia"
+msgstr ""
+
+msgctxt "#60105"
+msgid "Cherokee"
+msgstr ""
+
+msgctxt "#60106"
+msgid "Cherokee (Cher)"
+msgstr ""
+
+msgctxt "#60107"
+msgid "Cherokee-United States"
+msgstr ""
+
+msgctxt "#60108"
+msgid "Chiga"
+msgstr ""
+
+msgctxt "#60109"
+msgid "Chiga-Uganda"
+msgstr ""
+
+msgctxt "#60110"
+msgid "Chinese (Simplified) (Hans)"
+msgstr ""
+
+msgctxt "#60111"
+msgid "Chinese (Simplified)"
+msgstr ""
+
+msgctxt "#60112"
+msgid "Chinese (Simplified)-People's Republic of China"
+msgstr ""
+
+msgctxt "#60113"
+msgid "Chinese (Simplified)-Singapore"
+msgstr ""
+
+msgctxt "#60114"
+msgid "Chinese (Traditional)"
+msgstr ""
+
+msgctxt "#60115"
+msgid "Chinese (Traditional)-Hong Kong S.A.R."
+msgstr ""
+
+msgctxt "#60116"
+msgid "Chinese (Traditional)-Macao S.A.R."
+msgstr ""
+
+msgctxt "#60117"
+msgid "Chinese (Traditional)-Taiwan"
+msgstr ""
+
+msgctxt "#60118"
+msgid "Church Slavic-Russia"
+msgstr ""
+
+msgctxt "#60119"
+msgid "Congo Swahili"
+msgstr ""
+
+msgctxt "#60120"
+msgid "Congo Swahili-Congo DRC"
+msgstr ""
+
+msgctxt "#60121"
+msgid "Cornish"
+msgstr ""
+
+msgctxt "#60122"
+msgid "Cornish-United Kingdom"
+msgstr ""
+
+msgctxt "#60123"
+msgid "Corsican"
+msgstr ""
+
+msgctxt "#60124"
+msgid "Corsican-France"
+msgstr ""
+
+msgctxt "#60125"
+msgid "Croatian"
+msgstr ""
+
+msgctxt "#60126"
+msgid "Croatian-Croatia"
+msgstr ""
+
+msgctxt "#60127"
+msgid "Croatian (Latin)-Bosnia and Herzegovina"
+msgstr ""
+
+msgctxt "#60128"
+msgid "Czech"
+msgstr ""
+
+msgctxt "#60129"
+msgid "Czech-Czech Republic"
+msgstr ""
+
+msgctxt "#60130"
+msgid "Danish"
+msgstr ""
+
+msgctxt "#60131"
+msgid "Danish-Denmark"
+msgstr ""
+
+msgctxt "#60132"
+msgid "Danish-Greenland"
+msgstr ""
+
+msgctxt "#60133"
+msgid "Dari"
+msgstr ""
+
+msgctxt "#60134"
+msgid "Dari-Afghanistan"
+msgstr ""
+
+msgctxt "#60135"
+msgid "Divehi"
+msgstr ""
+
+msgctxt "#60136"
+msgid "Divehi-Maldives"
+msgstr ""
+
+msgctxt "#60137"
+msgid "Duala"
+msgstr ""
+
+msgctxt "#60138"
+msgid "Duala-Cameroon"
+msgstr ""
+
+msgctxt "#60139"
+msgid "Dutch"
+msgstr ""
+
+msgctxt "#60140"
+msgid "Dutch-Aruba"
+msgstr ""
+
+msgctxt "#60141"
+msgid "Dutch-Belgium"
+msgstr ""
+
+msgctxt "#60142"
+msgid "Dutch-Bonaire, Sint Eustatius and Saba"
+msgstr ""
+
+msgctxt "#60143"
+msgid "Dutch-Curacao"
+msgstr ""
+
+msgctxt "#60144"
+msgid "Dutch-Netherlands"
+msgstr ""
+
+msgctxt "#60145"
+msgid "Dutch-Sint Maarten"
+msgstr ""
+
+msgctxt "#60146"
+msgid "Dutch-Suriname"
+msgstr ""
+
+msgctxt "#60147"
+msgid "Dzongkha"
+msgstr ""
+
+msgctxt "#60148"
+msgid "Dzongkha-Bhutan"
+msgstr ""
+
+msgctxt "#60149"
+msgid "Embu"
+msgstr ""
+
+msgctxt "#60150"
+msgid "Embu-Kenya"
+msgstr ""
+
+msgctxt "#60151"
+msgid "English"
+msgstr ""
+
+msgctxt "#60152"
+msgid "English-American Samoa"
+msgstr ""
+
+msgctxt "#60153"
+msgid "English-Anguilla"
+msgstr ""
+
+msgctxt "#60154"
+msgid "English-Antigua and Barbuda"
+msgstr ""
+
+msgctxt "#60155"
+msgid "English-Australia"
+msgstr ""
+
+msgctxt "#60156"
+msgid "English-Austria"
+msgstr ""
+
+msgctxt "#60157"
+msgid "English-Bahamas"
+msgstr ""
+
+msgctxt "#60158"
+msgid "English-Barbados"
+msgstr ""
+
+msgctxt "#60159"
+msgid "English-Belgium"
+msgstr ""
+
+msgctxt "#60160"
+msgid "English-Belize"
+msgstr ""
+
+msgctxt "#60161"
+msgid "English-Bermuda"
+msgstr ""
+
+msgctxt "#60162"
+msgid "English-Botswana"
+msgstr ""
+
+msgctxt "#60163"
+msgid "English-British Indian Ocean Territory"
+msgstr ""
+
+msgctxt "#60164"
+msgid "English-British Virgin Islands"
+msgstr ""
+
+msgctxt "#60165"
+msgid "English-Burundi"
+msgstr ""
+
+msgctxt "#60166"
+msgid "English-Cameroon"
+msgstr ""
+
+msgctxt "#60167"
+msgid "English-Canada"
+msgstr ""
+
+msgctxt "#60168"
+msgid "English-Caribbean"
+msgstr ""
+
+msgctxt "#60169"
+msgid "English-Cayman Islands"
+msgstr ""
+
+msgctxt "#60170"
+msgid "English-Christmas Island"
+msgstr ""
+
+msgctxt "#60171"
+msgid "English-Cocos [Keeling] Islands"
+msgstr ""
+
+msgctxt "#60172"
+msgid "English-Cook Islands"
+msgstr ""
+
+msgctxt "#60173"
+msgid "English-Cyprus"
+msgstr ""
+
+msgctxt "#60174"
+msgid "English-Denmark"
+msgstr ""
+
+msgctxt "#60175"
+msgid "English-Dominica"
+msgstr ""
+
+msgctxt "#60176"
+msgid "English-Eritrea"
+msgstr ""
+
+msgctxt "#60177"
+msgid "English-Europe"
+msgstr ""
+
+msgctxt "#60178"
+msgid "English-Falkland Islands"
+msgstr ""
+
+msgctxt "#60179"
+msgid "English-Finland"
+msgstr ""
+
+msgctxt "#60180"
+msgid "English-Fiji"
+msgstr ""
+
+msgctxt "#60181"
+msgid "English-Gambia"
+msgstr ""
+
+msgctxt "#60182"
+msgid "English-Germany"
+msgstr ""
+
+msgctxt "#60183"
+msgid "English-Ghana"
+msgstr ""
+
+msgctxt "#60184"
+msgid "English-Gibraltar"
+msgstr ""
+
+msgctxt "#60185"
+msgid "English-Grenada"
+msgstr ""
+
+msgctxt "#60186"
+msgid "English-Guam"
+msgstr ""
+
+msgctxt "#60187"
+msgid "English-Guernsey"
+msgstr ""
+
+msgctxt "#60188"
+msgid "English-Guyana"
+msgstr ""
+
+msgctxt "#60189"
+msgid "English-Hong Kong"
+msgstr ""
+
+msgctxt "#60190"
+msgid "English-India"
+msgstr ""
+
+msgctxt "#60191"
+msgid "English-Ireland"
+msgstr ""
+
+msgctxt "#60192"
+msgid "English-Isle of Man"
+msgstr ""
+
+msgctxt "#60193"
+msgid "English-Israel"
+msgstr ""
+
+msgctxt "#60194"
+msgid "English-Jamaica"
+msgstr ""
+
+msgctxt "#60195"
+msgid "English-Jersey"
+msgstr ""
+
+msgctxt "#60196"
+msgid "English-Kenya"
+msgstr ""
+
+msgctxt "#60197"
+msgid "English-Kiribati"
+msgstr ""
+
+msgctxt "#60198"
+msgid "English-Lesotho"
+msgstr ""
+
+msgctxt "#60199"
+msgid "English-Liberia"
+msgstr ""
+
+msgctxt "#60200"
+msgid "English-Macao SAR"
+msgstr ""
+
+msgctxt "#60201"
+msgid "English-Madagascar"
+msgstr ""
+
+msgctxt "#60202"
+msgid "English-Malawi"
+msgstr ""
+
+msgctxt "#60203"
+msgid "English-Malaysia"
+msgstr ""
+
+msgctxt "#60204"
+msgid "English-Malta"
+msgstr ""
+
+msgctxt "#60205"
+msgid "English-Marshall Islands"
+msgstr ""
+
+msgctxt "#60206"
+msgid "English-Mauritius"
+msgstr ""
+
+msgctxt "#60207"
+msgid "English-Micronesia"
+msgstr ""
+
+msgctxt "#60208"
+msgid "English-Montserrat"
+msgstr ""
+
+msgctxt "#60209"
+msgid "English-Namibia"
+msgstr ""
+
+msgctxt "#60210"
+msgid "English-Nauru"
+msgstr ""
+
+msgctxt "#60211"
+msgid "English-Netherlands"
+msgstr ""
+
+msgctxt "#60212"
+msgid "English-New Zealand"
+msgstr ""
+
+msgctxt "#60213"
+msgid "English-Nigeria"
+msgstr ""
+
+msgctxt "#60214"
+msgid "English-Niue"
+msgstr ""
+
+msgctxt "#60215"
+msgid "English-Norfolk Island"
+msgstr ""
+
+msgctxt "#60216"
+msgid "English-Northern Mariana Islands"
+msgstr ""
+
+msgctxt "#60217"
+msgid "English-Pakistan"
+msgstr ""
+
+msgctxt "#60218"
+msgid "English-Palau"
+msgstr ""
+
+msgctxt "#60219"
+msgid "English-Papua New Guinea"
+msgstr ""
+
+msgctxt "#60220"
+msgid "English-Pitcairn Islands"
+msgstr ""
+
+msgctxt "#60221"
+msgid "English-Puerto Rico"
+msgstr ""
+
+msgctxt "#60222"
+msgid "English-Republic of the Philippines"
+msgstr ""
+
+msgctxt "#60223"
+msgid "English-Rwanda"
+msgstr ""
+
+msgctxt "#60224"
+msgid "English-Saint Kitts and Nevis"
+msgstr ""
+
+msgctxt "#60225"
+msgid "English-Saint Lucia"
+msgstr ""
+
+msgctxt "#60226"
+msgid "English-Saint Vincent and the Grenadines"
+msgstr ""
+
+msgctxt "#60227"
+msgid "English-Samoa"
+msgstr ""
+
+msgctxt "#60228"
+msgid "English-Seychelles"
+msgstr ""
+
+msgctxt "#60229"
+msgid "English-Sierra Leone"
+msgstr ""
+
+msgctxt "#60230"
+msgid "English-Singapore"
+msgstr ""
+
+msgctxt "#60231"
+msgid "English-Sint Maarten"
+msgstr ""
+
+msgctxt "#60232"
+msgid "English-Slovenia"
+msgstr ""
+
+msgctxt "#60233"
+msgid "English-Solomon Islands"
+msgstr ""
+
+msgctxt "#60234"
+msgid "English-South Africa"
+msgstr ""
+
+msgctxt "#60235"
+msgid "English-South Sudan"
+msgstr ""
+
+msgctxt "#60236"
+msgid "English-St Helena, Ascension, Tristan da Cunha"
+msgstr ""
+
+msgctxt "#60237"
+msgid "English-Sudan"
+msgstr ""
+
+msgctxt "#60238"
+msgid "English-Swaziland"
+msgstr ""
+
+msgctxt "#60239"
+msgid "English-Sweden"
+msgstr ""
+
+msgctxt "#60240"
+msgid "English-Switzerland"
+msgstr ""
+
+msgctxt "#60241"
+msgid "English-Tanzania"
+msgstr ""
+
+msgctxt "#60242"
+msgid "English-Tokelau"
+msgstr ""
+
+msgctxt "#60243"
+msgid "English-Tonga"
+msgstr ""
+
+msgctxt "#60244"
+msgid "English-Trinidad and Tobago"
+msgstr ""
+
+msgctxt "#60245"
+msgid "English-Turks and Caicos Islands"
+msgstr ""
+
+msgctxt "#60246"
+msgid "English-Tuvalu"
+msgstr ""
+
+msgctxt "#60247"
+msgid "English-Uganda"
+msgstr ""
+
+msgctxt "#60248"
+msgid "English-United Kingdom"
+msgstr ""
+
+msgctxt "#60249"
+msgid "English-United States"
+msgstr ""
+
+msgctxt "#60250"
+msgid "English-US Minor Outlying Islands"
+msgstr ""
+
+msgctxt "#60251"
+msgid "English-US Virgin Islands"
+msgstr ""
+
+msgctxt "#60252"
+msgid "English-Vanuatu"
+msgstr ""
+
+msgctxt "#60253"
+msgid "English-World"
+msgstr ""
+
+msgctxt "#60254"
+msgid "English-Zambia"
+msgstr ""
+
+msgctxt "#60255"
+msgid "English-Zimbabwe"
+msgstr ""
+
+msgctxt "#60256"
+msgid "Esperanto"
+msgstr ""
+
+msgctxt "#60257"
+msgid "Esperanto-World"
+msgstr ""
+
+msgctxt "#60258"
+msgid "Estonian"
+msgstr ""
+
+msgctxt "#60259"
+msgid "Estonian-Estonia"
+msgstr ""
+
+msgctxt "#60260"
+msgid "Ewe"
+msgstr ""
+
+msgctxt "#60261"
+msgid "Ewe-Ghana"
+msgstr ""
+
+msgctxt "#60262"
+msgid "Ewe-Togo"
+msgstr ""
+
+msgctxt "#60263"
+msgid "Ewondo"
+msgstr ""
+
+msgctxt "#60264"
+msgid "Ewondo-Cameroon"
+msgstr ""
+
+msgctxt "#60265"
+msgid "Faroese"
+msgstr ""
+
+msgctxt "#60266"
+msgid "Faroese-Denmark"
+msgstr ""
+
+msgctxt "#60267"
+msgid "Faroese-Faroe Islands"
+msgstr ""
+
+msgctxt "#60268"
+msgid "Filipino"
+msgstr ""
+
+msgctxt "#60269"
+msgid "Filipino-Philippines"
+msgstr ""
+
+msgctxt "#60270"
+msgid "Finnish"
+msgstr ""
+
+msgctxt "#60271"
+msgid "Finnish-Finland"
+msgstr ""
+
+msgctxt "#60272"
+msgid "French"
+msgstr ""
+
+msgctxt "#60273"
+msgid "French-Algeria"
+msgstr ""
+
+msgctxt "#60274"
+msgid "French-Belgium"
+msgstr ""
+
+msgctxt "#60275"
+msgid "French-Benin"
+msgstr ""
+
+msgctxt "#60276"
+msgid "French-Burkina Faso"
+msgstr ""
+
+msgctxt "#60277"
+msgid "French-Burundi"
+msgstr ""
+
+msgctxt "#60278"
+msgid "French-Cameroon"
+msgstr ""
+
+msgctxt "#60279"
+msgid "French-Canada"
+msgstr ""
+
+msgctxt "#60280"
+msgid "French-Central African Republic"
+msgstr ""
+
+msgctxt "#60281"
+msgid "French-Chad"
+msgstr ""
+
+msgctxt "#60282"
+msgid "French-Comoros"
+msgstr ""
+
+msgctxt "#60283"
+msgid "French-Congo"
+msgstr ""
+
+msgctxt "#60284"
+msgid "French-Congo, DRC"
+msgstr ""
+
+msgctxt "#60285"
+msgid "French-Cote d'Ivoire"
+msgstr ""
+
+msgctxt "#60286"
+msgid "French-Djibouti"
+msgstr ""
+
+msgctxt "#60287"
+msgid "French-Equatorial Guinea"
+msgstr ""
+
+msgctxt "#60288"
+msgid "French-France"
+msgstr ""
+
+msgctxt "#60289"
+msgid "French-French Guiana"
+msgstr ""
+
+msgctxt "#60290"
+msgid "French-French Polynesia"
+msgstr ""
+
+msgctxt "#60291"
+msgid "French-Gabon"
+msgstr ""
+
+msgctxt "#60292"
+msgid "French-Guadeloupe"
+msgstr ""
+
+msgctxt "#60293"
+msgid "French-Guinea"
+msgstr ""
+
+msgctxt "#60294"
+msgid "French-Haiti"
+msgstr ""
+
+msgctxt "#60295"
+msgid "French-Luxembourg"
+msgstr ""
+
+msgctxt "#60296"
+msgid "French-Madagascar"
+msgstr ""
+
+msgctxt "#60297"
+msgid "French-Mali"
+msgstr ""
+
+msgctxt "#60298"
+msgid "French-Martinique"
+msgstr ""
+
+msgctxt "#60299"
+msgid "French-Mauritania"
+msgstr ""
+
+msgctxt "#60300"
+msgid "French-Mauritius"
+msgstr ""
+
+msgctxt "#60301"
+msgid "French-Mayotte"
+msgstr ""
+
+msgctxt "#60302"
+msgid "French-Morocco"
+msgstr ""
+
+msgctxt "#60303"
+msgid "French-New Caledonia"
+msgstr ""
+
+msgctxt "#60304"
+msgid "French-Niger"
+msgstr ""
+
+msgctxt "#60305"
+msgid "French-Principality of Monaco"
+msgstr ""
+
+msgctxt "#60306"
+msgid "French-Reunion"
+msgstr ""
+
+msgctxt "#60307"
+msgid "French-Rwanda"
+msgstr ""
+
+msgctxt "#60308"
+msgid "French-Saint Barthelemy"
+msgstr ""
+
+msgctxt "#60309"
+msgid "French-Saint Martin"
+msgstr ""
+
+msgctxt "#60310"
+msgid "French-Saint Pierre and Miquelon"
+msgstr ""
+
+msgctxt "#60311"
+msgid "French-Senegal"
+msgstr ""
+
+msgctxt "#60312"
+msgid "French-Seychelles"
+msgstr ""
+
+msgctxt "#60313"
+msgid "French-Switzerland"
+msgstr ""
+
+msgctxt "#60314"
+msgid "French-Syria"
+msgstr ""
+
+msgctxt "#60315"
+msgid "French-Togo"
+msgstr ""
+
+msgctxt "#60316"
+msgid "French-Tunisia"
+msgstr ""
+
+msgctxt "#60317"
+msgid "French-Vanuatu"
+msgstr ""
+
+msgctxt "#60318"
+msgid "French-Wallis and Futuna"
+msgstr ""
+
+msgctxt "#60319"
+msgid "Frisian"
+msgstr ""
+
+msgctxt "#60320"
+msgid "Frisian-Netherlands"
+msgstr ""
+
+msgctxt "#60321"
+msgid "Friulian"
+msgstr ""
+
+msgctxt "#60322"
+msgid "Friulian-Italy"
+msgstr ""
+
+msgctxt "#60323"
+msgid "Fulah"
+msgstr ""
+
+msgctxt "#60324"
+msgid "Fulah (Latn)"
+msgstr ""
+
+msgctxt "#60325"
+msgid "Fulah-Cameroon"
+msgstr ""
+
+msgctxt "#60326"
+msgid "Fulah-Guinea"
+msgstr ""
+
+msgctxt "#60327"
+msgid "Fulah-Mauritania"
+msgstr ""
+
+msgctxt "#60328"
+msgid "Fulah-Senegal"
+msgstr ""
+
+msgctxt "#60329"
+msgid "Galician"
+msgstr ""
+
+msgctxt "#60330"
+msgid "Galician-Spain"
+msgstr ""
+
+msgctxt "#60331"
+msgid "Ganda"
+msgstr ""
+
+msgctxt "#60332"
+msgid "Ganda-Uganda"
+msgstr ""
+
+msgctxt "#60333"
+msgid "Georgian"
+msgstr ""
+
+msgctxt "#60334"
+msgid "Georgian-Georgia"
+msgstr ""
+
+msgctxt "#60335"
+msgid "German"
+msgstr ""
+
+msgctxt "#60336"
+msgid "German-Austria"
+msgstr ""
+
+msgctxt "#60337"
+msgid "German-Belgium"
+msgstr ""
+
+msgctxt "#60338"
+msgid "German-Germany"
+msgstr ""
+
+msgctxt "#60339"
+msgid "German-Italy"
+msgstr ""
+
+msgctxt "#60340"
+msgid "German-Liechtenstein"
+msgstr ""
+
+msgctxt "#60341"
+msgid "German-Luxembourg"
+msgstr ""
+
+msgctxt "#60342"
+msgid "German-Switzerland"
+msgstr ""
+
+msgctxt "#60343"
+msgid "Greek"
+msgstr ""
+
+msgctxt "#60344"
+msgid "Greek-Cyprus"
+msgstr ""
+
+msgctxt "#60345"
+msgid "Greek-Greece"
+msgstr ""
+
+msgctxt "#60346"
+msgid "Greenlandic"
+msgstr ""
+
+msgctxt "#60347"
+msgid "Greenlandic-Greenland"
+msgstr ""
+
+msgctxt "#60348"
+msgid "Guarani"
+msgstr ""
+
+msgctxt "#60349"
+msgid "Guarani-Paraguay"
+msgstr ""
+
+msgctxt "#60350"
+msgid "Gujarati"
+msgstr ""
+
+msgctxt "#60351"
+msgid "Gujarati-India"
+msgstr ""
+
+msgctxt "#60352"
+msgid "Gusii"
+msgstr ""
+
+msgctxt "#60353"
+msgid "Gusii-Kenya"
+msgstr ""
+
+msgctxt "#60354"
+msgid "Hausa (Latin)"
+msgstr ""
+
+msgctxt "#60355"
+msgid "Hausa (Latin) (Latn)"
+msgstr ""
+
+msgctxt "#60356"
+msgid "Hausa (Latin)-Ghana"
+msgstr ""
+
+msgctxt "#60357"
+msgid "Hausa (Latin)-Niger"
+msgstr ""
+
+msgctxt "#60358"
+msgid "Hausa (Latin)-Nigeria"
+msgstr ""
+
+msgctxt "#60359"
+msgid "Hawaiian"
+msgstr ""
+
+msgctxt "#60360"
+msgid "Hawaiian-United States"
+msgstr ""
+
+msgctxt "#60361"
+msgid "Hebrew"
+msgstr ""
+
+msgctxt "#60362"
+msgid "Hebrew-Israel"
+msgstr ""
+
+msgctxt "#60363"
+msgid "Hindi"
+msgstr ""
+
+msgctxt "#60364"
+msgid "Hindi-India"
+msgstr ""
+
+msgctxt "#60365"
+msgid "Hungarian"
+msgstr ""
+
+msgctxt "#60366"
+msgid "Hungarian-Hungary"
+msgstr ""
+
+msgctxt "#60367"
+msgid "Icelandic"
+msgstr ""
+
+msgctxt "#60368"
+msgid "Icelandic-Iceland"
+msgstr ""
+
+msgctxt "#60369"
+msgid "Igbo"
+msgstr ""
+
+msgctxt "#60370"
+msgid "Igbo-Nigeria"
+msgstr ""
+
+msgctxt "#60371"
+msgid "Indonesian"
+msgstr ""
+
+msgctxt "#60372"
+msgid "Indonesian-Indonesia"
+msgstr ""
+
+msgctxt "#60373"
+msgid "Interlingua"
+msgstr ""
+
+msgctxt "#60374"
+msgid "Interlingua-France"
+msgstr ""
+
+msgctxt "#60375"
+msgid "Interlingua-World"
+msgstr ""
+
+msgctxt "#60376"
+msgid "Inuktitut (Latin)"
+msgstr ""
+
+msgctxt "#60377"
+msgid "Inuktitut (Latin) (Latn)"
+msgstr ""
+
+msgctxt "#60378"
+msgid "Inuktitut (Latin)-Canada"
+msgstr ""
+
+msgctxt "#60379"
+msgid "Inuktitut (Syllabics)"
+msgstr ""
+
+msgctxt "#60380"
+msgid "Inuktitut (Syllabics)-Canada"
+msgstr ""
+
+msgctxt "#60381"
+msgid "Irish"
+msgstr ""
+
+msgctxt "#60382"
+msgid "Irish-Ireland"
+msgstr ""
+
+msgctxt "#60383"
+msgid "Italian"
+msgstr ""
+
+msgctxt "#60384"
+msgid "Italian-Italy"
+msgstr ""
+
+msgctxt "#60385"
+msgid "Italian-San Marino"
+msgstr ""
+
+msgctxt "#60386"
+msgid "Italian-Switzerland"
+msgstr ""
+
+msgctxt "#60387"
+msgid "Italian-Vatican City"
+msgstr ""
+
+msgctxt "#60388"
+msgid "Japanese"
+msgstr ""
+
+msgctxt "#60389"
+msgid "Japanese-Japan"
+msgstr ""
+
+msgctxt "#60390"
+msgid "Javanese"
+msgstr ""
+
+msgctxt "#60391"
+msgid "Javanese-Latin"
+msgstr ""
+
+msgctxt "#60392"
+msgid "Javanese-Latin, Indonesia"
+msgstr ""
+
+msgctxt "#60393"
+msgid "Jola-Fonyi"
+msgstr ""
+
+msgctxt "#60394"
+msgid "Jola-Fonyi-Senegal"
+msgstr ""
+
+msgctxt "#60395"
+msgid "Kabuverdianu"
+msgstr ""
+
+msgctxt "#60396"
+msgid "Kabuverdianu-Cabo Verde"
+msgstr ""
+
+msgctxt "#60397"
+msgid "Kabyle"
+msgstr ""
+
+msgctxt "#60398"
+msgid "Kabyle-Algeria"
+msgstr ""
+
+msgctxt "#60399"
+msgid "Kako"
+msgstr ""
+
+msgctxt "#60400"
+msgid "Kako-Cameroon"
+msgstr ""
+
+msgctxt "#60401"
+msgid "Kalenjin"
+msgstr ""
+
+msgctxt "#60402"
+msgid "Kalenjin-Kenya"
+msgstr ""
+
+msgctxt "#60403"
+msgid "Kamba"
+msgstr ""
+
+msgctxt "#60404"
+msgid "Kamba-Kenya"
+msgstr ""
+
+msgctxt "#60405"
+msgid "Kannada"
+msgstr ""
+
+msgctxt "#60406"
+msgid "Kannada-India"
+msgstr ""
+
+msgctxt "#60407"
+msgid "Kashmiri"
+msgstr ""
+
+msgctxt "#60408"
+msgid "Kashmiri-Perso-Arabic"
+msgstr ""
+
+msgctxt "#60409"
+msgid "Kashmiri-Perso-Arabic (IN)"
+msgstr ""
+
+msgctxt "#60410"
+msgid "Kazakh"
+msgstr ""
+
+msgctxt "#60411"
+msgid "Kazakh-Kazakhstan"
+msgstr ""
+
+msgctxt "#60412"
+msgid "Khmer"
+msgstr ""
+
+msgctxt "#60413"
+msgid "Khmer-Cambodia"
+msgstr ""
+
+msgctxt "#60414"
+msgid "K'iche"
+msgstr ""
+
+msgctxt "#60415"
+msgid "K'iche-Guatemala"
+msgstr ""
+
+msgctxt "#60416"
+msgid "Kikuyu"
+msgstr ""
+
+msgctxt "#60417"
+msgid "Kikuyu-Kenya"
+msgstr ""
+
+msgctxt "#60418"
+msgid "Kinyarwanda"
+msgstr ""
+
+msgctxt "#60419"
+msgid "Kinyarwanda-Rwanda"
+msgstr ""
+
+msgctxt "#60420"
+msgid "Kiswahili"
+msgstr ""
+
+msgctxt "#60421"
+msgid "Kiswahili-Kenya"
+msgstr ""
+
+msgctxt "#60422"
+msgid "Kiswahili-Tanzania"
+msgstr ""
+
+msgctxt "#60423"
+msgid "Kiswahili-Uganda"
+msgstr ""
+
+msgctxt "#60424"
+msgid "Konkani"
+msgstr ""
+
+msgctxt "#60425"
+msgid "Konkani-India"
+msgstr ""
+
+msgctxt "#60426"
+msgid "Korean"
+msgstr ""
+
+msgctxt "#60427"
+msgid "Korean-Korea"
+msgstr ""
+
+msgctxt "#60428"
+msgid "Korean-North Korea"
+msgstr ""
+
+msgctxt "#60429"
+msgid "Koyra Chiini"
+msgstr ""
+
+msgctxt "#60430"
+msgid "Koyra Chiini-Mali"
+msgstr ""
+
+msgctxt "#60431"
+msgid "Koyraboro Senni"
+msgstr ""
+
+msgctxt "#60432"
+msgid "Koyraboro Senni-Mali"
+msgstr ""
+
+msgctxt "#60433"
+msgid "Kwasio"
+msgstr ""
+
+msgctxt "#60434"
+msgid "Kwasio-Cameroon"
+msgstr ""
+
+msgctxt "#60435"
+msgid "Kyrgyz"
+msgstr ""
+
+msgctxt "#60436"
+msgid "Kyrgyz-Kyrgyzstan"
+msgstr ""
+
+msgctxt "#60437"
+msgid "Kurdish-Perso-Arabic, Iran"
+msgstr ""
+
+msgctxt "#60438"
+msgid "Lakota"
+msgstr ""
+
+msgctxt "#60439"
+msgid "Lakota-United States"
+msgstr ""
+
+msgctxt "#60440"
+msgid "Langi"
+msgstr ""
+
+msgctxt "#60441"
+msgid "Langi-Tanzania"
+msgstr ""
+
+msgctxt "#60442"
+msgid "Lao"
+msgstr ""
+
+msgctxt "#60443"
+msgid "Lao-Lao P.D.R."
+msgstr ""
+
+msgctxt "#60444"
+msgid "Latvian"
+msgstr ""
+
+msgctxt "#60445"
+msgid "Latvian-Latvia"
+msgstr ""
+
+msgctxt "#60446"
+msgid "Lingala"
+msgstr ""
+
+msgctxt "#60447"
+msgid "Lingala-Angola"
+msgstr ""
+
+msgctxt "#60448"
+msgid "Lingala-Central African Republic"
+msgstr ""
+
+msgctxt "#60449"
+msgid "Lingala-Congo"
+msgstr ""
+
+msgctxt "#60450"
+msgid "Lingala-Congo DRC"
+msgstr ""
+
+msgctxt "#60451"
+msgid "Lithuanian"
+msgstr ""
+
+msgctxt "#60452"
+msgid "Lithuanian-Lithuania"
+msgstr ""
+
+msgctxt "#60453"
+msgid "Low German"
+msgstr ""
+
+msgctxt "#60454"
+msgid "Low German-Germany"
+msgstr ""
+
+msgctxt "#60455"
+msgid "Low German-Netherlands"
+msgstr ""
+
+msgctxt "#60456"
+msgid "Lower Sorbian"
+msgstr ""
+
+msgctxt "#60457"
+msgid "Lower Sorbian-Germany"
+msgstr ""
+
+msgctxt "#60458"
+msgid "Luba-Katanga"
+msgstr ""
+
+msgctxt "#60459"
+msgid "Luba-Katanga-Congo DRC"
+msgstr ""
+
+msgctxt "#60460"
+msgid "Luo"
+msgstr ""
+
+msgctxt "#60461"
+msgid "Luo-Kenya"
+msgstr ""
+
+msgctxt "#60462"
+msgid "Luxembourgish"
+msgstr ""
+
+msgctxt "#60463"
+msgid "Luxembourgish-Luxembourg"
+msgstr ""
+
+msgctxt "#60464"
+msgid "Luyia"
+msgstr ""
+
+msgctxt "#60465"
+msgid "Luyia-Kenya"
+msgstr ""
+
+msgctxt "#60466"
+msgid "Macedonian"
+msgstr ""
+
+msgctxt "#60467"
+msgid "Macedonian-Macedonia (Former Yugoslav Republic of Macedonia)"
+msgstr ""
+
+msgctxt "#60468"
+msgid "Machame"
+msgstr ""
+
+msgctxt "#60469"
+msgid "Machame-Tanzania"
+msgstr ""
+
+msgctxt "#60470"
+msgid "Makhuwa-Meetto"
+msgstr ""
+
+msgctxt "#60471"
+msgid "Makhuwa-Meetto-Mozambique"
+msgstr ""
+
+msgctxt "#60472"
+msgid "Makonde"
+msgstr ""
+
+msgctxt "#60473"
+msgid "Makonde-Tanzania"
+msgstr ""
+
+msgctxt "#60474"
+msgid "Malagasy"
+msgstr ""
+
+msgctxt "#60475"
+msgid "Malagasy-Madagascar"
+msgstr ""
+
+msgctxt "#60476"
+msgid "Malay"
+msgstr ""
+
+msgctxt "#60477"
+msgid "Malay-Brunei Darussalam"
+msgstr ""
+
+msgctxt "#60478"
+msgid "Malay-Malaysia"
+msgstr ""
+
+msgctxt "#60479"
+msgid "Malayalam"
+msgstr ""
+
+msgctxt "#60480"
+msgid "Malayalam-India"
+msgstr ""
+
+msgctxt "#60481"
+msgid "Maltese"
+msgstr ""
+
+msgctxt "#60482"
+msgid "Maltese-Malta"
+msgstr ""
+
+msgctxt "#60483"
+msgid "Manx"
+msgstr ""
+
+msgctxt "#60484"
+msgid "Manx-Isle of Man"
+msgstr ""
+
+msgctxt "#60485"
+msgid "Maori"
+msgstr ""
+
+msgctxt "#60486"
+msgid "Maori-New Zealand"
+msgstr ""
+
+msgctxt "#60487"
+msgid "Mapudungun"
+msgstr ""
+
+msgctxt "#60488"
+msgid "Mapudungun-Chile"
+msgstr ""
+
+msgctxt "#60489"
+msgid "Marathi"
+msgstr ""
+
+msgctxt "#60490"
+msgid "Marathi-India"
+msgstr ""
+
+msgctxt "#60491"
+msgid "Masai"
+msgstr ""
+
+msgctxt "#60492"
+msgid "Masai-Kenya"
+msgstr ""
+
+msgctxt "#60493"
+msgid "Masai-Tanzania"
+msgstr ""
+
+msgctxt "#60494"
+msgid "Mazanderani-Iran"
+msgstr ""
+
+msgctxt "#60495"
+msgid "Meru"
+msgstr ""
+
+msgctxt "#60496"
+msgid "Meru-Kenya"
+msgstr ""
+
+msgctxt "#60497"
+msgid "Meta'"
+msgstr ""
+
+msgctxt "#60498"
+msgid "Meta'-Cameroon"
+msgstr ""
+
+msgctxt "#60499"
+msgid "Mohawk"
+msgstr ""
+
+msgctxt "#60500"
+msgid "Mohawk-Canada"
+msgstr ""
+
+msgctxt "#60501"
+msgid "Mongolian (Cyrillic)"
+msgstr ""
+
+msgctxt "#60502"
+msgid "Mongolian (Cyrillic) (Cyrl)"
+msgstr ""
+
+msgctxt "#60503"
+msgid "Mongolian (Cyrillic)-Mongolia"
+msgstr ""
+
+msgctxt "#60504"
+msgid "Mongolian (Traditional Mongolian)"
+msgstr ""
+
+msgctxt "#60505"
+msgid "Mongolian (Traditional Mongolian)-People's Republic of China"
+msgstr ""
+
+msgctxt "#60506"
+msgid "Mongolian (Traditional Mongolian)-Mongolia"
+msgstr ""
+
+msgctxt "#60507"
+msgid "Morisyen"
+msgstr ""
+
+msgctxt "#60508"
+msgid "Morisyen-Mauritius"
+msgstr ""
+
+msgctxt "#60509"
+msgid "Mundang"
+msgstr ""
+
+msgctxt "#60510"
+msgid "Mundang-Cameroon"
+msgstr ""
+
+msgctxt "#60511"
+msgid "N'ko"
+msgstr ""
+
+msgctxt "#60512"
+msgid "N'ko-Guinea"
+msgstr ""
+
+msgctxt "#60513"
+msgid "Nama"
+msgstr ""
+
+msgctxt "#60514"
+msgid "Nama-Namibia"
+msgstr ""
+
+msgctxt "#60515"
+msgid "Nepali"
+msgstr ""
+
+msgctxt "#60516"
+msgid "Nepali-India"
+msgstr ""
+
+msgctxt "#60517"
+msgid "Nepali-Nepal"
+msgstr ""
+
+msgctxt "#60518"
+msgid "Ngiemboon"
+msgstr ""
+
+msgctxt "#60519"
+msgid "Ngiemboon-Cameroon"
+msgstr ""
+
+msgctxt "#60520"
+msgid "Ngomba"
+msgstr ""
+
+msgctxt "#60521"
+msgid "Ngomba-Cameroon"
+msgstr ""
+
+msgctxt "#60522"
+msgid "Northern Luri-Iraq"
+msgstr ""
+
+msgctxt "#60523"
+msgid "Northern Luri-Iran"
+msgstr ""
+
+msgctxt "#60524"
+msgid "North Ndebele"
+msgstr ""
+
+msgctxt "#60525"
+msgid "North Ndebele-Zimbabwe"
+msgstr ""
+
+msgctxt "#60526"
+msgid "Norwegian (Bokmal) (no)"
+msgstr ""
+
+msgctxt "#60527"
+msgid "Norwegian (Bokmal) (nb)"
+msgstr ""
+
+msgctxt "#60528"
+msgid "Norwegian (Bokmal)-Norway"
+msgstr ""
+
+msgctxt "#60529"
+msgid "Norwegian (Nynorsk)"
+msgstr ""
+
+msgctxt "#60530"
+msgid "Norwegian (Nynorsk)-Norway"
+msgstr ""
+
+msgctxt "#60531"
+msgid "Norwegian Bokmal-Svalbard and Jan Mayen"
+msgstr ""
+
+msgctxt "#60532"
+msgid "Nuer"
+msgstr ""
+
+msgctxt "#60533"
+msgid "Nuer-Sudan"
+msgstr ""
+
+msgctxt "#60534"
+msgid "Nyankole"
+msgstr ""
+
+msgctxt "#60535"
+msgid "Nyankole-Uganda"
+msgstr ""
+
+msgctxt "#60536"
+msgid "Occitan"
+msgstr ""
+
+msgctxt "#60537"
+msgid "Occitan-France"
+msgstr ""
+
+msgctxt "#60538"
+msgid "Odia"
+msgstr ""
+
+msgctxt "#60539"
+msgid "Odia-India"
+msgstr ""
+
+msgctxt "#60540"
+msgid "Oromo"
+msgstr ""
+
+msgctxt "#60541"
+msgid "Oromo-Ethiopia"
+msgstr ""
+
+msgctxt "#60542"
+msgid "Oromo-Kenya"
+msgstr ""
+
+msgctxt "#60543"
+msgid "Ossetian"
+msgstr ""
+
+msgctxt "#60544"
+msgid "Ossetian-Cyrillic, Georgia"
+msgstr ""
+
+msgctxt "#60545"
+msgid "Ossetian-Cyrillic, Russia"
+msgstr ""
+
+msgctxt "#60546"
+msgid "Pashto"
+msgstr ""
+
+msgctxt "#60547"
+msgid "Pashto-Afghanistan"
+msgstr ""
+
+msgctxt "#60548"
+msgid "Persian"
+msgstr ""
+
+msgctxt "#60549"
+msgid "Persian-Afghanistan"
+msgstr ""
+
+msgctxt "#60550"
+msgid "Persian-Iran"
+msgstr ""
+
+msgctxt "#60551"
+msgid "Polish"
+msgstr ""
+
+msgctxt "#60552"
+msgid "Polish-Poland"
+msgstr ""
+
+msgctxt "#60553"
+msgid "Portuguese"
+msgstr ""
+
+msgctxt "#60554"
+msgid "Portuguese-Angola"
+msgstr ""
+
+msgctxt "#60555"
+msgid "Portuguese-Brazil"
+msgstr ""
+
+msgctxt "#60556"
+msgid "Portuguese-Cabo Verde"
+msgstr ""
+
+msgctxt "#60557"
+msgid "Portuguese-Equatorial Guinea"
+msgstr ""
+
+msgctxt "#60558"
+msgid "Portuguese-Guinea-Bissau"
+msgstr ""
+
+msgctxt "#60559"
+msgid "Portuguese-Luxembourg"
+msgstr ""
+
+msgctxt "#60560"
+msgid "Portuguese-Macao SAR"
+msgstr ""
+
+msgctxt "#60561"
+msgid "Portuguese-Mozambique"
+msgstr ""
+
+msgctxt "#60562"
+msgid "Portuguese-Portugal"
+msgstr ""
+
+msgctxt "#60563"
+msgid "Portuguese-Sao Tome and Principe"
+msgstr ""
+
+msgctxt "#60564"
+msgid "Portuguese-Switzerland"
+msgstr ""
+
+msgctxt "#60565"
+msgid "Portuguese-Timor-Leste"
+msgstr ""
+
+msgctxt "#60566"
+msgid "Prussian"
+msgstr ""
+
+msgctxt "#60567"
+msgid "Punjabi"
+msgstr ""
+
+msgctxt "#60568"
+msgid "Punjabi (Arab)"
+msgstr ""
+
+msgctxt "#60569"
+msgid "Punjabi-India"
+msgstr ""
+
+msgctxt "#60570"
+msgid "Punjabi-Islamic Republic of Pakistan"
+msgstr ""
+
+msgctxt "#60571"
+msgid "Quechua"
+msgstr ""
+
+msgctxt "#60572"
+msgid "Quechua-Bolivia"
+msgstr ""
+
+msgctxt "#60573"
+msgid "Quechua-Ecuador"
+msgstr ""
+
+msgctxt "#60574"
+msgid "Quechua-Peru"
+msgstr ""
+
+msgctxt "#60575"
+msgid "Ripuarian"
+msgstr ""
+
+msgctxt "#60576"
+msgid "Ripuarian-Germany"
+msgstr ""
+
+msgctxt "#60577"
+msgid "Romanian"
+msgstr ""
+
+msgctxt "#60578"
+msgid "Romanian-Moldova"
+msgstr ""
+
+msgctxt "#60579"
+msgid "Romanian-Romania"
+msgstr ""
+
+msgctxt "#60580"
+msgid "Romansh"
+msgstr ""
+
+msgctxt "#60581"
+msgid "Romansh-Switzerland"
+msgstr ""
+
+msgctxt "#60582"
+msgid "Rombo"
+msgstr ""
+
+msgctxt "#60583"
+msgid "Rombo-Tanzania"
+msgstr ""
+
+msgctxt "#60584"
+msgid "Rundi"
+msgstr ""
+
+msgctxt "#60585"
+msgid "Rundi-Burundi"
+msgstr ""
+
+msgctxt "#60586"
+msgid "Russian"
+msgstr ""
+
+msgctxt "#60587"
+msgid "Russian-Belarus"
+msgstr ""
+
+msgctxt "#60588"
+msgid "Russian-Kazakhstan"
+msgstr ""
+
+msgctxt "#60589"
+msgid "Russian-Kyrgyzstan"
+msgstr ""
+
+msgctxt "#60590"
+msgid "Russian-Moldova"
+msgstr ""
+
+msgctxt "#60591"
+msgid "Russian-Russia"
+msgstr ""
+
+msgctxt "#60592"
+msgid "Russian-Ukraine"
+msgstr ""
+
+msgctxt "#60593"
+msgid "Rwa"
+msgstr ""
+
+msgctxt "#60594"
+msgid "Rwa-Tanzania"
+msgstr ""
+
+msgctxt "#60595"
+msgid "Saho"
+msgstr ""
+
+msgctxt "#60596"
+msgid "Saho-Eritrea"
+msgstr ""
+
+msgctxt "#60597"
+msgid "Sakha"
+msgstr ""
+
+msgctxt "#60598"
+msgid "Sakha-Russia"
+msgstr ""
+
+msgctxt "#60599"
+msgid "Samburu"
+msgstr ""
+
+msgctxt "#60600"
+msgid "Samburu-Kenya"
+msgstr ""
+
+msgctxt "#60601"
+msgid "Sami (Inari)"
+msgstr ""
+
+msgctxt "#60602"
+msgid "Sami (Inari)-Finland"
+msgstr ""
+
+msgctxt "#60603"
+msgid "Sami (Lule)"
+msgstr ""
+
+msgctxt "#60604"
+msgid "Sami (Lule)-Norway"
+msgstr ""
+
+msgctxt "#60605"
+msgid "Sami (Lule)-Sweden"
+msgstr ""
+
+msgctxt "#60606"
+msgid "Sami (Northern)"
+msgstr ""
+
+msgctxt "#60607"
+msgid "Sami (Northern)-Finland"
+msgstr ""
+
+msgctxt "#60608"
+msgid "Sami (Northern)-Norway"
+msgstr ""
+
+msgctxt "#60609"
+msgid "Sami (Northern)-Sweden"
+msgstr ""
+
+msgctxt "#60610"
+msgid "Sami (Skolt)"
+msgstr ""
+
+msgctxt "#60611"
+msgid "Sami (Skolt)-Finland"
+msgstr ""
+
+msgctxt "#60612"
+msgid "Sami (Southern)"
+msgstr ""
+
+msgctxt "#60613"
+msgid "Sami (Southern)-Norway"
+msgstr ""
+
+msgctxt "#60614"
+msgid "Sami (Southern)-Sweden"
+msgstr ""
+
+msgctxt "#60615"
+msgid "Sango"
+msgstr ""
+
+msgctxt "#60616"
+msgid "Sango-Central African Republic"
+msgstr ""
+
+msgctxt "#60617"
+msgid "Sangu"
+msgstr ""
+
+msgctxt "#60618"
+msgid "Sangu-Tanzania"
+msgstr ""
+
+msgctxt "#60619"
+msgid "Sanskrit"
+msgstr ""
+
+msgctxt "#60620"
+msgid "Sanskrit-India"
+msgstr ""
+
+msgctxt "#60621"
+msgid "Scottish Gaelic"
+msgstr ""
+
+msgctxt "#60622"
+msgid "Scottish Gaelic-United Kingdom"
+msgstr ""
+
+msgctxt "#60623"
+msgid "Sena"
+msgstr ""
+
+msgctxt "#60624"
+msgid "Sena-Mozambique"
+msgstr ""
+
+msgctxt "#60625"
+msgid "Serbian (Cyrillic)"
+msgstr ""
+
+msgctxt "#60626"
+msgid "Serbian (Cyrillic)-Bosnia and Herzegovina"
+msgstr ""
+
+msgctxt "#60627"
+msgid "Serbian (Cyrillic)-Montenegro"
+msgstr ""
+
+msgctxt "#60628"
+msgid "Serbian (Cyrillic)-Serbia"
+msgstr ""
+
+msgctxt "#60629"
+msgid "Serbian (Cyrillic)-Serbia and Montenegro (Former)"
+msgstr ""
+
+msgctxt "#60630"
+msgid "Serbian (Latin) (Latn)"
+msgstr ""
+
+msgctxt "#60631"
+msgid "Serbian (Latin)"
+msgstr ""
+
+msgctxt "#60632"
+msgid "Serbian (Latin)-Bosnia and Herzegovina"
+msgstr ""
+
+msgctxt "#60633"
+msgid "Serbian (Latin)-Montenegro"
+msgstr ""
+
+msgctxt "#60634"
+msgid "Serbian (Latin)-Serbia"
+msgstr ""
+
+msgctxt "#60635"
+msgid "Serbian (Latin)-Serbia and Montenegro (Former)"
+msgstr ""
+
+msgctxt "#60636"
+msgid "Sesotho sa Leboa"
+msgstr ""
+
+msgctxt "#60637"
+msgid "Sesotho sa Leboa-South Africa"
+msgstr ""
+
+msgctxt "#60638"
+msgid "Setswana"
+msgstr ""
+
+msgctxt "#60639"
+msgid "Setswana-Botswana"
+msgstr ""
+
+msgctxt "#60640"
+msgid "Setswana-South Africa"
+msgstr ""
+
+msgctxt "#60641"
+msgid "Shambala"
+msgstr ""
+
+msgctxt "#60642"
+msgid "Shambala-Tanzania"
+msgstr ""
+
+msgctxt "#60643"
+msgid "Shona"
+msgstr ""
+
+msgctxt "#60644"
+msgid "Shona-Latin"
+msgstr ""
+
+msgctxt "#60645"
+msgid "Shona-Zimbabwe"
+msgstr ""
+
+msgctxt "#60646"
+msgid "Sindhi"
+msgstr ""
+
+msgctxt "#60647"
+msgid "Sindhi (Arab)"
+msgstr ""
+
+msgctxt "#60648"
+msgid "Sindhi-Islamic Republic of Pakistan"
+msgstr ""
+
+msgctxt "#60649"
+msgid "Sinhala"
+msgstr ""
+
+msgctxt "#60650"
+msgid "Sinhala-Sri Lanka"
+msgstr ""
+
+msgctxt "#60651"
+msgid "Slovak"
+msgstr ""
+
+msgctxt "#60652"
+msgid "Slovak-Slovakia"
+msgstr ""
+
+msgctxt "#60653"
+msgid "Slovenian"
+msgstr ""
+
+msgctxt "#60654"
+msgid "Slovenian-Slovenia"
+msgstr ""
+
+msgctxt "#60655"
+msgid "Soga"
+msgstr ""
+
+msgctxt "#60656"
+msgid "Soga-Uganda"
+msgstr ""
+
+msgctxt "#60657"
+msgid "Somali"
+msgstr ""
+
+msgctxt "#60658"
+msgid "Somali-Djibouti"
+msgstr ""
+
+msgctxt "#60659"
+msgid "Somali-Ethiopia"
+msgstr ""
+
+msgctxt "#60660"
+msgid "Somali-Kenya"
+msgstr ""
+
+msgctxt "#60661"
+msgid "Somali-Somalia"
+msgstr ""
+
+msgctxt "#60662"
+msgid "Sotho"
+msgstr ""
+
+msgctxt "#60663"
+msgid "Sotho-South Africa"
+msgstr ""
+
+msgctxt "#60664"
+msgid "South Ndebele"
+msgstr ""
+
+msgctxt "#60665"
+msgid "South Ndebele-South Africa"
+msgstr ""
+
+msgctxt "#60666"
+msgid "Southern Sotho-Lesotho"
+msgstr ""
+
+msgctxt "#60667"
+msgid "Spanish"
+msgstr ""
+
+msgctxt "#60668"
+msgid "Spanish-Argentina"
+msgstr ""
+
+msgctxt "#60669"
+msgid "Spanish-Belize"
+msgstr ""
+
+msgctxt "#60670"
+msgid "Spanish-Bolivarian Republic of Venezuela"
+msgstr ""
+
+msgctxt "#60671"
+msgid "Spanish-Bolivia"
+msgstr ""
+
+msgctxt "#60672"
+msgid "Spanish-Brazil"
+msgstr ""
+
+msgctxt "#60673"
+msgid "Spanish-Chile"
+msgstr ""
+
+msgctxt "#60674"
+msgid "Spanish-Colombia"
+msgstr ""
+
+msgctxt "#60675"
+msgid "Spanish-Costa Rica"
+msgstr ""
+
+msgctxt "#60676"
+msgid "Spanish-Cuba"
+msgstr ""
+
+msgctxt "#60677"
+msgid "Spanish-Dominican Republic"
+msgstr ""
+
+msgctxt "#60678"
+msgid "Spanish-Ecuador"
+msgstr ""
+
+msgctxt "#60679"
+msgid "Spanish-El Salvador"
+msgstr ""
+
+msgctxt "#60680"
+msgid "Spanish-Equatorial Guinea"
+msgstr ""
+
+msgctxt "#60681"
+msgid "Spanish-Guatemala"
+msgstr ""
+
+msgctxt "#60682"
+msgid "Spanish-Honduras"
+msgstr ""
+
+msgctxt "#60683"
+msgid "Spanish-Latin America"
+msgstr ""
+
+msgctxt "#60684"
+msgid "Spanish-Mexico"
+msgstr ""
+
+msgctxt "#60685"
+msgid "Spanish-Nicaragua"
+msgstr ""
+
+msgctxt "#60686"
+msgid "Spanish-Panama"
+msgstr ""
+
+msgctxt "#60687"
+msgid "Spanish-Paraguay"
+msgstr ""
+
+msgctxt "#60688"
+msgid "Spanish-Peru"
+msgstr ""
+
+msgctxt "#60689"
+msgid "Spanish-Philippines"
+msgstr ""
+
+msgctxt "#60690"
+msgid "Spanish-Puerto Rico"
+msgstr ""
+
+msgctxt "#60691"
+msgid "Spanish (tradnl)-Spain"
+msgstr ""
+
+msgctxt "#60692"
+msgid "Spanish-Spain"
+msgstr ""
+
+msgctxt "#60693"
+msgid "Spanish-United States"
+msgstr ""
+
+msgctxt "#60694"
+msgid "Spanish-Uruguay"
+msgstr ""
+
+msgctxt "#60695"
+msgid "Standard Moroccan Tamazight"
+msgstr ""
+
+msgctxt "#60696"
+msgid "Standard Moroccan Tamazight-Morocco"
+msgstr ""
+
+msgctxt "#60697"
+msgid "Standard Moroccan Tamazight-Tifinagh"
+msgstr ""
+
+msgctxt "#60698"
+msgid "Swati"
+msgstr ""
+
+msgctxt "#60699"
+msgid "Swati-South Africa"
+msgstr ""
+
+msgctxt "#60700"
+msgid "Swati-Swaziland"
+msgstr ""
+
+msgctxt "#60701"
+msgid "Swedish"
+msgstr ""
+
+msgctxt "#60702"
+msgid "Swedish-Aland Islands"
+msgstr ""
+
+msgctxt "#60703"
+msgid "Swedish-Finland"
+msgstr ""
+
+msgctxt "#60704"
+msgid "Swedish-Sweden"
+msgstr ""
+
+msgctxt "#60705"
+msgid "Syriac"
+msgstr ""
+
+msgctxt "#60706"
+msgid "Syriac-Syria"
+msgstr ""
+
+msgctxt "#60707"
+msgid "Tachelhit"
+msgstr ""
+
+msgctxt "#60708"
+msgid "Tachelhit-Tifinagh"
+msgstr ""
+
+msgctxt "#60709"
+msgid "Tachelhit-Tifinagh, Morocco"
+msgstr ""
+
+msgctxt "#60710"
+msgid "Tachelhit (Latin)"
+msgstr ""
+
+msgctxt "#60711"
+msgid "Tachelhit (Latin)-Morocco"
+msgstr ""
+
+msgctxt "#60712"
+msgid "Taita"
+msgstr ""
+
+msgctxt "#60713"
+msgid "Taita-Kenya"
+msgstr ""
+
+msgctxt "#60714"
+msgid "Tajik (Cyrillic)"
+msgstr ""
+
+msgctxt "#60715"
+msgid "Tajik (Cyrillic) (Cyrl)"
+msgstr ""
+
+msgctxt "#60716"
+msgid "Tajik (Cyrillic)-Tajikistan"
+msgstr ""
+
+msgctxt "#60717"
+msgid "Tamazight (Latin)"
+msgstr ""
+
+msgctxt "#60718"
+msgid "Tamazight (Latin) (Latn)"
+msgstr ""
+
+msgctxt "#60719"
+msgid "Tamazight (Latin)-Algeria"
+msgstr ""
+
+msgctxt "#60720"
+msgid "Tamil"
+msgstr ""
+
+msgctxt "#60721"
+msgid "Tamil-India"
+msgstr ""
+
+msgctxt "#60722"
+msgid "Tamil-Malaysia"
+msgstr ""
+
+msgctxt "#60723"
+msgid "Tamil-Singapore"
+msgstr ""
+
+msgctxt "#60724"
+msgid "Tamil-Sri Lanka"
+msgstr ""
+
+msgctxt "#60725"
+msgid "Tasawaq"
+msgstr ""
+
+msgctxt "#60726"
+msgid "Tasawaq-Niger"
+msgstr ""
+
+msgctxt "#60727"
+msgid "Tatar"
+msgstr ""
+
+msgctxt "#60728"
+msgid "Tatar-Russia"
+msgstr ""
+
+msgctxt "#60729"
+msgid "Telugu"
+msgstr ""
+
+msgctxt "#60730"
+msgid "Telugu-India"
+msgstr ""
+
+msgctxt "#60731"
+msgid "Teso"
+msgstr ""
+
+msgctxt "#60732"
+msgid "Teso-Kenya"
+msgstr ""
+
+msgctxt "#60733"
+msgid "Teso-Uganda"
+msgstr ""
+
+msgctxt "#60734"
+msgid "Thai"
+msgstr ""
+
+msgctxt "#60735"
+msgid "Thai-Thailand"
+msgstr ""
+
+msgctxt "#60736"
+msgid "Tibetan"
+msgstr ""
+
+msgctxt "#60737"
+msgid "Tibetan-India"
+msgstr ""
+
+msgctxt "#60738"
+msgid "Tibetan-People's Republic of China"
+msgstr ""
+
+msgctxt "#60739"
+msgid "Tigre"
+msgstr ""
+
+msgctxt "#60740"
+msgid "Tigre-Eritrea"
+msgstr ""
+
+msgctxt "#60741"
+msgid "Tigrinya"
+msgstr ""
+
+msgctxt "#60742"
+msgid "Tigrinya-Eritrea"
+msgstr ""
+
+msgctxt "#60743"
+msgid "Tigrinya-Ethiopia"
+msgstr ""
+
+msgctxt "#60744"
+msgid "Tongan"
+msgstr ""
+
+msgctxt "#60745"
+msgid "Tongan-Tonga"
+msgstr ""
+
+msgctxt "#60746"
+msgid "Tsonga"
+msgstr ""
+
+msgctxt "#60747"
+msgid "Tsonga-South Africa"
+msgstr ""
+
+msgctxt "#60748"
+msgid "Turkish"
+msgstr ""
+
+msgctxt "#60749"
+msgid "Turkish-Cyprus"
+msgstr ""
+
+msgctxt "#60750"
+msgid "Turkish-Turkey"
+msgstr ""
+
+msgctxt "#60751"
+msgid "Turkmen"
+msgstr ""
+
+msgctxt "#60752"
+msgid "Turkmen-Turkmenistan"
+msgstr ""
+
+msgctxt "#60753"
+msgid "Ukrainian"
+msgstr ""
+
+msgctxt "#60754"
+msgid "Ukrainian-Ukraine"
+msgstr ""
+
+msgctxt "#60755"
+msgid "Upper Sorbian"
+msgstr ""
+
+msgctxt "#60756"
+msgid "Upper Sorbian-Germany"
+msgstr ""
+
+msgctxt "#60757"
+msgid "Urdu"
+msgstr ""
+
+msgctxt "#60758"
+msgid "Urdu-India"
+msgstr ""
+
+msgctxt "#60759"
+msgid "Urdu-Islamic Republic of Pakistan"
+msgstr ""
+
+msgctxt "#60760"
+msgid "Uyghur"
+msgstr ""
+
+msgctxt "#60761"
+msgid "Uyghur-People's Republic of China"
+msgstr ""
+
+msgctxt "#60762"
+msgid "Uzbek-Perso-Arabic"
+msgstr ""
+
+msgctxt "#60763"
+msgid "Uzbek-Perso-Arabic, Afghanistan"
+msgstr ""
+
+msgctxt "#60764"
+msgid "Uzbek (Cyrillic)"
+msgstr ""
+
+msgctxt "#60765"
+msgid "Uzbek (Cyrillic)-Uzbekistan"
+msgstr ""
+
+msgctxt "#60766"
+msgid "Uzbek (Latin)"
+msgstr ""
+
+msgctxt "#60767"
+msgid "Uzbek (Latin) (Latn)"
+msgstr ""
+
+msgctxt "#60768"
+msgid "Uzbek (Latin)-Uzbekistan"
+msgstr ""
+
+msgctxt "#60769"
+msgid "Vai"
+msgstr ""
+
+msgctxt "#60770"
+msgid "Vai (Vaii)"
+msgstr ""
+
+msgctxt "#60771"
+msgid "Vai-Liberia"
+msgstr ""
+
+msgctxt "#60772"
+msgid "Vai (Latin)-Liberia"
+msgstr ""
+
+msgctxt "#60773"
+msgid "Vai (Latin)"
+msgstr ""
+
+msgctxt "#60774"
+msgid "Valencian-Spain"
+msgstr ""
+
+msgctxt "#60775"
+msgid "Venda"
+msgstr ""
+
+msgctxt "#60776"
+msgid "Venda-South Africa"
+msgstr ""
+
+msgctxt "#60777"
+msgid "Vietnamese"
+msgstr ""
+
+msgctxt "#60778"
+msgid "Vietnamese-Vietnam"
+msgstr ""
+
+msgctxt "#60779"
+msgid "Volapuk"
+msgstr ""
+
+msgctxt "#60780"
+msgid "Volapuk-World"
+msgstr ""
+
+msgctxt "#60781"
+msgid "Vunjo"
+msgstr ""
+
+msgctxt "#60782"
+msgid "Vunjo-Tanzania"
+msgstr ""
+
+msgctxt "#60783"
+msgid "Walser"
+msgstr ""
+
+msgctxt "#60784"
+msgid "Walser-Switzerland"
+msgstr ""
+
+msgctxt "#60785"
+msgid "Welsh"
+msgstr ""
+
+msgctxt "#60786"
+msgid "Welsh-United Kingdom"
+msgstr ""
+
+msgctxt "#60787"
+msgid "Wolaytta"
+msgstr ""
+
+msgctxt "#60788"
+msgid "Wolaytta-Ethiopia"
+msgstr ""
+
+msgctxt "#60789"
+msgid "Wolof"
+msgstr ""
+
+msgctxt "#60790"
+msgid "Wolof-Senegal"
+msgstr ""
+
+msgctxt "#60791"
+msgid "Xhosa"
+msgstr ""
+
+msgctxt "#60792"
+msgid "Xhosa-South Africa"
+msgstr ""
+
+msgctxt "#60793"
+msgid "Yangben"
+msgstr ""
+
+msgctxt "#60794"
+msgid "Yangben-Cameroon"
+msgstr ""
+
+msgctxt "#60795"
+msgid "Yi"
+msgstr ""
+
+msgctxt "#60796"
+msgid "Yi-People's Republic of China"
+msgstr ""
+
+msgctxt "#60797"
+msgid "Yoruba"
+msgstr ""
+
+msgctxt "#60798"
+msgid "Yoruba-Benin"
+msgstr ""
+
+msgctxt "#60799"
+msgid "Yoruba-Nigeria"
+msgstr ""
+
+msgctxt "#60800"
+msgid "Zarma"
+msgstr ""
+
+msgctxt "#60801"
+msgid "Zarma-Niger"
+msgstr ""
+
+msgctxt "#60802"
+msgid "Zulu"
+msgstr ""
+
+msgctxt "#60803"
+msgid "Zulu-South Africa"
+msgstr ""
+
+msgctxt "#60804"
+msgid "<None>"
+msgstr ""
+# end locale strings

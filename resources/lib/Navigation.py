@@ -695,6 +695,7 @@ class Navigation(object):
         options = {}
         credentials = self.kodi_helper.get_credentials()
         # check if we have user settings, if not, set em
+        self.set_locale()
         if credentials['email'] == '':
             email = self.kodi_helper.dialogs.show_email_dialog()
             self.kodi_helper.set_setting(key='email', value=email)
@@ -758,7 +759,24 @@ class Navigation(object):
         self.kodi_helper.dialogs.show_request_error_notify()
         return False
 
-    def parse_paramters(self, paramstring):
+    def set_locale (self):
+        """Set default locale"""
+        if self.kodi_helper.is_addon_setting_default('locale'):
+            val_list = self.kodi_helper.get_addon_setting_lvalues_list('locale')
+            kodi_locale_id = self.kodi_helper.get_kodi_locale_id()
+            locale_index = None
+            if kodi_locale_id:
+                try:
+                    locale_index = val_list.index(str(self.kodi_helper.get_locale_string_id_from_locale_id(kodi_locale_id)))
+                except:
+                    locale_index = None
+            if not locale_index:
+                locale_index = self.kodi_helper.dialogs.show_locale_dialog(self.kodi_helper.get_locale_name_list_from_string_id_list(val_list))
+            if locale_index:
+                self.kodi_helper.set_setting(key='locale', value=str(locale_index))
+        return
+
+    def parse_paramters (self, paramstring):
         """Tiny helper to convert a url paramstring into a dictionary
 
         Parameters

@@ -47,6 +47,23 @@ class Dialogs(object):
             type=xbmcgui.INPUT_NUMERIC)
         return dialog
 
+    def show_locale_dialog (self, options_list):
+        """
+        Asks the user for Netflix locale
+
+        Parameters
+        ----------
+        options_list : :obj:`list`
+            List of locale options
+
+        Returns
+        -------
+        :obj:`int`
+            Setting list index
+        """
+        dlg = xbmcgui.Dialog()
+        return dlg.select(self.get_local_string(string_id=30066), options_list)
+
     def show_search_term_dialog(self):
         """
         Asks the user for a term to query the netflix search for

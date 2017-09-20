@@ -58,6 +58,8 @@ class MSL(object):
         If they exist it will load the existing keys
         """
         self.kodi_helper = kodi_helper
+        self.locale_code = self.kodi_helper.get_locale_setting()
+
         try:
             xbmcvfs.mkdir(path=self.kodi_helper.msl_data_path)
         except OSError:
@@ -135,7 +137,7 @@ class MSL(object):
             'secureUrls': False,
             'supportPreviewContent': True,
             'forceClearStreams': False,
-            'languages': ['de-DE'],
+            'languages': [self.locale_code],
             'clientVersion': '4.0004.899.011',
             'uiVersion': 'akira'
         }
@@ -243,12 +245,15 @@ class MSL(object):
         :param sid: The sid paired to the challengew
         :return: Base64 representation of the licensekey or False unsuccessfull
         """
+        # check locale
+        self.locale_code = self.kodi_helper.get_locale_setting()
+
         license_request_data = {
             'method': 'license',
             'licenseType': 'STANDARD',
             'clientVersion': '4.0004.899.011',
             'uiVersion': 'akira',
-            'languages': ['de-DE'],
+            'languages': [self.locale_code],
             'playbackContextId': self.last_playback_context,
             'drmContextIds': [self.last_drm_context],
             'challenges': [{
