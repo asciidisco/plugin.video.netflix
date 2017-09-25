@@ -76,6 +76,8 @@ class Navigation:
             # show the profiles
             return self.show_profiles()
         elif params['action'] == 'video_lists':
+            # clean possible cached search string
+            self.kodi_helper.clean_search_cache()
             # list lists that contain other lists (starting point with recommendations, search, etc.)
             return self.show_video_lists()
         elif params['action'] == 'video_list':

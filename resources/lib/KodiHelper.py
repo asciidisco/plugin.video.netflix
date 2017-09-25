@@ -87,11 +87,30 @@ class KodiHelper:
         :obj:`str`
             Term to search for
         """
-        dlg = xbmcgui.Dialog()
-        term = dlg.input(self.get_local_string(string_id=30003), type=xbmcgui.INPUT_ALPHANUM)
-        if len(term) == 0:
-            term = ' '
+        term = self.get_cached_item(cache_id='search')
+        if len(term) == 0 or term == ' ':
+            term = self.add_cached_item(cache_id='search',content='')
+            dlg = xbmcgui.Dialog()
+            term = dlg.input(self.get_local_string(string_id=30003), type=xbmcgui.INPUT_ALPHANUM)
+            if len(term) == 0:
+                term = ' '
+            term = self.add_cached_item(cache_id='search',content=term)
+        else:
+            term = self.get_cached_item(cache_id='search')
+            if len(term) == 0:
+                term = ' '
         return term
+
+    def clean_search_cache (self):
+        """Clean last possible cached search string
+
+        Returns
+        -------
+        bool
+            Cache cleaned
+        """
+        term = self.add_cached_item(cache_id='search',content='')
+        return True
 
     def show_add_to_library_title_dialog (self, original_title):
         """Asks the user for an alternative title for the show/movie that gets exported to the local library
