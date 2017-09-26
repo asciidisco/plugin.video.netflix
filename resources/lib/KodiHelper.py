@@ -89,12 +89,12 @@ class KodiHelper:
         """
         term = self.get_cached_item(cache_id='search')
         if len(term) == 0 or term == ' ':
-            term = self.add_cached_item(cache_id='search',content='')
+            term = self.add_cached_item(cache_id='search',contents='')
             dlg = xbmcgui.Dialog()
             term = dlg.input(self.get_local_string(string_id=30003), type=xbmcgui.INPUT_ALPHANUM)
             if len(term) == 0:
                 term = ' '
-            term = self.add_cached_item(cache_id='search',content=term)
+            term = self.add_cached_item(cache_id='search',contents=term)
         else:
             term = self.get_cached_item(cache_id='search')
             if len(term) == 0:
@@ -109,7 +109,7 @@ class KodiHelper:
         bool
             Cache cleaned
         """
-        term = self.add_cached_item(cache_id='search',content='')
+        term = self.add_cached_item(cache_id='search',contents='')
         return True
 
     def show_add_to_library_title_dialog (self, original_title):
