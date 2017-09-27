@@ -87,16 +87,16 @@ class KodiHelper:
         :obj:`str`
             Term to search for
         """
-        term = self.get_cached_item(cache_id='search')
+        term = xbmcgui.Window(xbmcgui.getCurrentWindowId()).getProperty('searchstring')
         if len(term) == 0 or term == ' ':
-            term = self.add_cached_item(cache_id='search',contents='')
+            xbmcgui.Window(xbmcgui.getCurrentWindowId()).setProperty('searchstring','')
             dlg = xbmcgui.Dialog()
             term = dlg.input(self.get_local_string(string_id=30003), type=xbmcgui.INPUT_ALPHANUM)
             if len(term) == 0:
                 term = ' '
-            term = self.add_cached_item(cache_id='search',contents=term)
+            xbmcgui.Window(xbmcgui.getCurrentWindowId()).setProperty('searchstring',term)
         else:
-            term = self.get_cached_item(cache_id='search')
+            term = xbmcgui.Window(xbmcgui.getCurrentWindowId()).getProperty('searchstring')
             if len(term) == 0:
                 term = ' '
         return term
@@ -109,7 +109,7 @@ class KodiHelper:
         bool
             Cache cleaned
         """
-        term = self.add_cached_item(cache_id='search',contents='')
+        xbmcgui.Window(xbmcgui.getCurrentWindowId()).setProperty('searchstring','')
         return True
 
     def show_add_to_library_title_dialog (self, original_title):
