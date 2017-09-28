@@ -10,6 +10,7 @@ import hashlib
 from os import remove
 from uuid import uuid4
 from urllib import urlencode
+import copy
 from Cryptodome import Random
 from os.path import join, isfile
 from Cryptodome.Cipher import AES
@@ -20,8 +21,10 @@ import xbmcplugin
 from xbmcaddon import Addon
 from resources.lib.MSL import MSL
 from resources.lib.kodi.Dialogs import Dialogs
-from utils import get_user_agent, uniq_id
+from utils import dd, get_user_agent, uniq_id
 from UniversalAnalytics import Tracker
+from collections import OrderedDict
+from Search import SearchParams, SearchResults
 try:
     import cPickle as pickle
 except:
@@ -39,6 +42,114 @@ VIEW_SHOW = 'show'
 VIEW_SEASON = 'season'
 VIEW_EPISODE = 'episode'
 
+class KodiListItem(object):
+    """ Pickle-able wrapper for xbmcgui.ListItem class """
+    _method_proto = {
+        'method': '',
+        'argv': [],
+        'kwargs': {}
+    }
+    _list_item_proto = {
+        'label': '',
+        'label2': '',
+        'iconImage': '',
+        'thumbnailImage': '',
+        'path': '',
+        'offscreen': False
+    }
+    def __init__(self, *argv, **kwargs):
+        self.list_item = copy.deepcopy(self._list_item_proto)
+        self.calls = []
+        if argv:
+            if isinstance(argv[0],self.__class__):
+                for attr in dir(self):
+                    if attr[:1] != '_':
+                        if hasattr(argv[0],attr):
+                            setattr(self,attr,getattr(argv[0],attr))
+            elif isinstance(argv[0],dict):
+                self.list_item.update({k:v for k,v in argv[0].iteritems() if k in self.list_item})
+        elif kwargs:
+            for attr,value in kwargs.iteritems():
+                if attr in self.list_item:
+                    self.list_item[attr] = value
+                elif attr[:1] != '_' and hasattr(self,attr):
+                    setattr(self,attr,value)
+        return
+    def __getattribute__(self, attr):
+        ret = None
+        try:
+            ret = object.__getattribute__(self,attr)
+        except:
+            if attr[:1] != '_':
+                self._last_get_attr = attr
+                return self._dummy
+            raise
+        return ret
+    def _dummy(self, *argv, **kwargs):
+        method = copy.deepcopy(self._method_proto)
+        method['method'] = copy.deepcopy(self._last_get_attr)
+        method['argv'] = copy.deepcopy(argv)
+        method['kwargs'] = copy.deepcopy(kwargs)
+        self.calls.append(method)
+        return
+    def build(self):
+        li = xbmcgui.ListItem(**self.list_item)
+        for call in self.calls:
+            if hasattr(li,call['method']):
+                getattr(li,call['method'])(*call['argv'],**call['kwargs'])
+        return li
+
+class KodiDirectoryBuilder(object):
+    """ Pickle-able class for building a Kodi directory """
+    _listing_proto = {
+        'url': None, # string
+        'listitem': None, # KodiListItem (xbmcgui.ListItem)
+        'isFolder': None # bool
+    }
+    def __init__(self, *argv, **kwargs):
+        self.listings = []
+        self.view_mode = VIEW_FOLDER # default
+        self.sort_methods = [xbmcplugin.SORT_METHOD_NONE] # default
+        if argv and isinstance(argv[0], self.__class__):
+            for attr in dir(self):
+                if attr[:1] != '_':
+                    if hasattr(argv[0],attr):
+                        setattr(self,attr,getattr(argv[0],attr))
+        elif kwargs:
+            for attr,value in kwargs.iteritems():
+                if attr[:1] != '_' and hasattr(self,attr):
+                    setattr(self,attr,value)
+        return
+    def __len__(self):
+        return len(self.listings)
+    @classmethod
+    def new_listing(cls,**kwargs):
+        ret = copy.deepcopy(cls._listing_proto)
+        if kwargs:
+            ret.update({k:v for k,v in kwargs.iteritems() if k in ret})
+        return ret
+    @staticmethod
+    def new_list_item(*argv, **kwargs):
+        return KodiListItem(*argv, **kwargs)
+    def add_listing(self, listing):
+        new_listing = self.new_listing()
+        new_listing.update(
+            {k:v for k,v in listing.iteritems() if k in new_listing}
+        )
+        self.listings.append(new_listing)
+        return
+    def build(self, plugin_handle):
+        for item in self.listings:
+            if isinstance(item['listitem'], KodiListItem):
+                _item = copy.deepcopy(item)
+                _item['listitem'] = _item['listitem'].build()
+                xbmcplugin.addDirectoryItem(handle=plugin_handle, **_item)
+        for sort_method in self.sort_methods:
+            xbmcplugin.addSortMethod(handle=plugin_handle, sortMethod=sort_method)
+        if self.view_mode:
+            xbmc.executebuiltin('Container.SetViewMode({})'.format(view))
+        xbmcplugin.endOfDirectory(plugin_handle)
+        return True
 
 class KodiHelper(object):
     """
@@ -83,6 +194,7 @@ class KodiHelper(object):
         self.dialogs = Dialogs(
             get_local_string=self.get_local_string,
             custom_export_name=self.custom_export_name)
+        self.GLOBAL_PCACHE_LIMIT = 20  # item limit of 20
 
     def get_addon(self):
         """Returns a fresh addon instance"""
@@ -317,12 +429,31 @@ class KodiHelper(object):
         except EOFError:
             pass
 
+    def setup_persistentcache(self,type=None):
+        """Sets up the persistent memcache if not existant"""
+        cache = 'persistentcache_{}'.format(type)
+        try:
+            cached_items = xbmcgui.Window(xbmcgui.getCurrentWindowId()).getProperty(cache)
+            # no cache setup yet, create one
+            if len(cached_items) < 1:
+                xbmcgui.Window(xbmcgui.getCurrentWindowId()).setProperty(cache, pickle.dumps(OrderedDict()))
+        except EOFError:
+            pass
+        return cache
+
     def invalidate_memcache(self):
         """Invalidates the memory cache"""
         current_window = xbmcgui.getCurrentWindowId()
         window = xbmcgui.Window(current_window)
         try:
             window.setProperty('memcache', pickle.dumps({}))
+        except EOFError:
+            pass
+
+    def invalidate_persistentcache(self,type=None):
+        """Invalidates the persistent memory cache"""
+        try:
+            xbmcgui.Window(xbmcgui.getCurrentWindowId()).setProperty('persistentcache_{}'.format(type), pickle.dumps(OrderedDict()))
         except EOFError:
             pass
 
@@ -349,6 +480,31 @@ class KodiHelper(object):
             ret = None
         return ret
 
+    def get_pcached_item(self, cache_id, type=None):
+        """Returns an item from the in memory persistent cache
+
+        Parameters
+        ----------
+        cache_id : :obj:`str`
+            ID of the cache entry
+
+        type : :obj:`str`
+            Cache type
+
+        Returns
+        -------
+        mixed
+            Contents of the requested cache item or none
+        """
+        ret = None
+        cache = self.setup_persistentcache(type=type)
+        try:
+            cached_items = pickle.loads(xbmcgui.Window(xbmcgui.getCurrentWindowId()).getProperty(cache))
+            ret = cached_items.get(cache_id)
+        except EOFError:
+            ret = None
+        return ret
+
     def add_cached_item(self, cache_id, contents):
         """Adds an item to the in memory cache
 
@@ -368,6 +524,37 @@ class KodiHelper(object):
             window.setProperty('memcache', pickle.dumps(cached_items))
         except EOFError:
             pass
+
+    def add_pcached_item(self, cache_id, contents, type=None):
+        """Adds an item to the in memory persistent cache and manages cache limit
+
+        Parameters
+        ----------
+        cache_id : :obj:`str`
+            ID of the cache entry
+
+        contents : mixed
+            Cache entry contents
+
+        type : :obj:`str`
+            Cache type
+        """
+        cache = self.setup_persistentcache(type=type)
+        try:
+            cached_items = pickle.loads(xbmcgui.Window(xbmcgui.getCurrentWindowId()).getProperty(cache))
+            cached_items.update({cache_id: contents})
+            # ensure limit
+            if len(cached_items) > self.GLOBAL_PCACHE_LIMIT:
+                cached_items.popitem(last=False)
+            xbmcgui.Window(xbmcgui.getCurrentWindowId()).setProperty(cache, pickle.dumps(cached_items))
+        except EOFError:
+            pass
+
+    def create_pcached_id(self, cache_item, type=None):
+        """Save item to cache and return the ID"""
+        cache_id = str(uuid4())
+        self.add_pcached_item(cache_id, cache_item, type=type)
+        return cache_id
 
     def set_custom_view(self, content):
         """Set the view mode
@@ -404,9 +591,23 @@ class KodiHelper(object):
         self.invalidate_memcache()
         self.refresh()
 
+    def get_new_kodidirectorybuilder(self, *argv, **kwargs):
+        return KodiDirectoryBuilder(*argv,**kwargs)
+
     def build_profiles_listing(self, profiles, action, build_url):
         """
         Builds the profiles list Kodi screen
+
+        Parameters
+        ----------
+        profiles : :obj:`list` of :obj:`dict` of :obj:`str`
+            List of user profiles
+
+        action : :obj:`str`
+            Action paramter to build the subsequent routes
+
+        build_url : :obj:`fn`
+            Function to build the subsequent routes
 
         :param profiles: list of user profiles
         :type profiles: list
@@ -584,36 +785,11 @@ class KodiHelper(object):
         self.set_custom_view(VIEW_FOLDER)
         return True
 
-    def build_video_listing(self, video_list, actions, type, build_url, has_more=False, start=0, current_video_list_id=""):
-        """
-        Builds the video lists (my list, continue watching, etc.)
-        contents Kodi screen
-
-        Parameters
-        ----------
-        video_list_ids : :obj:`dict` of :obj:`str`
-            List of video lists
-
-        actions : :obj:`dict` of :obj:`str`
-            Dictionary of actions to build subsequent routes
-
-        type : :obj:`str`
-            None or 'queue' f.e. when itÂ´s a special video lists
-
-        build_url : :obj:`fn`
-            Function to build the subsequent routes
-
-        Returns
-        -------
-        bool
-            List could be build
-        """
-        view = VIEW_FOLDER
+    def generate_video_listings(self, video_list, actions, build_url):
+        listings = []
         for video_list_id in video_list:
             video = video_list[video_list_id]
-            li = xbmcgui.ListItem(
-                label=video['title'],
-                iconImage=self.default_fanart)
+            li = KodiDirectoryBuilder.new_list_item(label=video['title'], iconImage=self.default_fanart)
             # add some art to the item
             li = self._generate_art_info(entry=video, li=li)
             # add list item info
@@ -643,46 +819,51 @@ class KodiHelper(object):
                     title = infos.get('tvshowtitle', '').encode('utf-8')
                     params['tvshowtitle'] = base64.urlsafe_b64encode(title)
                 url = build_url(params)
-                view = VIEW_SHOW
-            xbmcplugin.addDirectoryItem(
-                handle=self.plugin_handle,
-                url=url,
-                listitem=li,
-                isFolder=isFolder)
+            listings.append(KodiDirectoryBuilder.new_listing(url=url, listitem=li, isFolder=isFolder))
+        return listings
 
-        if has_more:
-            li_more = xbmcgui.ListItem(label=self.get_local_string(30045))
-            more_url = build_url({
-                "action": "video_list",
-                "type": type,
-                "start": str(start),
-                "video_list_id": current_video_list_id})
-            xbmcplugin.addDirectoryItem(
-                handle=self.plugin_handle,
-                url=more_url,
-                listitem=li_more,
-                isFolder=True)
+    def build_video_listing(self, video_list, actions, build_url):
+        """
+        Builds the video lists (my list, continue watching, etc.)
+        contents Kodi screen
 
-        xbmcplugin.addSortMethod(
-            handle=self.plugin_handle,
-            sortMethod=xbmcplugin.SORT_METHOD_UNSORTED)
-        xbmcplugin.addSortMethod(
-            handle=self.plugin_handle,
-            sortMethod=xbmcplugin.SORT_METHOD_LABEL)
-        xbmcplugin.addSortMethod(
-            handle=self.plugin_handle,
-            sortMethod=xbmcplugin.SORT_METHOD_TITLE)
-        xbmcplugin.addSortMethod(
-            handle=self.plugin_handle,
-            sortMethod=xbmcplugin.SORT_METHOD_VIDEO_YEAR)
-        xbmcplugin.addSortMethod(
-            handle=self.plugin_handle,
-            sortMethod=xbmcplugin.SORT_METHOD_GENRE)
-        xbmcplugin.addSortMethod(
-            handle=self.plugin_handle,
-            sortMethod=xbmcplugin.SORT_METHOD_LASTPLAYED)
-        xbmcplugin.endOfDirectory(self.plugin_handle)
-        self.set_custom_view(view)
+        Parameters
+        ----------
+        video_list_ids : :obj:`dict` of :obj:`str`
+            List of video lists
+
+        actions : :obj:`dict` of :obj:`str`
+            Dictionary of actions to build subsequent routes
+
+        type : :obj:`str`
+            None or 'queue' f.e. when itÂ´s a special video lists
+
+        build_url : :obj:`fn`
+            Function to build the subsequent routes
+
+        Returns
+        -------
+        bool
+            List could be build
+        """
+        video_list_directory = KodiDirectoryBuilder(
+            view_mode = self.set_custom_view(VIEW_FOLDER),
+            sort_methods = [
+                xbmcplugin.SORT_METHOD_UNSORTED,
+                xbmcplugin.SORT_METHOD_LABEL,
+                xbmcplugin.SORT_METHOD_TITLE,
+                xbmcplugin.SORT_METHOD_VIDEO_YEAR,
+                xbmcplugin.SORT_METHOD_GENRE,
+                xbmcplugin.SORT_METHOD_LASTPLAYED
+            ]
+        )
+
+        for video_listing in self.generate_video_listings(video_list=video_list, actions=actions, build_url=build_url):
+            video_list_directory.add_listing(video_listing)
+
+        if video_list_directory:
+            video_list_directory.build(plugin_handle=self.plugin_handle)
+
         return True
 
     def build_video_listing_exported(self, content, build_url):
@@ -760,7 +941,7 @@ class KodiHelper(object):
         self.set_custom_view(VIEW_FOLDER)
         return True
 
-    def build_search_result_folder(self, build_url, term):
+    def build_search_result_folder(self, build_url, term, search_id):
         """Add search result folder
 
         Parameters
@@ -781,15 +962,9 @@ class KodiHelper(object):
             label='({})'.format(term),
             iconImage=self.default_fanart)
         li_rec.setProperty('fanart_image', self.default_fanart)
-        url_rec = build_url({'action': 'search_result', 'term': term})
-        xbmcplugin.addDirectoryItem(
-            handle=self.plugin_handle,
-            url=url_rec,
-            listitem=li_rec,
-            isFolder=True)
-        xbmcplugin.addSortMethod(
-            handle=self.plugin_handle,
-            sortMethod=xbmcplugin.SORT_METHOD_UNSORTED)
+        url_rec = build_url({'action': 'search_result', 'search_id': search_id})
+        xbmcplugin.addDirectoryItem(handle=self.plugin_handle, url=url_rec, listitem=li_rec, isFolder=True)
+        xbmcplugin.addSortMethod(handle=self.plugin_handle, sortMethod=xbmcplugin.SORT_METHOD_UNSORTED)
         xbmcplugin.endOfDirectory(self.plugin_handle)
         self.set_custom_view(VIEW_FOLDER)
         return url_rec
@@ -813,7 +988,7 @@ class KodiHelper(object):
         cmd = 'Container.Update({},{})'.format(url, str(replace))
         return xbmc.executebuiltin(cmd)
 
-    def build_search_result_listing(self, video_list, actions, build_url):
+    def build_search_result_listing(self, search_params, search_results, video_list, actions, build_url):
         """Builds the search results list Kodi screen
 
         Parameters
@@ -832,12 +1007,75 @@ class KodiHelper(object):
         bool
             List could be build
         """
-        video_listing = self.build_video_listing(
-            video_list=video_list,
-            actions=actions,
-            type='search',
-            build_url=build_url)
-        return video_listing
+        entity_list = []
+        search_directory = KodiDirectoryBuilder(
+            view_mode = self.set_custom_view(VIEW_FOLDER),
+            sort_methods = [
+                xbmcplugin.SORT_METHOD_UNSORTED,
+                xbmcplugin.SORT_METHOD_LABEL,
+                xbmcplugin.SORT_METHOD_TITLE,
+                xbmcplugin.SORT_METHOD_VIDEO_YEAR,
+                xbmcplugin.SORT_METHOD_GENRE,
+                xbmcplugin.SORT_METHOD_LASTPLAYED
+            ]
+        )
+        # collect entities
+        for result,result_values in search_results.iteritems():
+            entity_list += result_values['data'].get('entities',[])
+        if entity_list:
+            # build suggestions directory
+            suggestions_directory = KodiDirectoryBuilder(
+                view_mode = self.set_custom_view(VIEW_FOLDER),
+                sort_methods = [
+                    xbmcplugin.SORT_METHOD_UNSORTED,
+                    xbmcplugin.SORT_METHOD_LABEL,
+                    xbmcplugin.SORT_METHOD_TITLE,
+                    xbmcplugin.SORT_METHOD_VIDEO_YEAR,
+                    xbmcplugin.SORT_METHOD_GENRE,
+                    xbmcplugin.SORT_METHOD_LASTPLAYED
+                ]
+            )
+            for entity in entity_list:
+                entity_search = SearchParams()
+                entity_search.add_entity(type_id=entity['type_id'])
+                entity_search_id = self.create_pcached_id(entity_search, type='SEARCH')
+                suggestions_directory.add_listing(
+                    KodiDirectoryBuilder.new_listing(
+                        url=build_url({'action': 'search_result', 'search_id': entity_search_id}),
+                        listitem=KodiDirectoryBuilder.new_list_item(
+                            label='{} ({})'.format(entity['name'].encode('ascii','ignore'),entity['type'].encode('ascii','ignore'))
+                        ),
+                        isFolder=True
+                    )
+                )
+            suggestions_cache_id = self.create_pcached_id(suggestions_directory, type='DIRECTORY')
+            # add suggestions dir to search dir
+            search_directory.add_listing(
+                KodiDirectoryBuilder.new_listing(
+                    url=build_url({'action': 'cached_directory', 'cache_id': suggestions_cache_id}),
+                    listitem=KodiDirectoryBuilder.new_list_item(
+                        label=self.get_local_string(30063) # suggestions
+                    ),
+                    isFolder=True
+                )
+            )
+        # add video listings
+        for listing in self.generate_video_listings(video_list=video_list, actions=actions, build_url=build_url):
+            search_directory.add_listing(listing)
+        # add next search (page) listing
+        next_search = search_params.build_next_search(search_results=search_results)
+        if next_search:
+            next_search_id = self.create_pcached_id(next_search, type='SEARCH')
+            search_directory.add_listing(
+                KodiDirectoryBuilder.new_listing(
+                    url=build_url({'action': 'search_result', 'search_id': next_search_id}),
+                    listitem=KodiDirectoryBuilder.new_list_item(
+                        label=self.get_local_string(30045)
+                    ),
+                    isFolder=True
+                )
+            )
+        return search_directory.build(plugin_handle=self.plugin_handle)
 
     def build_no_seasons_available(self):
         """Builds the season list screen if no seasons could be found

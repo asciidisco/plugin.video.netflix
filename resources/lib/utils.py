@@ -11,7 +11,6 @@ from functools import wraps
 from types import FunctionType
 import xbmc
 
-
 def noop(**kwargs):
     """Takes everything, does nothing, classic no operation function"""
     return kwargs
@@ -49,6 +48,50 @@ def log(func):
     wrapped.__doc__ = func.__doc__
     return wrapped
 
+# enhanced dictionary class for handling nested dict paths
+class dd(dict):
+    def __init__(self,d=None,root=None,root_key=None):
+        dict.__init__(self,d) if d else dict.__init__(self)
+        self.root = root
+        self.root_key = root_key
+        self._link_root()
+    def __getitem__(self,key):
+        try:
+            ret = dict.__getitem__(self,key)
+        except KeyError:
+            return dd(root=self,root_key=key)
+        if isinstance(ret,dict) and not isinstance(ret,dd):
+            ret = dd(ret)
+        return ret
+    def __setitem__(self,key,value):
+        if isinstance(value,dict) and not isinstance(value,dd):
+            dict.__setitem__(self,key,dd(d=value))
+        else:
+            dict.__setitem__(self,key,value)
+        self._link_root()
+    def __len__(self):
+        if self.has_substance():
+            return dict.__len__(self)
+        else:
+            return 0
+    def _link_root(self):
+        if self and (self.root is not None) and (self.root_key is not None):
+            if not self.root[self.root_key]:
+                self.root[self.root_key] = self
+            elif isinstance(self.root[self.root_key],dict):
+                self.root[self.root_key].update(self)
+            else:
+                raise Exception("dd - root key is already set")
+            self.root = None
+            self.root_key = None
+    def has_substance(self):
+        for value in self.values():
+            if value:
+                if isinstance(value,dd):
+                    return value.has_substance()
+                else:
+                    return True
+        return False
 
 def get_user_agent():
     """

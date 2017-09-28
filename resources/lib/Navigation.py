@@ -17,10 +17,11 @@ import urllib
 import urllib2
 from urlparse import parse_qsl, urlparse
 import xbmc
+from sys import exc_info
 from xbmcaddon import Addon
 import resources.lib.NetflixSession as Netflix
 from resources.lib.utils import noop, log
-
+from Search import SearchParams, SearchResults
 
 class Navigation(object):
     """
@@ -211,12 +212,17 @@ class Navigation(object):
             # if the user requested a search, ask for the term
             term = self.kodi_helper.dialogs.show_search_term_dialog()
             if term:
-                result_folder = self.kodi_helper.build_search_result_folder(
-                    build_url=self.build_url,
-                    term=term)
-                return self.kodi_helper.set_location(url=result_folder)
-        elif action == 'search_result':
-            return self.show_search_results(params.get('term'))
+                search_params = SearchParams()
+                search_params.add_term(search_string=term)
+                search_id = self.kodi_helper.create_pcached_id(search_params,type='SEARCH')
+                search_result_folder = self.kodi_helper.build_search_result_folder(build_url=self.build_url, term=term, search_id=search_id)
+                return self.kodi_helper.set_location(url=search_result_folder)
+        elif params['action'] == 'search_result':
+            return self.show_search_results(search_params=self.kodi_helper.get_pcached_item(params.get('search_id'),type='SEARCH'))
+        elif params['action'] == 'cached_directory':
+            cached_directory = self.kodi_helper.get_new_kodidirectorybuilder(self.kodi_helper.get_pcached_item(params.get('cache_id'),type='DIRECTORY'))
+            if cached_directory:
+                return cached_directory.build(plugin_handle=self.kodi_helper.plugin_handle)
         elif action == 'user-items' and params['type'] == 'exported':
             # update local db from exported media
             self.library.updatedb_from_exported()
@@ -263,7 +269,7 @@ class Navigation(object):
         return False
 
     @log
-    def show_search_results(self, term):
+    def show_search_results(self, search_params):
         """Display a list of search results
 
         Parameters
@@ -276,22 +282,29 @@ class Navigation(object):
         bool
             If no results are available
         """
-        user_data = self._check_response(self.call_netflix_service({
-            'method': 'get_user_data'}))
-        if user_data:
-            search_contents = self._check_response(self.call_netflix_service({
-                'method': 'search',
-                'term': term, 'guid':
-                user_data['guid'],
-                'cache': True}))
-            if search_contents and len(search_contents) != 0:
-                actions = {'movie': 'play_video', 'show': 'season_list'}
-                results = self.kodi_helper.build_search_result_listing(
-                    video_list=search_contents,
-                    actions=actions,
-                    build_url=self.build_url)
-                return results
-        self.kodi_helper.dialogs.show_no_search_results_notify()
+        if search_params:
+            user_data = self._check_response(self.call_netflix_service({'method': 'get_user_data'}))
+            if user_data:
+                response = self._check_response(
+                               self.call_netflix_service({
+                                   'method': 'search',
+                                   'guid': user_data['guid'],
+                                   'cache': True
+                               }, post_data=search_params)
+                           )
+                if response:
+                    search_results,video_list = response
+                    search_results = SearchResults(search_results)
+                    if search_results:
+                        actions = {'movie': 'play_video', 'show': 'season_list'}
+                        return self.kodi_helper.build_search_result_listing(
+                                   search_params=search_params,
+                                   search_results=search_results,
+                                   video_list=video_list,
+                                   actions=actions,
+                                   build_url=self.build_url
+                               )
+        self.kodi_helper.show_no_search_results_notification()
         return False
 
     def show_user_list(self, type):
@@ -433,19 +446,8 @@ class Navigation(object):
                     break
                 req_count = Netflix.FETCH_VIDEO_REQUEST_COUNT
                 video_list.update(items)
-                start = end + 1
-                end = start + req_count
-            has_more = len(video_list) == (req_count + 1) * 4
             actions = {'movie': 'play_video', 'show': 'season_list'}
-            listing = self.kodi_helper.build_video_listing(
-                video_list=video_list,
-                actions=actions,
-                type=type,
-                build_url=self.build_url,
-                has_more=has_more,
-                start=start,
-                current_video_list_id=video_list_id)
-            return listing
+            return self.kodi_helper.build_video_listing(video_list=video_list, actions=actions, build_url=self.build_url)
         return False
 
     def show_video_lists(self):
@@ -846,7 +848,7 @@ class Navigation(object):
         service_url += str(addon.getSetting('netflix_service_port'))
         return service_url
 
-    def call_netflix_service(self, params):
+    def call_netflix_service(self, params, post_data=None):
         """
         Makes a GET request to the internal Netflix HTTP proxy
         and returns the result
@@ -877,11 +879,30 @@ class Navigation(object):
         url = self.get_netflix_service_url()
         full_url = url + '?' + values
         # don't use proxy for localhost
-        if urlparse(url).hostname in ('localhost', '127.0.0.1', '::1'):
-            opener = urllib2.build_opener(urllib2.ProxyHandler({}))
-            urllib2.install_opener(opener)
-        data = urllib2.urlopen(full_url).read(opener)
-        parsed_json = json.loads(data)
+        if (urlparse(url).hostname in ('localhost','127.0.0.1','::1')):
+            urllib2.install_opener(
+                urllib2.build_opener(
+                    urllib2.ProxyHandler({})
+                )
+            )
+        if post_data:
+            try:
+                post = json.dumps(post_data)
+            except:
+                exc = exc_info()
+                self.log(msg='Exception encoding to JSON - {} {]'.format(exc[0],exc[1]))
+            data = urllib2.urlopen(full_url, post).read()
+        else:
+            data = urllib2.urlopen(full_url).read()
+
+        try:
+            parsed_json = json.loads(data)
+        except:
+            exc = exc_info()
+            exc_msg = 'Exception parsing JSON - {} {}'.format(exc[0],exc[1])
+            self.log(msg=exc_msg)
+            parsed_json = {'error':exc_msg}
+
         if 'error' in parsed_json:
             result = {'error': parsed_json.get('error')}
             return result

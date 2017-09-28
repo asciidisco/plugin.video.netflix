@@ -360,7 +360,7 @@ class NetflixHttpSubRessourceHandler(object):
         """
         return self.netflix_session.user_data
 
-    def search(self, params):
+    def search (self, params, data):
         """Search proxy function
 
         Parameters
@@ -370,19 +370,26 @@ class NetflixHttpSubRessourceHandler(object):
 
         Returns
         -------
-        :obj:`list`
-            Transformed response of the remote call
+        :obj:`tuple` : :obj:`SearchResults` and :obj:`list`
+             SearchResults and search video list
         """
-        term = params.get('term', [''])[0]
-        raw_search_results = self.netflix_session.fetch_search_results(
-            search_str=term)
-        # determine if we found something
-        videos = raw_search_results.get('value', {}).get('videos', {})
-        result_size = len(videos.keys())
+        raw_search_results = self.netflix_session.fetch_search_results(search_params=data)
         # check for any errors
-        if 'error' in raw_search_results or result_size == 0:
-            return []
-        # list the search results
-        search_results = self.netflix_session.parse_video_list(
-            response_data=raw_search_results)
-        return search_results
+        if 'error' in raw_search_results:
+            return raw_search_results
+
+        # parse the search results
+        search_results = self.netflix_session.parse_search_results(search_params=data, response_data=raw_search_results)
+
+        # combine video ids
+        video_ids = []
+        for result in search_results:
+            video_ids += search_results[result]['data']['videos']
+
+        if len(video_ids) < 1:
+            return (search_results,{})
+
+        # fetch video information
+        video_list_information = self.netflix_session.fetch_video_list_information(video_ids=video_ids)
+
+        return (search_results,self.netflix_session.parse_video_list(response_data=video_list_information))
