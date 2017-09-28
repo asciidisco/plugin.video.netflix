@@ -1419,6 +1419,60 @@ class NetflixSession:
         response = self._path_request(paths=paths)
         return self._process_response(response=response, component='Video list')
 
+    def _sublist (self, list, length):
+        """Generate [length] slices of list
+
+        Parameters
+        ----------
+        list : :obj:`list`
+            list to be sliced
+
+        length : :obj:`int`
+            slice size
+
+        Yeilds
+        -------
+        :obj:`list`
+            slice
+        """
+        for i in range(0,len(list),length):
+            yield list[i:i+length]
+        return 
+
+    def _merge_video_information (self, target, source):
+        """Merge video information dicts into one
+
+        Parameters
+        ----------
+        target : :obj:`dict`
+            merge target
+
+        source : :obj:`dict`
+            merge source
+
+        Returns
+        -------
+        bool
+            result
+        """
+        for k,v in source.iteritems():
+            if k in target:
+                if isinstance(v,type(target[k])):
+                    if v != target[k]:
+                        if isinstance(v,dict):
+                            self._merge_video_information(target[k],v)
+                        elif isinstance(v,list) or isinstance(v,int):
+                            target[k] = target[k] + v
+                        else:
+                            # merge conflict
+                            raise Exception('Merge conflict: unable to merge value type ({})'.format(str(type(v))))
+                else:
+                    # merge conflict
+                    raise Exception('Merge conflict: incompatible types - {} {}'.format(str(type(v)),str(type(target[k]))))
+            else:
+                target[k] = v
+        return True
+
     def fetch_video_list_information (self, video_ids):
         """Fetches the JSON which contains the detail information of a list of given video ids
 
@@ -1432,26 +1486,36 @@ class NetflixSession:
         :obj:`dict` of :obj:`dict` of :obj:`str`
             Raw Netflix API call response or api call error
         """
-        paths = []
-        for video_id in video_ids:
-            paths.append(['videos', video_id, ['summary', 'title', 'synopsis', 'regularSynopsis', 'evidence', 'queue', 'episodeCount', 'info', 'maturity', 'runtime', 'seasonCount', 'releaseYear', 'userRating', 'numSeasonsLabel', 'bookmarkPosition', 'watched', 'delivery']])
-            paths.append(['videos', video_id, 'cast', {'from': 0, 'to': 15}, ['id', 'name']])
-            paths.append(['videos', video_id, 'cast', 'summary'])
-            paths.append(['videos', video_id, 'genres', {'from': 0, 'to': 5}, ['id', 'name']])
-            paths.append(['videos', video_id, 'genres', 'summary'])
-            paths.append(['videos', video_id, 'tags', {'from': 0, 'to': 9}, ['id', 'name']])
-            paths.append(['videos', video_id, 'tags', 'summary'])
-            paths.append(['videos', video_id, ['creators', 'directors'], {'from': 0, 'to': 49}, ['id', 'name']])
-            paths.append(['videos', video_id, ['creators', 'directors'], 'summary'])
-            paths.append(['videos', video_id, 'bb2OGLogo', '_400x90', 'png'])
-            paths.append(['videos', video_id, 'boxarts', '_342x192', 'jpg'])
-            paths.append(['videos', video_id, 'boxarts', '_1280x720', 'jpg'])
-            paths.append(['videos', video_id, 'storyarts', '_1632x873', 'jpg'])
-            paths.append(['videos', video_id, 'interestingMoment', '_665x375', 'jpg'])
-            paths.append(['videos', video_id, 'artWorkByType', 'BILLBOARD', '_1280x720', 'jpg'])
-
-        response = self._path_request(paths=paths)
-        return self._process_response(response=response, component='fetch_video_list_information')
+        video_list_information = {}
+        # limit request to 16 at a time
+        for sublist_video_ids in self._sublist(video_ids,16):
+            paths = []
+            for video_id in sublist_video_ids:
+                paths.append(['videos', video_id, ['summary', 'title', 'synopsis', 'regularSynopsis', 'evidence', 'queue', 'episodeCount', 'info', 'maturity', 'runtime', 'seasonCount', 'releaseYear', 'userRating', 'numSeasonsLabel', 'bookmarkPosition', 'watched', 'delivery']])
+                paths.append(['videos', video_id, 'cast', {'from': 0, 'to': 15}, ['id', 'name']])
+                paths.append(['videos', video_id, 'cast', 'summary'])
+                paths.append(['videos', video_id, 'genres', {'from': 0, 'to': 5}, ['id', 'name']])
+                paths.append(['videos', video_id, 'genres', 'summary'])
+                paths.append(['videos', video_id, 'tags', {'from': 0, 'to': 9}, ['id', 'name']])
+                paths.append(['videos', video_id, 'tags', 'summary'])
+                paths.append(['videos', video_id, ['creators', 'directors'], {'from': 0, 'to': 49}, ['id', 'name']])
+                paths.append(['videos', video_id, ['creators', 'directors'], 'summary'])
+                paths.append(['videos', video_id, 'bb2OGLogo', '_400x90', 'png'])
+                paths.append(['videos', video_id, 'boxarts', '_342x192', 'jpg'])
+                paths.append(['videos', video_id, 'boxarts', '_1280x720', 'jpg'])
+                paths.append(['videos', video_id, 'storyarts', '_1632x873', 'jpg'])
+                paths.append(['videos', video_id, 'interestingMoment', '_665x375', 'jpg'])
+                paths.append(['videos', video_id, 'artWorkByType', 'BILLBOARD', '_1280x720', 'jpg'])
+            response = self._path_request(paths=paths)
+            result = self._process_response(response=response, component='fetch_video_list_information')
+            if 'error' in result:
+                return result
+            try:
+                self._merge_video_information(video_list_information, result)
+            except:
+                exc = sys.exc_info()
+                self.log(msg='Unable to merge video list information {} {}'.format(exc[0],exc[1]))
+        return video_list_information
 
     def fetch_metadata (self, id):
         """Fetches the JSON which contains the metadata for a given show/movie or season id
