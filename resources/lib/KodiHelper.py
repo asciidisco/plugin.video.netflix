@@ -17,8 +17,9 @@ from MSL import MSL
 from os import remove
 from os.path import join, isfile
 from urllib import urlencode
+from inputstreamhelper import Helper
 from xbmcaddon import Addon
-from uuid import uuid4
+
 from utils import get_user_agent, uniq_id
 from UniversalAnalytics import Tracker
 try:
@@ -1294,85 +1295,78 @@ class KodiHelper(object):
         """
         self.set_esn(esn)
         addon = self.get_addon()
-        (inputstream_addon, inputstream_enabled) = self.get_inputstream_addon()
-        if inputstream_addon is None:
-            self.show_missing_inputstream_addon_notification()
-            self.log(msg='Inputstream addon not found')
-            return False
-        if not inputstream_enabled:
-            self.show_disabled_inputstream_addon_notification()
-            self.log(msg='Inputstream addon not enabled')
-            return False
+        is_helper = Helper(protocol='mpd', drm='widevine')
+        if is_helper.check_inputstream():
+            inputstream_addon = 'inputstream.adaptive'
+            # track play event
+            self.track_event('playVideo')
 
-        # track play event
-        self.track_event('playVideo')
+            # check esn in settings
+            settings_esn = str(addon.getSetting('esn'))
+            if len(settings_esn) == 0:
+                addon.setSetting('esn', str(esn))
 
-        # check esn in settings
-        settings_esn = str(addon.getSetting('esn'))
-        if len(settings_esn) == 0:
-            addon.setSetting('esn', str(esn))
+            # inputstream addon properties
+            port = str(addon.getSetting('msl_service_port'))
+            msl_service_url = 'http://localhost:' + port
+            play_item = xbmcgui.ListItem(
+                path=msl_service_url + '/manifest?id=' + video_id)
+            play_item.setContentLookup(False)
+            play_item.setMimeType('application/dash+xml')
+            play_item.setProperty(
+                key=inputstream_addon + '.stream_headers',
+                value='user-agent=' + get_user_agent())
+            play_item.setProperty(
+                key=inputstream_addon + '.license_type',
+                value='com.widevine.alpha')
+            play_item.setProperty(
+                key=inputstream_addon + '.manifest_type',
+                value='mpd')
+            play_item.setProperty(
+                key=inputstream_addon + '.license_key',
+                value=msl_service_url + '/license?id=' + video_id + '||b{SSM}!b{SID}|')
+            play_item.setProperty(
+                key=inputstream_addon + '.server_certificate',
+                value='Cr0CCAMSEOVEukALwQ8307Y2+LVP+0MYh/HPkwUijgIwggEKAoIBAQDm875btoWUbGqQD8eAGuBlGY+Pxo8YF1LQR+Ex0pDONMet8EHslcZRBKNQ/09RZFTP0vrYimyYiBmk9GG+S0wB3CRITgweNE15cD33MQYyS3zpBd4z+sCJam2+jj1ZA4uijE2dxGC+gRBRnw9WoPyw7D8RuhGSJ95OEtzg3Ho+mEsxuE5xg9LM4+Zuro/9msz2bFgJUjQUVHo5j+k4qLWu4ObugFmc9DLIAohL58UR5k0XnvizulOHbMMxdzna9lwTw/4SALadEV/CZXBmswUtBgATDKNqjXwokohncpdsWSauH6vfS6FXwizQoZJ9TdjSGC60rUB2t+aYDm74cIuxAgMBAAE6EHRlc3QubmV0ZmxpeC5jb20SgAOE0y8yWw2Win6M2/bw7+aqVuQPwzS/YG5ySYvwCGQd0Dltr3hpik98WijUODUr6PxMn1ZYXOLo3eED6xYGM7Riza8XskRdCfF8xjj7L7/THPbixyn4mULsttSmWFhexzXnSeKqQHuoKmerqu0nu39iW3pcxDV/K7E6aaSr5ID0SCi7KRcL9BCUCz1g9c43sNj46BhMCWJSm0mx1XFDcoKZWhpj5FAgU4Q4e6f+S8eX39nf6D6SJRb4ap7Znzn7preIvmS93xWjm75I6UBVQGo6pn4qWNCgLYlGGCQCUm5tg566j+/g5jvYZkTJvbiZFwtjMW5njbSRwB3W4CrKoyxw4qsJNSaZRTKAvSjTKdqVDXV/U5HK7SaBA6iJ981/aforXbd2vZlRXO/2S+Maa2mHULzsD+S5l4/YGpSt7PnkCe25F+nAovtl/ogZgjMeEdFyd/9YMYjOS4krYmwp3yJ7m9ZzYCQ6I8RQN4x/yLlHG5RH/+WNLNUs6JAZ0fFdCmw=')
+            play_item.setProperty(
+                key='inputstreamaddon',
+                value=inputstream_addon)
 
-        # inputstream addon properties
-        port = str(addon.getSetting('msl_service_port'))
-        msl_service_url = 'http://localhost:' + port
-        play_item = xbmcgui.ListItem(
-            path=msl_service_url + '/manifest?id=' + video_id)
-        play_item.setContentLookup(False)
-        play_item.setMimeType('application/dash+xml')
-        play_item.setProperty(
-            key=inputstream_addon + '.stream_headers',
-            value='user-agent=' + get_user_agent())
-        play_item.setProperty(
-            key=inputstream_addon + '.license_type',
-            value='com.widevine.alpha')
-        play_item.setProperty(
-            key=inputstream_addon + '.manifest_type',
-            value='mpd')
-        play_item.setProperty(
-            key=inputstream_addon + '.license_key',
-            value=msl_service_url + '/license?id=' + video_id + '||b{SSM}!b{SID}|')
-        play_item.setProperty(
-            key=inputstream_addon + '.server_certificate',
-            value='Cr0CCAMSEOVEukALwQ8307Y2+LVP+0MYh/HPkwUijgIwggEKAoIBAQDm875btoWUbGqQD8eAGuBlGY+Pxo8YF1LQR+Ex0pDONMet8EHslcZRBKNQ/09RZFTP0vrYimyYiBmk9GG+S0wB3CRITgweNE15cD33MQYyS3zpBd4z+sCJam2+jj1ZA4uijE2dxGC+gRBRnw9WoPyw7D8RuhGSJ95OEtzg3Ho+mEsxuE5xg9LM4+Zuro/9msz2bFgJUjQUVHo5j+k4qLWu4ObugFmc9DLIAohL58UR5k0XnvizulOHbMMxdzna9lwTw/4SALadEV/CZXBmswUtBgATDKNqjXwokohncpdsWSauH6vfS6FXwizQoZJ9TdjSGC60rUB2t+aYDm74cIuxAgMBAAE6EHRlc3QubmV0ZmxpeC5jb20SgAOE0y8yWw2Win6M2/bw7+aqVuQPwzS/YG5ySYvwCGQd0Dltr3hpik98WijUODUr6PxMn1ZYXOLo3eED6xYGM7Riza8XskRdCfF8xjj7L7/THPbixyn4mULsttSmWFhexzXnSeKqQHuoKmerqu0nu39iW3pcxDV/K7E6aaSr5ID0SCi7KRcL9BCUCz1g9c43sNj46BhMCWJSm0mx1XFDcoKZWhpj5FAgU4Q4e6f+S8eX39nf6D6SJRb4ap7Znzn7preIvmS93xWjm75I6UBVQGo6pn4qWNCgLYlGGCQCUm5tg566j+/g5jvYZkTJvbiZFwtjMW5njbSRwB3W4CrKoyxw4qsJNSaZRTKAvSjTKdqVDXV/U5HK7SaBA6iJ981/aforXbd2vZlRXO/2S+Maa2mHULzsD+S5l4/YGpSt7PnkCe25F+nAovtl/ogZgjMeEdFyd/9YMYjOS4krYmwp3yJ7m9ZzYCQ6I8RQN4x/yLlHG5RH/+WNLNUs6JAZ0fFdCmw=')
-        play_item.setProperty(
-            key='inputstreamaddon',
-            value=inputstream_addon)
-
-        # check if we have a bookmark e.g. start offset position
-        if int(start_offset) > 0:
-            play_item.setProperty('StartOffset', str(start_offset) + '.0')
-        # set infoLabels
-        if len(infoLabels) > 0:
+            # check if we have a bookmark e.g. start offset position
+            if int(start_offset) > 0:
+                play_item.setProperty('StartOffset', str(start_offset) + '.0')
+            # set infoLabels
+            if len(infoLabels) > 0:
+                play_item.setInfo('video', infoLabels)
+            if len(infoLabels) == 0:
+                infoLabels = self.library.read_metadata_file(video_id=video_id)
+                art = self.library.read_artdata_file(video_id=video_id)
+                play_item.setArt(art)
             play_item.setInfo('video', infoLabels)
-        if len(infoLabels) == 0:
-            infoLabels = self.library.read_metadata_file(video_id=video_id)
-            art = self.library.read_artdata_file(video_id=video_id)
-            play_item.setArt(art)
-        play_item.setInfo('video', infoLabels)
 
-        # check for content in kodi db
-        if str(infoLabels) != 'None':
-            if infoLabels['mediatype'] == 'episode':
-                id = self.showtitle_to_id(title=infoLabels['tvshowtitle'])
-                details = self.get_show_content_by_id(
-                    showid=id,
-                    showseason=infoLabels['season'],
-                    showepisode=infoLabels['episode'])
-                if details is not False:
-                    play_item.setInfo('video', details[0])
-                    play_item.setArt(details[1])
-            if infoLabels['mediatype'] != 'episode':
-                id = self.movietitle_to_id(title=infoLabels['title'])
-                details = self.get_movie_content_by_id(movieid=id)
-                if details is not False:
-                    play_item.setInfo('video', details[0])
-                    play_item.setArt(details[1])
+            # check for content in kodi db
+            if str(infoLabels) != 'None':
+                if infoLabels['mediatype'] == 'episode':
+                    id = self.showtitle_to_id(title=infoLabels['tvshowtitle'])
+                    details = self.get_show_content_by_id(
+                        showid=id,
+                        showseason=infoLabels['season'],
+                        showepisode=infoLabels['episode'])
+                    if details is not False:
+                        play_item.setInfo('video', details[0])
+                        play_item.setArt(details[1])
+                if infoLabels['mediatype'] != 'episode':
+                    id = self.movietitle_to_id(title=infoLabels['title'])
+                    details = self.get_movie_content_by_id(movieid=id)
+                    if details is not False:
+                        play_item.setInfo('video', details[0])
+                        play_item.setArt(details[1])
 
-        resolved = xbmcplugin.setResolvedUrl(
-            handle=self.plugin_handle,
-            succeeded=True,
-            listitem=play_item)
-        return resolved
+            resolved = xbmcplugin.setResolvedUrl(
+                handle=self.plugin_handle,
+                succeeded=True,
+                listitem=play_item)
+            return resolved
 
     def _generate_art_info(self, entry, li):
         """Adds the art info from an entry to a Kodi list item
