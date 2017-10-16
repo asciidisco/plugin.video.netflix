@@ -467,7 +467,7 @@ class Navigation(object):
                     user_list_order=user_list_order,
                     actions=actions,
                     build_url=self.build_url)
-                return lisiting
+                return listing
         return False
 
     @log
