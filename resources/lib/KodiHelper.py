@@ -15,13 +15,13 @@ import xbmcvfs
 import xbmcplugin
 from resources.lib.MSL import MSL
 from resources.lib.Constants import Constants
-from resources.lib.kodihelper.Rpc import Rpc
-from resources.lib.kodihelper.Cache import Cache
-from resources.lib.kodihelper.Addon import Addon
-from resources.lib.kodihelper.Dialogs import Dialogs
+from resources.lib.kodi.Rpc import Rpc
+from resources.lib.kodi.Cache import Cache
+from resources.lib.kodi.Addon import Addon
+from resources.lib.kodi.Dialogs import Dialogs
 from resources.lib.UniversalAnalytics import Tracker
-from resources.lib.kodihelper.Settings import Settings
-from resources.lib.kodihelper.ListItem import ListItem
+from resources.lib.kodi.Settings import Settings
+from resources.lib.kodi.ListItem import ListItem
 from resources.lib.utils import get_user_agent, strip_title
 
 
@@ -610,6 +610,9 @@ class KodiHelper(object):
         :type library: resources.lib.Library
         """
         self.library = library
+<<<<<<< HEAD
+>>>>>>> refactor(kodihelper): Break up Kodi Helper into components
+=======
 >>>>>>> refactor(kodihelper): Break up Kodi Helper into components
 
     def log(self, msg, level=xbmc.LOGDEBUG):
