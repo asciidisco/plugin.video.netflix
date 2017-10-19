@@ -4,6 +4,7 @@
 
 """General utils"""
 
+import re
 import time
 import hashlib
 import platform
@@ -12,9 +13,11 @@ from types import FunctionType
 import xbmc
 
 
-def noop(**kwargs):
+def noop(*args, **_):
     """Takes everything, does nothing, classic no operation function"""
-    return kwargs
+    if len(args) == 1:
+        return args[0]
+    return args
 
 
 def log(func):
@@ -120,3 +123,19 @@ def get_class_methods(class_item=None):
     """
     _type = FunctionType
     return [x for x, y in class_item.__dict__.items() if isinstance(y, _type)]
+
+
+def strip_title(title=''):
+    """
+    Strips special chars out of a title
+
+    :param title: Title to be stripped
+    :type title: str
+    :returns: str -- Stripped title
+    """
+    title_ascii = title.encode('ascii', 'ignore')
+    title_stripped = re.sub(
+        pattern=r'[?|$|!|:|#|\.|\,|\'| ]',
+        repl=r'',
+        string=title_ascii).lower().replace('-', '')
+    return title_stripped

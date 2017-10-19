@@ -26,7 +26,7 @@ exclude_paths:
   - "resources/settings.xml"
   - "resources/__init__.py"
   - "resources/lib/__init__.py"
-  - "__init__.py"
+  - "resources/lib/kodihelper/__init__.py"
   - "addon.xml"
   - "LICENSE.txt"
   - "makefile"

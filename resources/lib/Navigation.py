@@ -141,7 +141,7 @@ class Navigation(object):
             return episode_list
         elif action == 'rating':
             return self.rate_on_netflix(video_id=params['id'])
-        elif action == 'remove_from_list':
+        elif action == 'remove_list':
             # removes a title from the users list on Netflix
             self.kodi_helper.invalidate_memcache()
             return self.remove_from_list(video_id=params['id'])
@@ -435,16 +435,19 @@ class Navigation(object):
                 video_list.update(items)
                 start = end + 1
                 end = start + req_count
-            has_more = len(video_list) == (req_count + 1) * 4
+            page = None
+            if len(video_list) == (req_count + 1) * 4:
+                page = {
+                    'type': type,
+                    'start': start,
+                    'video_list_id': video_list_id,
+                }
             actions = {'movie': 'play_video', 'show': 'season_list'}
             listing = self.kodi_helper.build_video_listing(
                 video_list=video_list,
                 actions=actions,
-                type=type,
                 build_url=self.build_url,
-                has_more=has_more,
-                start=start,
-                current_video_list_id=video_list_id)
+                page=page)
             return listing
         return False
 
@@ -711,8 +714,11 @@ class Navigation(object):
                 self.kodi_helper.dialogs.show_login_failed_notify()
         # persist & load main menu selection
         if 'type' in params:
-            self.kodi_helper.set_main_menu_selection(type=params['type'])
-            main_menu = self.kodi_helper.get_main_menu_selection()
+            self.kodi_helper.cache.set(
+                cache_id='main_menu_selection',
+                value=params['type'])
+            main_menu = self.kodi_helper.cache.get(
+                cache_id='main_menu_selection')
             options['main_menu_selection'] = main_menu
         # check and switch the profile if needed
         if self.check_for_designated_profile_change(params=params):

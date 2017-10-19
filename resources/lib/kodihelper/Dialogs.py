@@ -12,16 +12,13 @@ import xbmcgui
 class Dialogs(object):
     """Kodi UI Dialogs"""
 
-    def __init__(self, get_local_string, custom_export_name, notify_time=5000):
+    def __init__(self, get_local_string, settings, notify_time=5000):
         """
-        Sets the i18n string loader function and exprt name properties
 
-        :param original_title: Original title of the show
-        :type original_title: str
         """
+        self.settings = settings
         self.notify_time = notify_time
         self.get_local_string = get_local_string
-        self.custom_export_name = custom_export_name
 
     def show_rating_dialog(self):
         """
@@ -71,7 +68,7 @@ class Dialogs(object):
 
         :returns: str - Title to persist
         """
-        if self.custom_export_name == 'true':
+        if self.settings.get('custom_export_name') is True:
             return original_title
         dlg = xbmcgui.Dialog()
         custom_title = dlg.input(
