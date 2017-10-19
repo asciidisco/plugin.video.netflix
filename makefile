@@ -10,9 +10,9 @@ COVERAGE_FILE = ./.coverage
 COVERAGE_DIR = ./coverage
 REPORT_DIR = ./report
 DOCS_DIR = ./docs
-FLAKE_FILES = ./addon.py ./service.py ./setup.py ./resources/lib/utils.py ./resources/lib/MSLHttpRequestHandler.py ./resources/lib/NetflixHttpRequestHandler.py ./resources/lib/KodiHelper.py ./resources/lib/Navigation.py ./resources/lib/Constants.py ./resources/lib/kodi/Dialogs.py ./resources/lib/kodi/Addon.py ./resources/lib/kodi/Cache.py ./resources/lib/kodi/Rpc.py ./resources/lib/kodi/Settings.py ./resources/lib/kodi/ListItem.py 
-RADON_FILES = resources/lib/*.py resources/lib/kodi/*.py ./addon.py ./service.py
-PYLINT_FILES = addon service setup resources.lib.MSLHttpRequestHandler resources.lib.NetflixHttpRequestHandler resources.lib.utils resources.lib.KodiHelper resources.lib.Constants resources.lib.kodi.Dialogs resources.lib.kodi.Addon resources.lib.kodi.Cache resources.lib.kodi.Rpc resources.lib.kodi.Settings resources.lib.kodi.ListItem
+FLAKE_FILES = ./addon.py ./service.py ./setup.py ./resources/lib/utils.py ./resources/lib/MSLHttpRequestHandler.py ./resources/lib/NetflixHttpRequestHandler.py ./resources/lib/KodiHelper.py ./resources/lib/Navigation.py ./resources/lib/Constants.py ./resources/lib/kodihelper/Dialogs.py ./resources/lib/kodihelper/Addon.py ./resources/lib/kodihelper/Cache.py ./resources/lib/kodihelper/Rpc.py ./resources/lib/kodihelper/Settings.py ./resources/lib/kodihelper/ListItem.py 
+RADON_FILES = resources/lib/*.py resources/lib/kodihelper/*.py ./addon.py ./service.py
+PYLINT_FILES = addon service setup resources.lib.MSLHttpRequestHandler resources.lib.NetflixHttpRequestHandler resources.lib.utils resources.lib.KodiHelper resources.lib.Constants resources.lib.kodihelper.Dialogs resources.lib.kodihelper.Addon resources.lib.kodihelper.Cache resources.lib.kodihelper.Rpc resources.lib.kodihelper.Settings resources.lib.kodihelper.ListItem
 LINT_REPORT_FILE = ./report/lint.html
 TEST_OPTIONS = -s --cover-package=resources.lib.utils --cover-package=resources.lib.NetflixSession  --cover-package=resources.lib.Navigation --cover-package=resources.lib.MSL --cover-package=resources.lib.KodiHelper --cover-package=resources.lib.kodi.Dialogs --cover-package=resources.lib.Library --cover-package=resources.lib.KodiHelper --cover-package=resources.lib.Library --cover-package=resources.lib.NetflixHttpRequestHandler --cover-package=resources.lib.NetflixHttpSubRessourceHandler --cover-erase --with-coverage --cover-branches
 I18N_FILES = resources/language/**/*.po
