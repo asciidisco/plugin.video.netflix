@@ -94,7 +94,7 @@ class Library(object):
         """
         for label in source:
             exists = xbmcvfs.exists(
-                path=self.kodi_helper.check_folder_path(source[label]))
+                path=self.check_folder_path(source[label]))
             if not exists:
                 xbmcvfs.mkdir(source[label])
 
@@ -350,7 +350,7 @@ class Library(object):
         title = re.sub(r'[?|$|!|:|#]', r'', title)
         movie_meta = '%s (%d)' % (title, year)
         folder = re.sub(r'[?|$|!|:|#]', r'', alt_title)
-        dirname = self.kodi_helper.check_folder_path(
+        dirname = self.check_folder_path(
             path=os.path.join(self.movie_path, folder))
         filename = os.path.join(dirname, movie_meta + '.strm')
         progress = xbmcgui.DialogProgress()
@@ -393,7 +393,7 @@ class Library(object):
         title = re.sub(r'[?|$|!|:|#]', r'', title)
         show_meta = '%s' % (title)
         folder = re.sub(r'[?|$|!|:|#]', r'', alt_title.encode('utf-8'))
-        show_dir = self.kodi_helper.check_folder_path(
+        show_dir = self.check_folder_path(
             path=os.path.join(self.tvshow_path, folder))
         progress = xbmcgui.DialogProgress()
         progress.create(self.kodi_helper.get_local_string(650), show_meta)
@@ -513,7 +513,7 @@ class Library(object):
         time.sleep(0.5)
         del self.db[self.movies_label][movie_meta]
         self._update_local_db(filename=self.db_filepath, db=self.db)
-        dirname = self.kodi_helper.check_folder_path(
+        dirname = self.check_folder_path(
             path=os.path.join(self.movie_path, folder))
         filename = os.path.join(self.movie_path, folder, movie_meta + '.strm')
         if xbmcvfs.exists(dirname):
@@ -549,7 +549,7 @@ class Library(object):
         time.sleep(0.5)
         del self.db[self.series_label][title]
         self._update_local_db(filename=self.db_filepath, db=self.db)
-        show_dir = self.kodi_helper.check_folder_path(
+        show_dir = self.check_folder_path(
             path=os.path.join(self.tvshow_path, folder))
         if xbmcvfs.exists(show_dir):
             show_files = xbmcvfs.listdir(show_dir)[1]
@@ -593,7 +593,7 @@ class Library(object):
                 season_list.append(season_entry)
         self.db[self.series_label][show_meta]['seasons'] = season_list
         alt_title = self.db[self.series_label][show_meta]['alt_title']
-        show_dir = self.kodi_helper.check_folder_path(
+        show_dir = self.check_folder_path(
             path=os.path.join(self.tvshow_path, alt_title))
         if xbmcvfs.exists(show_dir):
             show_files = [f for f in xbmcvfs.listdir(show_dir) if xbmcvfs.exists(os.path.join(show_dir, f))]
@@ -630,7 +630,7 @@ class Library(object):
         show_meta = '%s' % (title)
         episode_meta = 'S%02dE%02d' % (season, episode)
         alt_title = self.db[self.series_label][show_meta]['alt_title']
-        show_dir = self.kodi_helper.check_folder_path(
+        show_dir = self.check_folder_path(
             path=os.path.join(self.tvshow_path, alt_title))
         if xbmcvfs.exists(os.path.join(show_dir, episode_meta + '.strm')):
             xbmcvfs.delete(os.path.join(show_dir, episode_meta + '.strm'))
@@ -653,9 +653,9 @@ class Library(object):
         shows = (['', ''])
         movie_path = self.movie_path
         tvshow_path = self.tvshow_path
-        if xbmcvfs.exists(self.kodi_helper.check_folder_path(movie_path)):
+        if xbmcvfs.exists(self.check_folder_path(movie_path)):
             movies = xbmcvfs.listdir(movie_path)
-        if xbmcvfs.exists(self.kodi_helper.check_folder_path(tvshow_path)):
+        if xbmcvfs.exists(self.check_folder_path(tvshow_path)):
             shows = xbmcvfs.listdir(tvshow_path)
         return movies + shows
 
@@ -668,7 +668,7 @@ class Library(object):
             year of given movie
         """
         year = '0000'
-        folder = self.kodi_helper.check_folder_path(
+        folder = self.check_folder_path(
             path=os.path.join(self.movie_path, title))
         if xbmcvfs.exists(folder):
             file = xbmcvfs.listdir(folder)
@@ -685,7 +685,7 @@ class Library(object):
         """
         tv_show_path = self.tvshow_path
         db_filepath = self.db_filepath
-        if xbmcvfs.exists(self.kodi_helper.check_folder_path(self.movie_path)):
+        if xbmcvfs.exists(self.check_folder_path(self.movie_path)):
             movies = xbmcvfs.listdir(self.movie_path)
             for video in movies[0]:
                 folder = os.path.join(self.movie_path, video)
@@ -699,7 +699,7 @@ class Library(object):
                         'alt_title': alt_title}
                     self._update_local_db(filename=db_filepath, db=self.db)
 
-        if xbmcvfs.exists(self.kodi_helper.check_folder_path(tv_show_path)):
+        if xbmcvfs.exists(self.check_folder_path(tv_show_path)):
             shows = xbmcvfs.listdir(tv_show_path)
             for video in shows[0]:
                 show_dir = os.path.join(tv_show_path, video)
@@ -747,9 +747,9 @@ class Library(object):
         title = re.sub(r'[?|$|!|:|#]', r'', title)
         imgfile = title + '.jpg'
         file = os.path.join(self.imagecache_path, imgfile)
-        folder_movies = self.kodi_helper.check_folder_path(
+        folder_movies = self.check_folder_path(
             path=os.path.join(self.movie_path, title))
-        folder_tvshows = self.kodi_helper.check_folder_path(
+        folder_tvshows = self.check_folder_path(
             path=os.path.join(self.tvshow_path, title))
         file_exists = xbmcvfs.exists(file)
         folder_exists = xbmcvfs.exists(folder_movies)
@@ -787,3 +787,25 @@ class Library(object):
         if xbmcvfs.exists(file):
             return file
         return self.kodi_helper.default_fanart
+
+    def check_folder_path(self, path):
+        """
+        Check if folderpath ends with path delimator
+        If not correct it (makes sure xbmcvfs.exists is working correct)
+        """
+        if isinstance(path, unicode):
+            check = path.encode('ascii', 'ignore')
+            if '/' in check and not str(check).endswith('/'):
+                end = u'/'
+                path = path + end
+                return path
+            if '\\' in check and not str(check).endswith('\\'):
+                end = u'\\'
+                path = path + end
+                return path
+        if '/' in path and not str(path).endswith('/'):
+            path = path + '/'
+            return path
+        if '\\' in path and not str(path).endswith('\\'):
+            path = path + '\\'
+            return path
