@@ -1639,7 +1639,7 @@ class NetflixSession(object):
                 target[k] = v
         return True
 
-    def fetch_video_list_information (self, video_ids):
+    def fetch_video_list_information (self, video_ids, split=None):
         """
         Fetches the JSON which contains the detail information of a list of given video ids
 
@@ -1654,11 +1654,16 @@ class NetflixSession(object):
             Raw Netflix API call response or api call error
         """
         video_list_information = {}
-        # limit request to 16 at a time
-        for sublist_video_ids in self._sublist(video_ids,16):
+        if split is not None:
+            # limit request size
+            video_ids_lists = self._sublist(video_ids, split)
+        else:
+            video_ids_lists = [video_ids]
+        for sublist_video_ids in video_ids_lists:
             paths = []
             for video_id in sublist_video_ids:
-                paths.append(['videos', video_id, ['summary', 'title', 'synopsis', 'regularSynopsis', 'evidence', 'queue', 'episodeCount', 'info', 'maturity', 'runtime', 'seasonCount', 'releaseYear', 'userRating', 'numSeasonsLabel', 'bookmarkPosition', 'watched', 'delivery']])
+                paths.append(['videos', video_id, ['summary', 'title', 'synopsis', 'regularSynopsis', 'evidence', 'queue', 'episodeCount', 'info',
+                              'maturity', 'runtime', 'seasonCount', 'releaseYear', 'userRating', 'numSeasonsLabel', 'bookmarkPosition', 'watched', 'delivery']])
                 paths.append(['videos', video_id, 'cast', {'from': 0, 'to': 15}, ['id', 'name']])
                 paths.append(['videos', video_id, 'cast', 'summary'])
                 paths.append(['videos', video_id, 'genres', {'from': 0, 'to': 5}, ['id', 'name']])
@@ -1676,13 +1681,22 @@ class NetflixSession(object):
             response = self._path_request(paths=paths)
             result = self._process_response(response=response, component='fetch_video_list_information')
             if 'error' in result:
+                if split is None or split > 5:
+                    error_code = int(result.get('code',0))
+                    if (error_code == 413) or (error_code == 500):
+                        # try again with smaller requests
+                        return self.fetch_video_list_information(video_ids, split=((len(sublist_video_ids) + 2 // 2) // 2))
                 return result
-            try:
-                self._merge_video_information(video_list_information, result)
-            except:
-                exc = sys.exc_info()
-                self.log(msg='Unable to merge video list information {} {}'.format(exc[0],exc[1]))
+            if split is not None:
+                try:
+                    self._merge_video_information(video_list_information, result)
+                except:
+                    exc = sys.exc_info()
+                    self.log(msg='Unable to merge video list information {} {}'.format(exc[0],exc[1]))
+            else:
+                video_list_information = result
         return video_list_information
+
 
     def fetch_metadata(self, id):
         """
