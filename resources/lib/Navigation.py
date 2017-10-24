@@ -890,7 +890,7 @@ class Navigation(object):
                 post = json.dumps(post_data)
             except:
                 exc = exc_info()
-                self.log(msg='Exception encoding to JSON - {} {]'.format(exc[0],exc[1]))
+                self.log(msg='Exception encoding to JSON - {} {}'.format(exc[0],exc[1]))
             data = urllib2.urlopen(full_url, post).read()
         else:
             data = urllib2.urlopen(full_url).read()
