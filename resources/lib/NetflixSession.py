@@ -2240,7 +2240,7 @@ class NetflixSession(object):
         if user_data is None:
             return None
         self.user_data = user_data
-        self.esn = user_data.get('esn')
+        self.esn = self._parse_esn_data(user_data)
         self.api_data = {
             'API_BASE_URL': user_data.get('API_BASE_URL'),
             'API_ROOT': user_data.get('API_ROOT'),
