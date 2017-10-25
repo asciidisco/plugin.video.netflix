@@ -304,7 +304,7 @@ class Navigation(object):
                                    actions=actions,
                                    build_url=self.build_url
                                )
-        self.kodi_helper.show_no_search_results_notification()
+        self.kodi_helper.dialogs.show_no_search_results_notify()
         return False
 
     def show_user_list(self, type):

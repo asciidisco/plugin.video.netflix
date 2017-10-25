@@ -1043,8 +1043,10 @@ class KodiHelper(object):
                     KodiDirectoryBuilder.new_listing(
                         url=build_url({'action': 'search_result', 'search_id': entity_search_id}),
                         listitem=KodiDirectoryBuilder.new_list_item(
-                            label='{} ({})'.format(entity['name'].encode('ascii','ignore'),entity['type'].encode('ascii','ignore'))
-                        ),
+                            label='{} ({})'.format(entity['name'].encode('ascii','ignore'),entity['type'].encode('ascii','ignore')),
+                            iconImage=self.default_fanart,
+                            thumbnailImage=self.default_fanart
+                            ),
                         isFolder=True
                     )
                 )
@@ -1054,8 +1056,10 @@ class KodiHelper(object):
                 KodiDirectoryBuilder.new_listing(
                     url=build_url({'action': 'cached_directory', 'cache_id': suggestions_cache_id}),
                     listitem=KodiDirectoryBuilder.new_list_item(
-                        label=self.get_local_string(30063) # suggestions
-                    ),
+                        label=self.get_local_string(30063), # suggestions
+                        iconImage=self.default_fanart,
+                        thumbnailImage=self.default_fanart
+                        ),
                     isFolder=True
                 )
             )
@@ -1070,7 +1074,9 @@ class KodiHelper(object):
                 KodiDirectoryBuilder.new_listing(
                     url=build_url({'action': 'search_result', 'search_id': next_search_id}),
                     listitem=KodiDirectoryBuilder.new_list_item(
-                        label=self.get_local_string(30045)
+                        label=self.get_local_string(30045),
+                        iconImage=self.default_fanart,
+                        thumbnailImage=self.default_fanart
                     ),
                     isFolder=True
                 )
