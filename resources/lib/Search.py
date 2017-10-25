@@ -68,3 +68,12 @@ class SearchResults(dd):
             'length': length,
             'data': data if data else {'videos': [], 'entities': []}
         }
+    def has_results(self):
+        count = 0
+        length = 0
+        for ref in self:
+            count += self[ref].get('count',0)
+            length += self[ref].get('length',0)
+        if count or length:
+            return True
+        return False

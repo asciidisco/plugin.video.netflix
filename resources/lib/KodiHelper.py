@@ -544,7 +544,7 @@ class KodiHelper(object):
             cached_items = pickle.loads(xbmcgui.Window(xbmcgui.getCurrentWindowId()).getProperty(cache))
             cached_items.update({cache_id: contents})
             # ensure limit
-            if len(cached_items) > self.GLOBAL_PCACHE_LIMIT:
+            for item in range(self.GLOBAL_PCACHE_LIMIT, len(cached_items)):
                 cached_items.popitem(last=False)
             xbmcgui.Window(xbmcgui.getCurrentWindowId()).setProperty(cache, pickle.dumps(cached_items))
         except EOFError:

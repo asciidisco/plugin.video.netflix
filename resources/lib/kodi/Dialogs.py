@@ -189,6 +189,20 @@ class Dialogs(object):
             time=self.notify_time)
         return dialog
 
+    def show_search_expired_notify(self):
+        """
+        Shows notification that the search has expired
+
+        :return: bool - Dialog shown
+        """
+        dlg = xbmcgui.Dialog()
+        dialog = dlg.notification(
+            heading=self.get_local_string(string_id=30011),
+            message=self.get_local_string(string_id=30064),
+            icon=xbmcgui.NOTIFICATION_INFO,
+            time=self.notify_time)
+        return dialog
+
     def show_no_seasons_notify(self):
         """
         Shows notification that no seasons be found

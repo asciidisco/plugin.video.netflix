@@ -297,7 +297,7 @@ class Navigation(object):
                 if response:
                     search_results,video_list = response
                     search_results = SearchResults(search_results)
-                    if search_results:
+                    if search_results and search_results.has_results():
                         actions = {'movie': 'play_video', 'show': 'season_list'}
                         return self.kodi_helper.build_search_result_listing(
                                    search_params=search_params,
@@ -306,6 +306,9 @@ class Navigation(object):
                                    actions=actions,
                                    build_url=self.build_url
                                )
+        else:
+            self.kodi_helper.dialogs.show_search_expired_notify()
+            return False
         self.kodi_helper.dialogs.show_no_search_results_notify()
         return False
 

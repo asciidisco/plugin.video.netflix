@@ -271,3 +271,8 @@ msgstr ""
 msgctxt "#30063"
 msgid "SUGGESTIONS"
 msgstr ""
+
+msgctxt "#30064"
+msgid "Search has expired. Please search again."
+msgstr ""
+
