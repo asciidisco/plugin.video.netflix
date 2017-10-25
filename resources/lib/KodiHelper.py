@@ -194,7 +194,7 @@ class KodiHelper(object):
         self.dialogs = Dialogs(
             get_local_string=self.get_local_string,
             custom_export_name=self.custom_export_name)
-        self.GLOBAL_PCACHE_LIMIT = 20  # item limit of 20
+        self.GLOBAL_PCACHE_LIMIT = 40  # item limit of 40
 
     def get_addon(self):
         """Returns a fresh addon instance"""
