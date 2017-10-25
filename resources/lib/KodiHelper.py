@@ -1039,27 +1039,31 @@ class KodiHelper(object):
                 entity_search = SearchParams()
                 entity_search.add_entity(type_id=entity['type_id'])
                 entity_search_id = self.create_pcached_id(entity_search, type='SEARCH')
+                entity_li = KodiDirectoryBuilder.new_list_item(
+                    label='{} ({})'.format(entity['name'].encode('ascii','ignore'),entity['type'].encode('ascii','ignore')),
+                    iconImage=self.default_fanart,
+                    thumbnailImage=self.default_fanart
+                )
+                entity_li.setProperty('fanart_image', self.default_fanart)
                 suggestions_directory.add_listing(
                     KodiDirectoryBuilder.new_listing(
                         url=build_url({'action': 'search_result', 'search_id': entity_search_id}),
-                        listitem=KodiDirectoryBuilder.new_list_item(
-                            label='{} ({})'.format(entity['name'].encode('ascii','ignore'),entity['type'].encode('ascii','ignore')),
-                            iconImage=self.default_fanart,
-                            thumbnailImage=self.default_fanart
-                            ),
+                        listitem=entity_li,
                         isFolder=True
                     )
                 )
             suggestions_cache_id = self.create_pcached_id(suggestions_directory, type='DIRECTORY')
             # add suggestions dir to search dir
+            suggestions_li = KodiDirectoryBuilder.new_list_item(
+                label=self.get_local_string(30063), # suggestions
+                iconImage=self.default_fanart,
+                thumbnailImage=self.default_fanart
+            )
+            suggestions_li.setProperty('fanart_image', self.default_fanart)
             search_directory.add_listing(
                 KodiDirectoryBuilder.new_listing(
                     url=build_url({'action': 'cached_directory', 'cache_id': suggestions_cache_id}),
-                    listitem=KodiDirectoryBuilder.new_list_item(
-                        label=self.get_local_string(30063), # suggestions
-                        iconImage=self.default_fanart,
-                        thumbnailImage=self.default_fanart
-                        ),
+                    listitem=suggestions_li,
                     isFolder=True
                 )
             )
@@ -1070,14 +1074,16 @@ class KodiHelper(object):
         next_search = search_params.build_next_search(search_results=search_results)
         if next_search:
             next_search_id = self.create_pcached_id(next_search, type='SEARCH')
+            next_search_li = KodiDirectoryBuilder.new_list_item(
+                label=self.get_local_string(30045),
+                iconImage=self.default_fanart,
+                thumbnailImage=self.default_fanart
+            )
+            next_search_li.setProperty('fanart_image', self.default_fanart)
             search_directory.add_listing(
                 KodiDirectoryBuilder.new_listing(
                     url=build_url({'action': 'search_result', 'search_id': next_search_id}),
-                    listitem=KodiDirectoryBuilder.new_list_item(
-                        label=self.get_local_string(30045),
-                        iconImage=self.default_fanart,
-                        thumbnailImage=self.default_fanart
-                    ),
+                    listitem=next_search_li,
                     isFolder=True
                 )
             )
