@@ -15,6 +15,7 @@ import ast
 import json
 import urllib
 import urllib2
+import hashlib
 from urlparse import parse_qsl, urlparse
 import xbmc
 from sys import exc_info
@@ -22,6 +23,7 @@ from xbmcaddon import Addon
 import resources.lib.NetflixSession as Netflix
 from resources.lib.utils import noop, log
 from Search import SearchParams, SearchResults
+from collections import OrderedDict
 
 class Navigation(object):
     """
@@ -848,6 +850,16 @@ class Navigation(object):
         service_url += str(addon.getSetting('netflix_service_port'))
         return service_url
 
+    def _get_netflix_service_cache_id(self, params, post_data):
+        cache_id_data = OrderedDict()
+        if params:
+            cache_id_data['params'] = OrderedDict(sorted(params.items()))
+        if post_data:
+            cache_id_data['post_data'] = OrderedDict(sorted(post_data.items()))
+        hasher = hashlib.sha1()
+        hasher.update(str(cache_id_data))
+        return hasher.hexdigest()
+
     def call_netflix_service(self, params, post_data=None):
         """
         Makes a GET request to the internal Netflix HTTP proxy
@@ -867,13 +879,14 @@ class Navigation(object):
         values = urllib.urlencode(params)
         # check for cached items
         if cache:
+            cache_id = self._get_netflix_service_cache_id(params, post_data)
             cached_value = self.kodi_helper.get_cached_item(
-                cache_id=values)
+                cache_id=cache_id)
 
             # Cache lookup successful?
             if cached_value is not None:
                 self.log(
-                    msg='Fetched item from cache: (cache_id=' + values + ')')
+                    msg='Fetched item from cache: (cache_id=\'{}\')'.format(cache_id))
                 return cached_value
 
         url = self.get_netflix_service_url()
@@ -908,8 +921,9 @@ class Navigation(object):
             return result
         result = parsed_json.get('result', None)
         if result and cache:
-            self.log(msg='Adding item to cache: (cache_id=' + values + ')')
-            self.kodi_helper.add_cached_item(cache_id=values, contents=result)
+            cache_id = self._get_netflix_service_cache_id(params, post_data)
+            self.log(msg='Adding item to cache: (cache_id=\'{}\')'.format(cache_id))
+            self.kodi_helper.add_cached_item(cache_id=cache_id, contents=result)
         return result
 
     def open_settings(self, url):
