@@ -65,28 +65,30 @@ class Rpc(object):
 
     def __execute(self, query, cache=True):
         """ADD ME"""
-        # execute the query
-        serialized_result, serialized_query = self.__execute_rpc(query=query)
+        # serialize query
+        serialized_query = self.__serialize_query(query=query)
         # check for cached results
         if cache is True:
             cache_item = self.cache.get(cache_id='rpc_' + serialized_query)
             if cache_item is not None:
                 return cache_item
+        # execute the query
+        raw_result = self.__execute_rpc(
+            serialized_query=serialized_query,
+            query=query)
         # check for error responses
-        if self.__check_for_result_error(result=serialized_result) is None:
-            return None
+        raw_result = self.__check_for_result_error(result=raw_result)
         # cache the result
-        result = serialized_result.get('result', None)
+        result = raw_result.get('result', None)
         if cache is True and result is not None:
             self.cache.set(
                 cache_id='rpc_' + serialized_query,
                 value=result)
         return result
 
-    def __execute_rpc(self, query):
+    def __execute_rpc(self, serialized_query, query):
         """ADD ME"""
         # build & serialize query
-        serialized_query = self.__serialize_query(query=query)
         if serialized_query is None:
             return None
         # execute RPC
@@ -99,7 +101,7 @@ class Rpc(object):
             self.log(msg='Error executing RPC: "' + query.get('method') + '"')
             self.log(msg='Stage: Deserializing results')
             self.log(msg=error)
-        return result, serialized_query
+        return result
 
     def __serialize_query(self, query):
         """ADD ME"""
@@ -142,7 +144,8 @@ class Rpc(object):
         """ADD ME"""
         if result is None:
             return None
-        if 'error' not in result.keys():
+        if 'error' in result.keys():
             return None
         if isinstance(result.get('result'), dict) is False:
             return None
+        return result

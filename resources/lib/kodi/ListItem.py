@@ -11,84 +11,40 @@ from urllib import urlencode
 import xbmc
 import xbmcgui
 import xbmcplugin
-from resources.lib.Constants import Constants
+from resources.lib.constants import VIEW_MOVIE, VIEW_SHOW
 
 
 class ListItem(object):
     """ADD ME"""
 
-    def __init__(self, addon, settings, library, get_local_string, cache):
+    def __init__(self, addon, settings, library, get_local_string):
         """ADD ME"""
         self.addon = addon
-        self.cache = cache
-        self.handle = addon.get_plugin_handle()
+        self.cache = addon.cache
         self.library = library
         self.settings = settings
         self.get_local_string = get_local_string
 
-    def sort_and_close(self, methods):
+    def sort_and_close(self, methods=None, view=None):
+        """ADD ME"""
         self.__add_sorting_methods(methods=methods)
-        xbmcplugin.endOfDirectory(handle=self.handle)
+        if view is not None:
+            self.__set_custom_view(content=view)
+        xbmcplugin.endOfDirectory(handle=self.addon.handle)
 
-    def set_custom_view(self, content):
-        """Sets the view mode of a list, if enabled by the user
+    def generate_update_db_entry(self, fanart, build_url):
+        """ADD ME"""
+        list_item = xbmcgui.ListItem(
+            label=self.get_local_string(30049),
+            iconImage=fanart)
+        list_item.setProperty('fanart_image', fanart)
+        xbmcplugin.addDirectoryItem(
+            handle=self.addon.handle,
+            url=build_url({'action': 'updatedb'}),
+            listitem=list_item,
+            isFolder=True)
 
-        :param content: Type of content in container (folder, movie, season...)
-        :type content: str
-        """
-        if self.settings.get(key='customview') is True:
-            view = self.settings.get(key='viewmode' + content, convert=int)
-            if view != -1:
-                xbmc.executebuiltin('Container.SetViewMode(%s)' % view)
-
-    def __generate_art_info(self, entry, list_item):
-        """
-        Adds the art info from an entry to a Kodi list item
-
-        :param entry: Entry that should be turned into a list item
-        :type entry: dict
-        :param list_item: Kodi list item instance
-        :type list_item: `XMBC.ListItem`
-
-        :returns: `XMBC.ListItem` - Kodi list item instance
-        """
-        fanart = self.addon.get_addon_data().get('fanart')
-        art = {'landscape': '', 'thumb': '', 'fanart': fanart, 'poster': ''}
-
-        # set boxarts
-        boxart = entry.get('boxarts', None)
-        if boxart is not None:
-            boxart_big = boxart.get('big', fanart)
-            boxart_small = boxart.get('small', fanart)
-            art.update({
-                'poster': boxart_big,
-                'landscape': boxart_big,
-                'thumb': boxart_small,
-                'fanart': boxart_big,
-            })
-            # download image for exported listing
-            if 'title' in entry:
-                self.library.download_image_file(
-                    title=entry.get('title', '').encode('utf-8'),
-                    url=boxart_big)
-
-        # check for interesting moment images
-        moment = entry.get('interesting_moment', None)
-        if moment is not None:
-            art.update({'poster': moment, 'fanart': moment})
-        # update with sane defaults
-        art.update({'thumb': entry.get('thumb', art.get('thumb'))})
-        art.update({'fanart': entry.get('fanart', art.get('fanart'))})
-        art.update({'poster': entry.get('poster', art.get('poster'))})
-        # apply art data to the list item
-        list_item.setArt(art)
-        # store art
-        self.library.write_artdata_file(
-            video_id=str(entry.get('id')),
-            content=art)
-        return list_item
-
-    def __generate_entry_info(self, entry, list_item, base_info=None):
+    def generate_entry_info(self, entry, list_item, base_info=None):
         """
         Adds the item info from an entry to a Kodi list item
 
@@ -104,9 +60,9 @@ class ListItem(object):
         # populate the base dict
         infos = {} if base_info is None else base_info
 
-        infos.update({'cast': entry.get('cast', [])})
-        infos.update({'writer': entry.get('creators', [''])[0]})
-        infos.update({'director': entry.get('directors', [''])[0]})
+        # infos.update({'cast': entry.get('cast', [])})
+        # infos.update({'writer': entry.get('creators', [''])[0]})
+        # infos.update({'director': entry.get('directors', [''])[0]})
         infos.update({'genres': entry.get('genres', [''])[0]})
         infos.update({'rating': int(entry.get('rating', 0)) * 2})
         infos.update({'title': entry.get('title')})
@@ -123,8 +79,8 @@ class ListItem(object):
         if infos.get('mpaa') == '':
             maturity = entry.get('maturity', {})
             if maturity.get('board', None) and maturity.get('value', None):
-                board = str(maturity.get('board', '')).encode('utf-8')
-                value = str(maturity.get('value', '')).encode('utf-8')
+                board = str(maturity.get('board', '').encode('utf-8'))
+                value = str(maturity.get('value', '').encode('utf-8'))
                 infos.update({'mpaa': board + '-' + value})
 
         # mediatype (movie, epsiode or show)
@@ -139,7 +95,8 @@ class ListItem(object):
         if entry.get('watched', False) is True:
             infos.update({'playcount': 1})
         else:
-            del infos['playcount']
+            if infos.get('playcount') is not None:
+                del infos['playcount']
 
         # try to determine the quality
         if entry.get('quality', None) is not None:
@@ -153,8 +110,9 @@ class ListItem(object):
             list_item.addStreamInfo('video', quality)
 
         # decode tvshowtitle if given
-        title = base64.urlsafe_b64decode(entry.get('tvshowtitle', ''))
-        infos.update({'tvshowtitle': title.decode('utf-8')})
+        if entry.get('tvshowtitle') is not None:
+            title = base64.urlsafe_b64decode(entry.get('tvshowtitle', ''))
+            infos.update({'tvshowtitle': title.decode('utf-8')})
 
         # set item infos & write library metadata
         list_item.setInfo('video', infos)
@@ -163,7 +121,7 @@ class ListItem(object):
             content=infos)
         return list_item, infos
 
-    def __generate_context_menu_items(self, entry, list_item):
+    def generate_context_menu_items(self, entry, list_item):
         """Adds context menue items to a Kodi list item
 
         :param entry: Entry that should be turned into a list item
@@ -226,55 +184,54 @@ class ListItem(object):
         list_item.addContextMenuItems(items=items)
         return list_item
 
+    def add_directory_item(self, url, list_item, is_folder=True):
+        """ADD ME"""
+        xbmcplugin.addDirectoryItem(
+            handle=self.addon.handle,
+            url=url,
+            listitem=list_item,
+            isFolder=is_folder)
+
     def build_show_item(self, video, build_url, attributes, infos):
         """ADD ME"""
         props = {'is_folder': True}
-        _, needs_pin = self.__get_maturity(video=video)
+        _, needs_pin = self.get_maturity(video=video)
         title = infos.get('tvshowtitle', '').encode('utf-8')
         props['url'] = build_url({
             'action': attributes.get('action'),
             'show_id': attributes.get('list_id'),
             'pin': needs_pin,
             'tvshowtitle': base64.urlsafe_b64encode(title)})
-        props['view'] = Constants.get_view_ids().get('VIEW_SHOW')
+        props['view'] = VIEW_SHOW
         return props
 
     def build_movie_item(self, video, build_url, list_id, infos):
         """ADD ME"""
         props = {'is_folder': False}
-        _, needs_pin = self.__get_maturity(video=video)
+        _, needs_pin = self.get_maturity(video=video)
         props['url'] = build_url({
             'action': 'play_video',
             'video_id': list_id,
             'infoLabels': infos,
             'pin': needs_pin})
-        props['view'] = Constants.get_view_ids().get('VIEW_MOVIE')
+        props['view'] = VIEW_MOVIE
         return props
 
-    def __add_item_data(self, list_item, video):
+    def add_item_data(self, list_item, video):
         """ADD ME"""
         # add some art to the item
-        list_item = self.__generate_art_info(
+        list_item = self.generate_art_info(
             entry=video,
             list_item=list_item)
         # add list item info
-        list_item, infos = self.__generate_entry_info(
+        list_item, infos = self.generate_entry_info(
             entry=video,
             list_item=list_item)
         # add context menu items
-        list_item = self.__generate_context_menu_items(
+        list_item = self.generate_context_menu_items(
             entry=video,
             list_item=list_item)
         return list_item, infos
-
-    def __add_sorting_methods(self, methods=None):
-        """ADD ME"""
-        if methods is None:
-            methods = [xbmcplugin.SORT_METHOD_UNSORTED]
-        for method in methods:
-            xbmcplugin.addSortMethod(
-                handle=self.handle,
-                sortMethod=method)
 
     def build_has_more_entry(self, page, build_url):
         """ADD ME"""
@@ -286,12 +243,12 @@ class ListItem(object):
             'start': str(page.get('start')),
             'video_list_id': page.get('video_list_id')})
         xbmcplugin.addDirectoryItem(
-            handle=self.handle,
+            handle=self.addon.handle,
             url=url,
             listitem=list_item,
             isFolder=True)
 
-    def __generate_static_menu_entries(
+    def generate_static_menu_entries(
             self,
             video_list_ids,
             fanart,
@@ -321,13 +278,13 @@ class ListItem(object):
                     iconImage=fanart)
                 list_item.setProperty('fanart_image', fanart)
                 xbmcplugin.addDirectoryItem(
-                    handle=self.handle,
+                    handle=self.addon.handle,
                     url=build_url({'action': action, 'type': static_id}),
                     listitem=list_item,
                     isFolder=True)
         return preselect_items
 
-    def __generate_main_menu_entries(
+    def generate_main_menu_entries(
             self,
             user_list_order,
             user_lists,
@@ -348,6 +305,72 @@ class ListItem(object):
                         actions=actions,
                         build_url=build_url))
         return preselect_items
+
+    def generate_art_info(self, entry, list_item):
+        """
+        Adds the art info from an entry to a Kodi list item
+
+        :param entry: Entry that should be turned into a list item
+        :type entry: dict
+        :param list_item: Kodi list item instance
+        :type list_item: `XMBC.ListItem`
+
+        :returns: `XMBC.ListItem` - Kodi list item instance
+        """
+        fanart = self.addon.get_addon_data().get('fanart')
+        art = {'landscape': '', 'thumb': '', 'fanart': fanart, 'poster': ''}
+
+        # set boxarts
+        boxart = entry.get('boxarts', None)
+        if boxart is not None:
+            boxart_big = boxart.get('big', fanart)
+            boxart_small = boxart.get('small', fanart)
+            art.update({
+                'poster': boxart_big,
+                'landscape': boxart_big,
+                'thumb': boxart_small,
+                'fanart': boxart_big,
+            })
+            # download image for exported listing
+            if 'title' in entry:
+                self.library.download_image_file(
+                    title=entry.get('title', '').encode('utf-8'),
+                    url=boxart_big)
+        # check for interesting moment images
+        moment = entry.get('interesting_moment', None)
+        if moment is not None:
+            art.update({'poster': moment, 'fanart': moment})
+        # update with sane defaults
+        art.update({'thumb': entry.get('thumb', art.get('thumb'))})
+        art.update({'fanart': entry.get('fanart', art.get('fanart'))})
+        art.update({'poster': entry.get('poster', art.get('poster'))})
+        # apply art data to the list item
+        list_item.setArt(art)
+        # store art
+        self.library.write_artdata_file(
+            video_id=str(entry.get('id')),
+            content=art)
+        return list_item
+
+    def __set_custom_view(self, content):
+        """Sets the view mode of a list, if enabled by the user
+
+        :param content: Type of content in container (folder, movie, season...)
+        :type content: str
+        """
+        if self.settings.get(key='customview') is True:
+            view = self.settings.get(key='viewmode' + content, convert=int)
+            if view != -1:
+                xbmc.executebuiltin('Container.SetViewMode(%s)' % view)
+
+    def __add_sorting_methods(self, methods=None):
+        """ADD ME"""
+        if methods is None:
+            methods = [xbmcplugin.SORT_METHOD_UNSORTED]
+        for method in methods:
+            xbmcplugin.addSortMethod(
+                handle=self.addon.handle,
+                sortMethod=method)
 
     def __generate_main_menu_entry(
             self,
@@ -377,26 +400,14 @@ class ListItem(object):
             'video_list_id': attributes.get('user_list_id'),
             'type': attributes.get('category')})
         xbmcplugin.addDirectoryItem(
-            handle=self.handle,
+            handle=self.addon.handle,
             url=url,
             listitem=list_item,
             isFolder=True)
         return is_selected
 
-    def __generate_update_db_entry(self, fanart, build_url):
-        """ADD ME"""
-        list_item = xbmcgui.ListItem(
-            label=self.get_local_string(30049),
-            iconImage=fanart)
-        list_item.setProperty('fanart_image', fanart)
-        xbmcplugin.addDirectoryItem(
-            handle=self.handle,
-            url=build_url({'action': 'updatedb'}),
-            listitem=list_item,
-            isFolder=True)
-
     @classmethod
-    def __preselect_list_entry(cls, preselect_items):
+    def preselect_list_entry(cls, preselect_items):
         """ADD ME"""
         idx = 1
         current_window_id = xbmcgui.getCurrentWindowId()
@@ -410,7 +421,7 @@ class ListItem(object):
             xbmc.executebuiltin(function=func)
 
     @classmethod
-    def __get_maturity(cls, video):
+    def get_maturity(cls, video):
         """ADD ME"""
         maturity = video.get('maturity', {}).get('level', 999)
         needs_pin = (True, False)[int(maturity) >= 100]

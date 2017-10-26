@@ -17,11 +17,8 @@ from resources.lib.NetflixHttpSubRessourceHandler import \
 
 KODI_HELPER = KodiHelper()
 NETFLIX_SESSION = NetflixSession(
-    cookie_path=KODI_HELPER.cookie_path,
-    data_path=KODI_HELPER.data_path,
-    verify_ssl=KODI_HELPER.get_ssl_verification_setting(),
-    log_fn=KODI_HELPER.log
-)
+    verify_ssl=KODI_HELPER.settings.get(key='ssl_verification'),
+    log_fn=KODI_HELPER.log)
 
 # get list of methods & instance form the sub ressource handler
 METHODS = get_class_methods(class_item=NetflixHttpSubRessourceHandler)

@@ -60,7 +60,7 @@ class Cache(object):
         self.l1_cache = {}
         return self.__save_cache_contents(items={})
 
-    def get(self, cache_id, default=None, first_level_only=False):
+    def get(self, cache_id, fallback=None, first_level_only=False):
         """
         Returns an item from the in memory cache
 
@@ -75,7 +75,7 @@ class Cache(object):
             return object_cache_item
         # if not found, try Kodis session based window cache
         cached_items = self.__load_cache_contents()
-        return cached_items.get(cache_id, default)
+        return cached_items.get(cache_id, fallback)
 
     def set(self, cache_id, value, first_level_only=False):
         """
@@ -107,10 +107,11 @@ class Cache(object):
         :returns: mixed - Contents complete cache
         """
         window = self.__get_window_instance()
+        items = {}
         try:
             items = pickle.loads(window.getProperty(key=self.keyword))
         except EOFError:
-            self.log(msg='Error fetching cache items')
+            pass
         return items
 
     def __save_cache_contents(self, items=None):

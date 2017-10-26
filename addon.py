@@ -19,15 +19,8 @@ BASE_URL = sys.argv[0]
 REQUEST_PARAMS = sys.argv[2][1:]
 
 # init plugin libs
-KODI_HELPER = KodiHelper(
-    plugin_handle=PLUGIN_HANDLE,
-    base_url=BASE_URL
-)
-LIBRARY = Library(
-    root_folder=KODI_HELPER.base_data_path,
-    library_settings=KODI_HELPER.get_custom_library_settings(),
-    log_fn=KODI_HELPER.log
-)
+KODI_HELPER = KodiHelper(plugin_handle=PLUGIN_HANDLE, base_url=BASE_URL)
+LIBRARY = Library(kodi_helper=KODI_HELPER)
 NAVIGATION = Navigation(
     kodi_helper=KODI_HELPER,
     library=LIBRARY,
@@ -38,5 +31,6 @@ KODI_HELPER.set_library(library=LIBRARY)
 
 if __name__ == '__main__':
     # Call the router function and pass the plugin call parameters to it.
-    KODI_HELPER.log('Started (Version ' + KODI_HELPER.version + ')')
+    PLUGIN_VERSION = KODI_HELPER.addon.get_addon_data().get('version')
+    KODI_HELPER.log('Started (Version ' + PLUGIN_VERSION + ')')
     NAVIGATION.router(paramstring=REQUEST_PARAMS)

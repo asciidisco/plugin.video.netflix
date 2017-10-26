@@ -17,7 +17,7 @@ from resources.lib.utils import uniq_id, noop
 class Settings(object):
     """Interface for Kodi settings"""
 
-    def __init__(self, addon, cache):
+    def __init__(self, addon, cache, log=noop):
         """
         Stores the addon & cache references
         Sets block size & encryption key attributes
@@ -29,6 +29,7 @@ class Settings(object):
         """
         self.addon = addon
         self.cache = cache
+        self.log = log
         self.block_size = 32
         self.crypt_key = uniq_id()
 
@@ -58,10 +59,10 @@ class Settings(object):
             if isinstance(value, (dict, list, tuple)):
                 value = '##json##' + json.dumps(value)
         # set the setting
-        self.addon.setSetting(key=key, value=str(value))
+        self.addon.setSetting(id=key, value=str(value))
         return value
 
-    def get(self, key, default=None, convert=noop, use_cache=True):
+    def get(self, key, fallback=None, convert=noop, use_cache=True):
         """
         Public interface to the addons getSetting method
         Uses first level cache to store values
@@ -69,8 +70,8 @@ class Settings(object):
 
         :param key: Key of the setting
         :type key: str
-        :param default: Default value that should be applied if nothing found
-        :type default: mixed
+        :param fallback: Default value that should be applied if nothing found
+        :type fallback: mixed
         :param convert: Converter function (int, str, float, etc...)
         :type convert: fn
         :param use_cache: Use first level cache for settings
@@ -81,15 +82,15 @@ class Settings(object):
         # try to load the setting from cache
         cache_item = self.cache.get(
             cache_id='set_' + key,
-            default=None,
+            fallback=None,
             first_level_only=True)
         if use_cache is True and cache_item is not None:
             return convert(cache_item)
         # load the setting from Kodi settings
-        setting = self.addon.getSetting(key=key)
+        setting = self.addon.getSetting(id=key)
         # set the given default value if setting could not be found
         if setting is None:
-            setting = default
+            setting = fallback
         # check if item needs to be deserialized or converted into a boolean
         if isinstance(setting, str):
             if len(setting) > 8 and setting[0:8] == '##json##':
@@ -115,10 +116,9 @@ class Settings(object):
         :returns: dict - The users (decoded) account data
         """
         credentials = {
-            'email': self.get(key='email', default=''),
-            'password': self.get(key='password', default='')
+            'email': self.get(key='email', fallback=''),
+            'password': self.get(key='password', fallback=''),
         }
-
         # soft migration for existing (non encoded) credentials
         # base64 can't contain `@` chars
         if '@' in credentials.get('email'):
@@ -132,11 +132,29 @@ class Settings(object):
         # if everything is fine, we decode the values
         if credentials.get('email') != '':
             credentials['email'] = self.decode(
-                enc=credentials.get('email')),
+                enc=credentials.get('email'))
         if credentials.get('password') != '':
             credentials['password'] = self.decode(
                 enc=credentials.get('password'))
+        # if email/password is empty, we return an empty map
+        return credentials
 
+    def set_credentials(self, email, password):
+        """
+        Sets the users credentials and encodes them
+
+        :returns: dict - The users (decoded) account data
+        """
+        credentials = {
+            'email': email,
+            'password': password,
+        }
+        self.set(
+            key='email',
+            value=self.encode(raw=credentials.get('email')))
+        self.set(
+            key='password',
+            value=self.encode(raw=credentials.get('password')))
         # if email/password is empty, we return an empty map
         return credentials
 
@@ -147,7 +165,7 @@ class Settings(object):
         :returns: bool - Set adultpin state
         """
         key = 'adultpin_enable'
-        adultpin_enabled_flipped = not self.get(key=key, default=False)
+        adultpin_enabled_flipped = not self.get(key=key, fallback=False)
         return self.set(key=key, value=adultpin_enabled_flipped)
 
     def encode(self, raw):

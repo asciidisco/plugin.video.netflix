@@ -92,7 +92,7 @@ class Navigation(object):
                 'pin': adult_pin}))
             if pin_correct is not True:
                 return self.kodi_helper.dialogs.show_invalid_pin_notify()
-            return self.kodi_helper.toggle_adult_pin()
+            return self.kodi_helper.settings.toggle_adult_pin()
 
         # check if one of the before routing options decided to killthe routing
         if 'exit' in options:
@@ -100,8 +100,8 @@ class Navigation(object):
             return False
         if 'action' not in params.keys():
             # show the profiles
-            if self.kodi_helper.get_setting('autologin_enable') == 'true':
-                profile_id = self.kodi_helper.get_setting('autologin_id')
+            if self.kodi_helper.settings.get(key='autologin_enable') is True:
+                profile_id = self.kodi_helper.settings.get(key='autologin_id')
                 if profile_id != '':
                     self.call_netflix_service({
                         'method': 'switch_profile',
@@ -143,29 +143,29 @@ class Navigation(object):
             return self.rate_on_netflix(video_id=params['id'])
         elif action == 'remove_list':
             # removes a title from the users list on Netflix
-            self.kodi_helper.invalidate_memcache()
+            self.kodi_helper.cache.invalidate()
             return self.remove_from_list(video_id=params['id'])
         elif action == 'add_to_list':
             # adds a title to the users list on Netflix
-            self.kodi_helper.invalidate_memcache()
+            self.kodi_helper.cache.invalidate()
             return self.add_to_list(video_id=params['id'])
         elif action == 'export':
             # adds a title to the users list on Netflix
             alt_title = self.kodi_helper.dialogs.show_add_library_title_dialog(
                 original_title=urllib.unquote(params['title']).decode('utf8'))
             self.export_to_library(video_id=params['id'], alt_title=alt_title)
-            return self.kodi_helper.refresh()
+            return xbmc.executebuiltin('Container.Refresh')
         elif action == 'remove':
             # adds a title to the users list on Netflix
             self.remove_from_library(video_id=params['id'])
-            return self.kodi_helper.refresh()
+            return xbmc.executebuiltin('Container.Refresh')
         elif action == 'update':
             # adds a title to the users list on Netflix
             self.remove_from_library(video_id=params['id'])
             alt_title = self.kodi_helper.dialogs.show_add_library_title_dialog(
                 original_title=urllib.unquote(params['title']).decode('utf8'))
             self.export_to_library(video_id=params['id'], alt_title=alt_title)
-            return self.kodi_helper.refresh()
+            return xbmc.executebuiltin('Container.Refresh')
         elif action == 'removeexported':
             # adds a title to the users list on Netflix
             term = self.kodi_helper.dialogs.show_finally_remove_modal(
@@ -175,10 +175,10 @@ class Navigation(object):
                 self.library.remove_movie(
                     title=params['title'].decode('utf-8'),
                     year=int(params['year']))
-                self.kodi_helper.refresh()
+                xbmc.executebuiltin('Container.Refresh')
             if params['type'] == 'show' and str(term) == '1':
                 self.library.remove_show(title=params['title'].decode('utf-8'))
-                self.kodi_helper.refresh()
+                xbmc.executebuiltin('Container.Refresh')
             return True
         elif action == 'updatedb':
             # adds a title to the users list on Netflix
@@ -191,9 +191,9 @@ class Navigation(object):
         elif action == 'play_video':
             # play a video, check for adult pin if needed
             adult_pin = None
-            adult_setting = self.kodi_helper.get_setting('adultpin_enable')
-            ask_for_adult_pin = adult_setting.lower() == 'true'
-            if ask_for_adult_pin is True:
+            adult_setting = self.kodi_helper.settings.get(
+                key='adultpin_enable')
+            if adult_setting is True:
                 if self.check_for_adult_pin(params=params):
                     pin = self.kodi_helper.dialogs.show_adult_pin_dialog()
                     pin_response = self.call_netflix_service({
@@ -203,10 +203,10 @@ class Navigation(object):
                     if pin_correct is not True:
                         self.kodi_helper.dialogs.show_invalid_pin_notify()
                         return True
-            self.play_video(
+            return self.play_video(
                 video_id=params['video_id'],
                 start_offset=params.get('start_offset', -1),
-                infoLabels=params.get('infoLabels', {}))
+                info_labels=params.get('infoLabels', {}))
         elif action == 'user-items' and params['type'] == 'search':
             # if the user requested a search, ask for the term
             term = self.kodi_helper.dialogs.show_search_term_dialog()
@@ -231,7 +231,7 @@ class Navigation(object):
         return True
 
     @log
-    def play_video(self, video_id, start_offset, infoLabels):
+    def play_video(self, video_id, start_offset, info_labels):
         """Starts video playback
 
         Note: This is just a dummy, inputstream is needed to play the vids
@@ -248,18 +248,18 @@ class Navigation(object):
             the listitem's infoLabels
         """
         try:
-            infoLabels = ast.literal_eval(infoLabels)
+            info_labels = ast.literal_eval(info_labels)
         except:
-            infoLabels = {}
+            info_labels = {}
         esn = self._check_response(self.call_netflix_service({
             'method': 'get_esn'}))
         if esn:
-            play = self.kodi_helper.play_item(
+            self.kodi_helper.play_item(
                 esn=esn,
                 video_id=video_id,
                 start_offset=start_offset,
-                infoLabels=infoLabels)
-            return play
+                info_labels=info_labels)
+            return True
         return False
 
     @log
@@ -424,11 +424,12 @@ class Navigation(object):
                     'guid': user_data['guid'],
                     'cache': True}))
                 if items is False and i == 0:
-                    self.kodi_helper.log('show_video_list response is dirty')
+                    self.kodi_helper.log(
+                        msg='show_video_list response is dirty')
                     return False
                 elif len(items) == 0:
                     if i == 0:
-                        self.kodi_helper.log('show_video_list items=0')
+                        self.kodi_helper.log(msg='show_video_list items=0')
                         return False
                     break
                 req_count = Netflix.FETCH_VIDEO_REQUEST_COUNT
@@ -527,7 +528,7 @@ class Navigation(object):
             'method': 'remove_from_list',
             'video_id': video_id}))
         if result:
-            return self.kodi_helper.refresh()
+            return xbmc.executebuiltin('Container.Refresh')
         return self.kodi_helper.dialogs.show_request_error_notify()
 
     @log
@@ -543,7 +544,7 @@ class Navigation(object):
             'method': 'add_to_list',
             'video_id': video_id}))
         if result:
-            return self.kodi_helper.refresh()
+            return xbmc.executebuiltin('Container.Refresh')
         return self.kodi_helper.dialogs.show_request_error_notify()
 
     @log
@@ -565,8 +566,9 @@ class Navigation(object):
             video = metadata['video']
             if video['type'] == 'movie':
                 self.library.add_movie(
-                    title=video['title'],
-                    alt_title=alt_title,
+                    titles={
+                        'title': video['title'],
+                        'alternative_title': alt_title},
                     year=video['year'],
                     video_id=video_id,
                     build_url=self.build_url)
@@ -642,23 +644,25 @@ class Navigation(object):
         """
         Deletes all current account data & prompts with dialogs for new ones
         """
+        # logout
         self._check_response(self.call_netflix_service({'method': 'logout'}))
-        self.kodi_helper.set_setting(key='email', value='')
-        self.kodi_helper.set_setting(key='password', value='')
+        # clear values
+        self.kodi_helper.settings.set(key='email', value='')
+        self.kodi_helper.settings.set(key='password', value='')
+        # ask the user for new account data
         raw_email = self.kodi_helper.dialogs.show_email_dialog()
         raw_password = self.kodi_helper.dialogs.show_password_dialog()
-        encoded_email = self.kodi_helper.encode(raw=raw_email)
-        encoded_password = self.kodi_helper.encode(raw=raw_password)
-        self.kodi_helper.set_setting(key='email', value=encoded_email)
-        self.kodi_helper.set_setting(key='password', value=encoded_password)
-        account = {
-            'email': raw_email,
-            'password': raw_password,
-        }
+        # store & encrypt values
+        account = self.kodi_helper.settings.set_credentials(
+            email=raw_email,
+            password=raw_password)
+        # check if credentials are valid
         if self.establish_session(account=account) is not True:
-            self.kodi_helper.set_setting(key='email', value='')
-            self.kodi_helper.set_setting(key='password', value='')
-            return self.kodi_helper.dialogs.show_login_failed_notify()
+            # if credentials are invalid, clear fields & show message
+            self.kodi_helper.settings.set(key='email', value='')
+            self.kodi_helper.settings.set(key='password', value='')
+            self.kodi_helper.dialogs.show_login_failed_notify()
+            return False
         return True
 
     def check_for_adult_pin(self, params):
@@ -696,15 +700,15 @@ class Navigation(object):
             used later in the routing process
         """
         options = {}
-        credentials = self.kodi_helper.get_credentials()
+        credentials = self.kodi_helper.settings.get_credentials()
         # check if we have user settings, if not, set em
         if credentials['email'] == '':
             email = self.kodi_helper.dialogs.show_email_dialog()
-            self.kodi_helper.set_setting(key='email', value=email)
+            self.kodi_helper.settings.set(key='email', value=email)
             credentials['email'] = email
         if credentials['password'] == '':
             password = self.kodi_helper.dialogs.show_password_dialog()
-            self.kodi_helper.set_setting(key='password', value=password)
+            self.kodi_helper.settings.set(key='password', value=password)
             credentials['password'] = password
         # check login & try to relogin if necessary
         logged_in = self._check_response(self.call_netflix_service({
@@ -722,7 +726,7 @@ class Navigation(object):
             options['main_menu_selection'] = main_menu
         # check and switch the profile if needed
         if self.check_for_designated_profile_change(params=params):
-            self.kodi_helper.invalidate_memcache()
+            self.kodi_helper.cache.invalidate()
             profile_id = params.get('profile_id', None)
             if profile_id is None:
                 user_data = self._check_response(self.call_netflix_service({
@@ -816,7 +820,7 @@ class Navigation(object):
             # check if we do not have a valid session,
             # in case that happens: (re)login
             if self._is_expired_session(response=response):
-                account = self.kodi_helper.get_credentials()
+                account = self.kodi_helper.settings.get_credentials()
                 self.establish_session(account=account)
             message = response['message'] if 'message' in response else ''
             code = response['code'] if 'code' in response else ''
@@ -847,9 +851,9 @@ class Navigation(object):
         str
             Url + Port
         """
-        addon = self.kodi_helper.get_addon()
+        port = self.kodi_helper.settings.get(key='netflix_service_port')
         service_url = 'http://127.0.0.1:'
-        service_url += str(addon.getSetting('netflix_service_port'))
+        service_url += str(port)
         return service_url
 
     def call_netflix_service(self, params):
@@ -871,9 +875,7 @@ class Navigation(object):
         values = urllib.urlencode(params)
         # check for cached items
         if cache:
-            cached_value = self.kodi_helper.get_cached_item(
-                cache_id=values)
-
+            cached_value = self.kodi_helper.cache.get(cache_id=values)
             # Cache lookup successful?
             if cached_value is not None:
                 self.log(
@@ -894,7 +896,7 @@ class Navigation(object):
         result = parsed_json.get('result', None)
         if result and cache:
             self.log(msg='Adding item to cache: (cache_id=' + values + ')')
-            self.kodi_helper.add_cached_item(cache_id=values, contents=result)
+            self.kodi_helper.cache.set(cache_id=values, value=result)
         return result
 
     def open_settings(self, url):
