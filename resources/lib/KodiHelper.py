@@ -147,7 +147,7 @@ class KodiDirectoryBuilder(object):
         for sort_method in self.sort_methods:
             xbmcplugin.addSortMethod(handle=plugin_handle, sortMethod=sort_method)
         if self.view_mode:
-            xbmc.executebuiltin('Container.SetViewMode({})'.format(view))
+            xbmc.executebuiltin('Container.SetViewMode({})'.format(self.view_mode))
         xbmcplugin.endOfDirectory(plugin_handle)
         return True
 
@@ -556,6 +556,23 @@ class KodiHelper(object):
         self.add_pcached_item(cache_id, cache_item, type=type)
         return cache_id
 
+    def get_custom_view(self, content):
+        """Get the view mode
+
+        Returns
+        ----------
+        view
+            Type of content in container
+            (folder, movie, show, season, episode, login)
+
+        """
+        custom_view = self.get_addon().getSetting('customview')
+        if custom_view == 'true':
+            view = int(self.get_addon().getSetting('viewmode' + content))
+            if view != -1:
+                return view
+        return None
+
     def set_custom_view(self, content):
         """Set the view mode
 
@@ -567,11 +584,9 @@ class KodiHelper(object):
             (folder, movie, show, season, episode, login)
 
         """
-        custom_view = self.get_addon().getSetting('customview')
-        if custom_view == 'true':
-            view = int(self.get_addon().getSetting('viewmode' + content))
-            if view != -1:
-                xbmc.executebuiltin('Container.SetViewMode(%s)' % view)
+        custom_view = self.get_custom_view(content)
+        if custom_view is not None:
+            xbmc.executebuiltin('Container.SetViewMode(%s)' % custom_view)
 
     def save_autologin_data(self, autologin_user, autologin_id):
         """Write autologin data to settings
@@ -847,7 +862,7 @@ class KodiHelper(object):
             List could be build
         """
         video_list_directory = KodiDirectoryBuilder(
-            view_mode = self.set_custom_view(VIEW_FOLDER),
+            view_mode = self.get_custom_view(VIEW_MOVIE),
             sort_methods = [
                 xbmcplugin.SORT_METHOD_UNSORTED,
                 xbmcplugin.SORT_METHOD_LABEL,
@@ -1009,7 +1024,7 @@ class KodiHelper(object):
         """
         entity_list = []
         search_directory = KodiDirectoryBuilder(
-            view_mode = self.set_custom_view(VIEW_FOLDER),
+            view_mode = self.get_custom_view(VIEW_MOVIE),
             sort_methods = [
                 xbmcplugin.SORT_METHOD_UNSORTED,
                 xbmcplugin.SORT_METHOD_LABEL,
@@ -1025,7 +1040,7 @@ class KodiHelper(object):
         if entity_list:
             # build suggestions directory
             suggestions_directory = KodiDirectoryBuilder(
-                view_mode = self.set_custom_view(VIEW_FOLDER),
+                view_mode = self.get_custom_view(VIEW_FOLDER),
                 sort_methods = [
                     xbmcplugin.SORT_METHOD_UNSORTED,
                     xbmcplugin.SORT_METHOD_LABEL,
