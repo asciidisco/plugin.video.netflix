@@ -7,6 +7,7 @@ import re
 import json
 import base64
 import hashlib
+import sys
 from os import remove
 from uuid import uuid4
 from urllib import urlencode
@@ -22,6 +23,8 @@ from resources.lib.MSL import MSL
 from resources.lib.kodi.Dialogs import Dialogs
 from utils import get_user_agent, uniq_id
 from UniversalAnalytics import Tracker
+from xml.etree import ElementTree
+from LocaleMaps import LocaleIdToNameMap,LocaleNameToIdMap,LocaleNameToStringIdMap
 try:
     import cPickle as pickle
 except:
@@ -83,6 +86,7 @@ class KodiHelper(object):
         self.dialogs = Dialogs(
             get_local_string=self.get_local_string,
             custom_export_name=self.custom_export_name)
+        self.parsed_addon_settings = None
 
     def get_addon(self):
         """Returns a fresh addon instance"""
@@ -192,10 +196,96 @@ class KodiHelper(object):
         cipher = AES.new(self.crypt_key, AES.MODE_CBC, iv)
         return base64.b64encode(iv + cipher.encrypt(raw))
 
+    def get_locale_string_id_from_locale_id (self, locale_id):
+        """Get locale string id from locale id
+
+        Returns
+        -------
+        int
+            Locale string id
+        """
+        return LocaleNameToStringIdMap.get(LocaleIdToNameMap.get(locale_id))
+
+    def get_locale_name_list_from_string_id_list (self, string_id_list):
+        """Get locale name list from locale string id list
+
+        Returns
+        -------
+        list
+            Locale name list
+        """
+        LocaleStringIdToNameMap = {v:k for k,v in LocaleNameToStringIdMap.iteritems()}
+        return [LocaleStringIdToNameMap.get(int(item),'') for item in string_id_list]
+
+    def set_setting (self, key, value):
+        """Public interface for the addons setSetting method
+
+        Returns
+        -------
+        bool
+            Setting could be set or not
+        """
+        return self.get_addon().setSetting(key, value)
+
+    def is_addon_setting_default (self, id):
+        """Check if addon setting is default
+
+        Returns
+        -------
+        :obj:`bool`
+            Addon setting is default
+        """
+        settings = self._parse_addon_settings()
+        if id in settings:
+            if settings[id].get('default','') == str(self.get_addon().getSetting('locale')):
+                return True
+        return False
+
+    def get_addon_setting_lvalues_list (self, id):
+        """Get addon setting lvalues as list
+
+        Returns
+        -------
+        :obj:`list`
+            Addon setting lvalues
+        """
+        list = []
+        settings = self._parse_addon_settings()
+        if id in settings:
+            lvalues = settings[id].get('lvalues','')
+            if lvalues:
+                list = lvalues.split('|')
+        return list
+
+    def _parse_addon_settings (self):
+        """Parse addon settings
+
+        Returns
+        -------
+        dict
+            Addons settings keyed by setting id
+        """
+        if self.parsed_addon_settings:
+            return self.parsed_addon_settings
+        settings = {}
+        settings_file = join(self.plugin_path,'resources/settings.xml')
+        try:
+            settings_xml = open(settings_file,'r').read()
+            parsed_xml = ElementTree.fromstring(settings_xml)
+            setting_elems = parsed_xml.findall('.//category/setting')
+            for setting in setting_elems:
+                attribs = setting.__dict__.get('attrib',{})
+                if attribs.get('id',None):
+                    settings[attribs['id']] = attribs
+        except:
+            exc = sys.exc_info()
+            self.log(msg='Unable to parse addon settings - {} {}'.format(exc[0], exc[1]))
+        self.parsed_addon_settings = settings
+        return settings
+
     def decode(self, enc):
         """
         Decodes data
-
         :param data: Data to be decoded
         :type data: str
         :returns:  string -- Decoded data
@@ -233,6 +323,29 @@ class KodiHelper(object):
         msl = MSL(kodi_helper=self)
         msl.perform_key_handshake()
         msl.save_msl_data()
+
+    def get_kodi_locale_id(self):
+        """ Attempt to get locale id from Kodi
+
+        Returns
+        -------
+        term : :obj:`str`
+            Locale string id
+        """
+        locale = xbmc.getLanguage(xbmc.ISO_639_1, True)
+        if locale in LocaleIdToNameMap:
+            return locale
+        return None
+
+    def get_locale_setting(self):
+        """ Returns the locale id associated with the locale setting
+
+        Returns
+        -------
+        :obj:`str`
+            Locale id
+        """
+        return LocaleNameToIdMap.get(self.get_local_string(int(self.get_addon().getSetting('locale'))),'de-DE')
 
     def get_dolby_setting(self):
         """
