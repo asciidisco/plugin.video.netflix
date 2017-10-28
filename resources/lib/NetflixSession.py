@@ -14,8 +14,11 @@ from time import time
 from urllib import quote, unquote
 from re import compile as recompile
 from base64 import urlsafe_b64encode
+import xbmc
+import xbmcvfs
 from requests import session, cookies
-from utils import noop, get_user_agent
+from resources.lib.utils import noop, get_user_agent
+from resources.lib.constants import NFX_COOKIE_PATH, NFX_DATA_PATH
 try:
     import cPickle as pickle
 except:
@@ -103,7 +106,7 @@ class NetflixSession(object):
         'membershipStatus'
     ]
 
-    def __init__(self, cookie_path, data_path, verify_ssl=True, log_fn=noop):
+    def __init__(self, verify_ssl=True, log_fn=noop):
         """Stores the cookie path for later use & instanciates a requests
            session with a proper user agent & stored cookies/data if available
 
@@ -118,12 +121,12 @@ class NetflixSession(object):
         log_fn : :obj:`fn`
              optional log function
         """
-        self.cookie_path = cookie_path
-        self.data_path = data_path
         self.verify_ssl = verify_ssl
         self.log = log_fn
         self.parsed_cookies = {}
         self.parsed_user_data = {}
+        self.cookie_path = NFX_COOKIE_PATH
+        self.data_path = NFX_DATA_PATH
         self._init_session()
 
     def extract_inline_netflix_page_data(self, content='', items=None):
@@ -1800,15 +1803,14 @@ class NetflixSession(object):
         bool
             Storage procedure was successfull
         """
-        if not os.path.isdir(os.path.dirname(filename)):
-            return False
-        with open(filename, 'w') as f:
-            f.truncate()
-            pickle.dump({
-                'user_data': self.user_data,
-                'api_data': self.api_data,
-                'profiles': self.profiles
-            }, f)
+        file_handle = xbmcvfs.File(filepath=filename, mode='w')
+        content = pickle.dumps({
+            'user_data': self.user_data,
+            'api_data': self.api_data,
+            'profiles': self.profiles
+        })
+        file_handle.write(buffer=content)
+        file_handle.close()
 
     def _delete_data(self, path):
         """Tiny helper that deletes session data
@@ -1819,6 +1821,7 @@ class NetflixSession(object):
             Complete path/filename that determines where to delete the files
 
         """
+        path = xbmc.translatePath(path=path)
         head, tail = os.path.split(path)
         for subdir, dirs, files in os.walk(head):
             for file in files:
@@ -1833,14 +1836,13 @@ class NetflixSession(object):
         :type filename: str
         :returns: bool -- Storing procedure successfull
         """
-        if not os.path.isdir(os.path.dirname(filename)):
-            return False
-        with open(filename, 'w') as file_handle:
-            _cookies = self.session.cookies._cookies
-            jar = self.session.cookies
-            file_handle.truncate()
-            pickle.dump(_cookies, file_handle)
-            self.parsed_cookies[filename] = (_cookies, jar)
+        file_handle = xbmcvfs.File(filepath=filename, mode='w')
+        _cookies = self.session.cookies._cookies
+        jar = self.session.cookies
+        content = pickle.dumps(_cookies)
+        file_handle.write(buffer=content)
+        file_handle.close()
+        self.parsed_cookies[filename] = (_cookies, jar)
 
     def _load_cookies(self, filename):
         """
@@ -1858,22 +1860,23 @@ class NetflixSession(object):
             return current_cookie
 
         # return if we haven't found a cookie file
-        if not os.path.isfile(filename):
+        if not xbmcvfs.exists(path=filename):
             self.log(msg='No cookies found')
             return False
 
         # open the cookies file & set the loaded cookies
-        with open(filename) as f:
-            self.log(msg='Loading cookies from file')
-            _cookies = pickle.load(f)
-            if _cookies:
-                jar = cookies.RequestsCookieJar()
-                jar._cookies = _cookies
-                self.session.cookies = jar
-                self.parsed_cookies[filename] = (_cookies, jar)
-                return self.parsed_cookies.get(filename)
-            else:
-                return False
+        file_handle = xbmcvfs.File(filepath=filename)
+        self.log(msg='Loading cookies from file')
+        content = file_handle.read()
+        _cookies = pickle.loads(content)
+        file_handle.close()
+        if _cookies:
+            jar = cookies.RequestsCookieJar()
+            jar._cookies = _cookies
+            self.session.cookies = jar
+            self.parsed_cookies[filename] = (_cookies, jar)
+            return self.parsed_cookies.get(filename)
+        return False
 
     def _delete_cookies(self, path):
         """
@@ -1882,6 +1885,7 @@ class NetflixSession(object):
         :param path: path + filename for the cookie file
         :type path: string
         """
+        path = xbmc.translatePath(path=path)
         self.parsed_cookies[path] = None
         head, tail = os.path.split(path)
         for subdir, dirs, files in os.walk(head):

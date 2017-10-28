@@ -34,12 +34,12 @@ KODI_HELPER = KodiHelper()
 
 # pick & store a port for the MSL service
 MSL_PORT = select_unused_port()
-KODI_HELPER.set_setting('msl_service_port', str(MSL_PORT))
+KODI_HELPER.settings.set(key='msl_service_port', value=str(MSL_PORT))
 KODI_HELPER.log(msg='[MSL] Picked Port: ' + str(MSL_PORT))
 
 # pick & store a port for the internal Netflix HTTP proxy service
 NS_PORT = select_unused_port()
-KODI_HELPER.set_setting('netflix_service_port', str(NS_PORT))
+KODI_HELPER.settings.set(key='netflix_service_port', value=str(NS_PORT))
 KODI_HELPER.log(msg='[NS] Picked Port: ' + str(NS_PORT))
 
 # server defaults

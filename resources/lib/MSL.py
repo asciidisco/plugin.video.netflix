@@ -24,6 +24,7 @@ from datetime import datetime
 import xbmcvfs
 import requests
 import xml.etree.ElementTree as ET
+from resources.lib.constants import MSL_DATA_PATH
 
 
 def base64key_decode(payload):
@@ -59,13 +60,13 @@ class MSL(object):
         """
         self.kodi_helper = kodi_helper
         try:
-            xbmcvfs.mkdir(path=self.kodi_helper.msl_data_path)
+            xbmcvfs.mkdir(path=MSL_DATA_PATH)
         except OSError:
             pass
 
-        if self.file_exists(self.kodi_helper.msl_data_path, 'msl_data.json'):
+        if self.file_exists(MSL_DATA_PATH, 'msl_data.json'):
             self.init_msl_data()
-        elif self.file_exists(self.kodi_helper.msl_data_path, 'rsa_key.bin'):
+        elif self.file_exists(MSL_DATA_PATH, 'rsa_key.bin'):
             self.init_rsa_keys()
         else:
             self.init_generate_rsa_keys()
@@ -78,7 +79,7 @@ class MSL(object):
     def init_rsa_keys(self):
         self.kodi_helper.log(msg='RSA Keys do already exist load old ones')
         self.__load_rsa_keys()
-        if self.kodi_helper.get_esn():
+        if self.kodi_helper.settings.get(key='esn'):
             self.__perform_key_handshake()
 
     def init_generate_rsa_keys(self):
@@ -86,7 +87,7 @@ class MSL(object):
             # Create new Key Pair and save
             self.rsa_key = RSA.generate(2048)
             self.__save_rsa_keys()
-            if self.kodi_helper.get_esn():
+            if self.kodi_helper.settings.get(key='esn'):
                 self.__perform_key_handshake()
 
     def perform_key_handshake(self):
@@ -141,7 +142,7 @@ class MSL(object):
         }
 
         # add hevc profiles if setting is set
-        if self.kodi_helper.use_hevc() is True:
+        if self.kodi_helper.settings.get(key='enable_hevc_profiles') is True:
             hevc = 'hevc-main-'
             main10 = 'hevc-main10-'
             prk = 'dash-cenc-prk'
@@ -203,7 +204,7 @@ class MSL(object):
             manifest_request_data['profiles'].append(hdr + 'L51-' + prk)
 
         # Check if dolby sound is enabled and add to profles
-        if self.kodi_helper.get_dolby_setting():
+        if self.kodi_helper.settings.get(key='enable_dolby_sound') is True:
             manifest_request_data['profiles'].append('ddplus-2.0-dash')
             manifest_request_data['profiles'].append('ddplus-5.1-dash')
 
@@ -320,7 +321,7 @@ class MSL(object):
     def __tranform_to_dash(self, manifest):
 
         self.save_file(
-            msl_data_path=self.kodi_helper.msl_data_path,
+            msl_data_path=MSL_DATA_PATH,
             filename='manifest.json',
             content=json.dumps(manifest))
         manifest = manifest['result']['viewables'][0]
@@ -546,7 +547,7 @@ class MSL(object):
         :return: The base64 encoded JSON String of the header
         """
         self.current_message_id = self.rndm.randint(0, pow(2, 52))
-        esn = self.kodi_helper.get_esn()
+        esn = self.kodi_helper.settings.get(key='esn')
 
         # Add compression algo if not empty
         compression_algos = [compressionalgo] if compressionalgo != '' else []
@@ -581,7 +582,7 @@ class MSL(object):
             if 'usertoken' in self.tokens:
                 pass
             else:
-                account = self.kodi_helper.get_credentials()
+                account = self.kodi_helper.settings.get_credentials()
                 # Auth via email and password
                 header_data['userauthdata'] = {
                     'scheme': 'EMAIL_PASSWORD',
@@ -599,7 +600,7 @@ class MSL(object):
         :param plaintext:
         :return: Serialized JSON String of the encryption Envelope
         """
-        esn = self.kodi_helper.get_esn()
+        esn = self.kodi_helper.settings.get(key='esn')
 
         iv = get_random_bytes(16)
         encryption_envelope = {
@@ -633,7 +634,7 @@ class MSL(object):
             is_handshake=True,
             compressionalgo='',
             encrypt=False)
-        esn = self.kodi_helper.get_esn()
+        esn = self.kodi_helper.settings.get('esn')
 
         request = {
             'entityauthdata': {
@@ -696,7 +697,7 @@ class MSL(object):
 
     def __load_msl_data(self):
         raw_msl_data = self.load_file(
-            msl_data_path=self.kodi_helper.msl_data_path,
+            msl_data_path=MSL_DATA_PATH,
             filename='msl_data.json')
         msl_data = json.JSONDecoder().decode(raw_msl_data)
         # Check expire date of the token
@@ -736,7 +737,7 @@ class MSL(object):
         }
         serialized_data = json.JSONEncoder().encode(data)
         self.save_file(
-            msl_data_path=self.kodi_helper.msl_data_path,
+            msl_data_path=MSL_DATA_PATH,
             filename='msl_data.json',
             content=serialized_data)
 
@@ -749,7 +750,7 @@ class MSL(object):
 
     def __load_rsa_keys(self):
         loaded_key = self.load_file(
-            msl_data_path=self.kodi_helper.msl_data_path,
+            msl_data_path=MSL_DATA_PATH,
             filename='rsa_key.bin')
         self.rsa_key = RSA.importKey(loaded_key)
 
@@ -758,7 +759,7 @@ class MSL(object):
         # Get the DER Base64 of the keys
         encrypted_key = self.rsa_key.exportKey()
         self.save_file(
-            msl_data_path=self.kodi_helper.msl_data_path,
+            msl_data_path=MSL_DATA_PATH,
             filename='rsa_key.bin',
             content=encrypted_key)
 
@@ -769,7 +770,7 @@ class MSL(object):
         :param filename: The filename
         :return: True if so
         """
-        return xbmcvfs.exists(path=msl_data_path + filename)
+        return xbmcvfs.exists(path=MSL_DATA_PATH + filename)
 
     @staticmethod
     def save_file(msl_data_path, filename, content):
@@ -780,7 +781,7 @@ class MSL(object):
         """
 
         file_handle = xbmcvfs.File(
-            filepath=msl_data_path + filename,
+            filepath=MSL_DATA_PATH + filename,
             mode='w')
         file_content = file_handle.write(content)
         file_handle.close()
@@ -793,7 +794,7 @@ class MSL(object):
         :return: The content of the file
         """
         file_handle = xbmcvfs.File(
-            filepath=msl_data_path + filename)
+            filepath=MSL_DATA_PATH + filename)
         file_content = file_handle.read()
         file_handle.close()
         return file_content

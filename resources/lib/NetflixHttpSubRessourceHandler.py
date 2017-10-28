@@ -25,7 +25,7 @@ class NetflixHttpSubRessourceHandler(object):
         """
         self.kodi_helper = kodi_helper
         self.netflix_session = netflix_session
-        self.credentials = self.kodi_helper.get_credentials()
+        self.credentials = self.kodi_helper.settings.get_credentials()
         self.profiles = []
         self.video_list_cache = {}
         self.prefetch_login()

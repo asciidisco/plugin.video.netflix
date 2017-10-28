@@ -16,6 +16,17 @@ VIEW_SHOW = 'show'
 VIEW_SEASON = 'season'
 VIEW_EPISODE = 'episode'
 
+# library
+LIB_LABEL_SHOW = 'shows'
+LIB_LABEL_MOVIE = 'movies'
+LIB_LABEL_META = 'metadata'
+LIB_LABEL_IMG = 'imagecache'
+
+# paths
+MSL_DATA_PATH = 'special://profile/addon_data/service.msl'
+NFX_COOKIE_PATH = 'special://profile/addon_data/' + ADDON_ID + '/COOKIE'
+NFX_DATA_PATH = 'special://profile/addon_data/' + ADDON_ID + '/DATA'
+
 # server certificate
 SERVER_CERT = (
     'Cr0CCAMSEOVEukALwQ8307Y2+LVP+0MYh/HPkwUijgIwggEKAoIBAQDm875btoWUbGqQD8eAG'
@@ -32,29 +43,3 @@ SERVER_CERT = (
     'BA6iJ981/aforXbd2vZlRXO/2S+Maa2mHULzsD+S5l4/YGpSt7PnkCe25F+nAovtl/ogZgjMe'
     'EdFyd/9YMYjOS4krYmwp3yJ7m9ZzYCQ6I8RQN4x/yLlHG5RH/+WNLNUs6JAZ0fFdCmw='
 )
-
-
-class Constants(object):
-    """ADD ME"""
-
-    @staticmethod
-    def get_server_cert():
-        """ADD ME"""
-        return SERVER_CERT
-
-    @staticmethod
-    def get_addon_id():
-        """ADD ME"""
-        return ADDON_ID
-
-    @staticmethod
-    def get_view_ids():
-        """ADD ME"""
-        view_ids = {
-            'VIEW_FOLDER': VIEW_FOLDER,
-            'VIEW_MOVIE': VIEW_MOVIE,
-            'VIEW_SHOW': VIEW_SHOW,
-            'VIEW_SEASON': VIEW_SEASON,
-            'VIEW_EPISODE': VIEW_EPISODE,
-        }
-        return view_ids
