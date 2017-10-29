@@ -77,7 +77,7 @@ class Cache(object):
         cached_items = self.__load_cache_contents()
         return cached_items.get(cache_id, fallback)
 
-    def set(self, cache_id, value, first_level_only=False):
+    def set(self, cache_id, value, first_level_only=False, ttl=None):
         """
         Adds an item to the in memory cache
 

@@ -60,7 +60,6 @@ class ListItem(object):
         # populate the base dict
         infos = {} if base_info is None else base_info
 
-
         # infos.update({'cast': entry.get('cast', [])})
         # infos.update({'writer': entry.get('creators', [''])[0]})
         # infos.update({'director': entry.get('directors', [''])[0]})

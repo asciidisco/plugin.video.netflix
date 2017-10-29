@@ -14,7 +14,6 @@ from resources.lib.constants import ADDON_ID
 class Addon(object):
     """Addon data abstraction"""
 
-
     def __init__(self, cache, base_url, handle, log=noop):
         """ADD ME"""
         self.cache = cache

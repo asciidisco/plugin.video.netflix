@@ -9,22 +9,22 @@
 import unittest
 import mock
 from resources.lib.utils import get_user_agent, noop, uniq_id, get_class_methods, __get_mac_address as gma
-from mocks.MinimalClassMocks import MockClass
-from mocks.LoggerMocks import TestLoggerWithArgs, TestLoggerWithCredentialArgs, TestLoggerWithNoArgs
+from resources.test.mocks.MinimalClassMocks import MockClass
+from resources.test.mocks.LoggerMocks import TestLoggerWithArgs, TestLoggerWithCredentialArgs, TestLoggerWithNoArgs
 
 
 class UtilsTestCase(unittest.TestCase):
     """Tests for the `Utils` module"""
 
     def test_get_user_agent(self):
-        """ADD ME"""
+        """Can get non OS dependent part of UA"""
         self.assertIn(
             container=get_user_agent(),
             member='Chrome/59.0.3071.115')
 
     @mock.patch('platform.system')
     def test_get_user_agent_Linux(self, mock_system):
-        """ADD ME"""
+        """Can get Linux UA"""
         mock_system.return_value = 'Linux'
         self.assertIn(
             container=get_user_agent(),
@@ -32,7 +32,7 @@ class UtilsTestCase(unittest.TestCase):
 
     @mock.patch('platform.system')
     def test_get_user_agent_Darwin(self, mock_system):
-        """ADD ME"""
+        """Can get OSX UA"""
         mock_system.return_value = 'Darwin'
         self.assertIn(
             container=get_user_agent(),
@@ -40,7 +40,7 @@ class UtilsTestCase(unittest.TestCase):
 
     @mock.patch('platform.system')
     def test_get_user_agent_Windows(self, mock_system):
-        """ADD ME"""
+        """Can get Windows UA"""
         mock_system.return_value = 'Windows'
         self.assertIn(
             container=get_user_agent(),
@@ -49,7 +49,7 @@ class UtilsTestCase(unittest.TestCase):
     @mock.patch('platform.system')
     @mock.patch('platform.machine')
     def test_get_user_agent_Arm(self, mock_machine, mock_system):
-        """ADD ME"""
+        """Can get Linux ARM UA"""
         mock_system.return_value = 'Linux'
         mock_machine.return_value = 'arm'
         self.assertIn(
@@ -58,14 +58,14 @@ class UtilsTestCase(unittest.TestCase):
 
     @mock.patch('xbmcaddon.Addon')
     def test_uniq_id(self, mock_xbmcaddon):
-        """ADD ME"""
+        """Can get Unique Hardware ID (without MAC address)"""
         self.assertEquals(
             first=uniq_id(delay=1),
             second='=\x05\xc1\xf7\x0b\xb5&\xd0\xa2\xd1]\xce\xf3\xee\x92\x8a\xb5\xc7\x985\x8a{\xf5A6TD\xf3/\x93\x84W')
 
     @mock.patch('xbmc.getInfoLabel')
     def test_get_mac_address_delay(self, mock_getInfoLabel):
-        """ADD ME"""
+        """Can get Unique Hardware ID (with MAC address)"""
         mock_getInfoLabel.return_value = '00:80:41:ae:fd:7e'
         self.assertEqual(
             first=uniq_id(delay=2),
@@ -73,7 +73,7 @@ class UtilsTestCase(unittest.TestCase):
 
     @mock.patch('xbmc.getInfoLabel')
     def test_get_mac_address(self, mock_getInfoLabel):
-        """ADD ME"""
+        """Can get MAC address"""
         mock_getInfoLabel.return_value = '00:80:41:ae:fd:7e'
         self.assertEqual(
             first=gma(),
@@ -81,17 +81,17 @@ class UtilsTestCase(unittest.TestCase):
 
     @mock.patch('xbmc.getInfoLabel')
     def test_get_mac_address_malformed(self, mock_getInfoLabel):
-        """ADD ME"""
+        """Can get malformed MAC address"""
         mock_getInfoLabel.return_value = '00-80-41-ae-fd-7e'
         self.assertEqual(
             first=gma(),
             second='00-80-41-ae-fd-7e')
 
     def test_noop(self):
-        """ADD ME"""
+        """Noop returns no data"""
         self.assertEqual(
             first=noop(a='a'),
-            second={'a': 'a'})
+            second=())
 
     def test_log_decorator(self):
         """Does log messages if a log function is applied to the parent class"""
@@ -132,6 +132,7 @@ class UtilsTestCase(unittest.TestCase):
         instTestLoggerWithCredentialArgs.to_be_logged(credentials='foo', account='bar', a='b')
 
     def test_get_class_methods(self):
+        """Can get all methods of a class"""
         self.assertEqual(
             first=get_class_methods(class_item=MockClass),
             second=['bar', 'foo', '__init__'])

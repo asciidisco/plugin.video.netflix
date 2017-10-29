@@ -78,8 +78,9 @@ class Rpc(object):
             query=query)
         # check for error responses
         raw_result = self.__check_for_result_error(result=raw_result)
+
         # cache the result
-        result = raw_result.get('result', None)
+        result = None if raw_result is None else raw_result.get('result', None)
         if cache is True and result is not None:
             self.cache.set(
                 cache_id='rpc_' + serialized_query,

@@ -26,6 +26,7 @@ from resources.lib.constants import (
     VIEW_EPISODE, VIEW_FOLDER, VIEW_SEASON,
     SERVER_CERT, ADDON_ID, MSL_DATA_PATH)
 
+
 class KodiHelper(object):
     """Accesses configuration & turns data into lists of folders/videos"""
 
