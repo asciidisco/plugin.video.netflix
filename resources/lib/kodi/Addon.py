@@ -15,38 +15,57 @@ class Addon(object):
     """Addon data abstraction"""
 
     def __init__(self, cache, base_url, handle, log=noop):
-        """ADD ME"""
+        """
+        Takes cache, plugin base url, Kodis plugin handle and a log function
+
+        :param cache: Cache instance
+        :type cache: resources.lib.kodi.Cache
+        :param base_url: Kodi internal base url
+        :type base_url: str
+        :param handle: Kodi internal plugin handle
+        :type handle: int
+        :param log: Log function
+        :type log: fn
+        """
+        self.log = log
         self.cache = cache
         self.handle = handle
         self.base_url = base_url
         self.addon = self.get_addon()
-        self.log = log
 
     def get_addon_data(self):
-        """ADD ME"""
+        """Fetches relevant addon data from Kodi
+
+        :returns: dict - Addon data
+        """
+        # check for cached data
         cache_id = 'addon_data'
         cache_item = self.cache.get(cache_id=cache_id)
         if cache_item is not None:
             return cache_item
+        # fetch addon data from Kodi
         addon_data = {
-            'name': self.addon.getAddonInfo('name'),
-            'version': self.addon.getAddonInfo('version'),
-            'profile': self.addon.getAddonInfo('profile'),
-            'path': self.addon.getAddonInfo('path'),
-            'fanart': self.addon.getAddonInfo('fanart'),
+            'name': self.addon.getAddonInfo(id='name'),
+            'version': self.addon.getAddonInfo(id='version'),
+            'profile': self.addon.getAddonInfo(id='profile'),
+            'path': self.addon.getAddonInfo(id='path'),
+            'fanart': self.addon.getAddonInfo(id='fanart'),
         }
+        # populate cache
         self.cache.set(cache_id=cache_id, value=addon_data)
         return addon_data
 
-    def get_plugin_handle(self):
-        """ADD ME"""
-        return self.handle
-
     def get_base_url(self):
-        """ADD ME"""
+        """Returns the plugins base url
+
+        :returns: str - Base url
+        """
         return self.base_url
 
     @classmethod
     def get_addon(cls):
-        """ADD ME"""
-        return xbmcaddon.Addon(ADDON_ID)
+        """Returns the plugins addon instance
+
+        :returns: xbmcaddon.Addon - Addon instance
+        """
+        return xbmcaddon.Addon(id=ADDON_ID)

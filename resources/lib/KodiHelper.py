@@ -40,7 +40,7 @@ class KodiHelper(object):
         """
         # instances
         self.library = None
-        self.cache = Cache(log=self.log, addon_id=ADDON_ID)
+        self.cache = Cache(log=self.log)
         self.rpc = Rpc(log=self.log, cache=self.cache)
         self.addon = Addon(
             cache=self.cache,
@@ -136,7 +136,6 @@ class KodiHelper(object):
             build_url=build_url)
         # generate static recommendation & genre items
         preselect_items += item_list.generate_static_menu_entries(
-            video_list_ids=video_list_ids,
             fanart=fanart,
             actions=actions,
             build_url=build_url)

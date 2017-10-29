@@ -250,7 +250,6 @@ class ListItem(object):
 
     def generate_static_menu_entries(
             self,
-            video_list_ids,
             fanart,
             actions,
             build_url):
@@ -265,23 +264,21 @@ class ListItem(object):
         }
         preselect_items = []
         for static_id in i18n_ids:
-            # determine if the lists have contents
-            if len(video_list_ids.get(static_id, '')) > 0:
-                # determine action route
-                action = actions.get(static_id, actions.get('default'))
-                # determine if the item should be selected
-                is_selected = static_id == self.cache.get(
-                    cache_id='main_menu_selection')
-                preselect_items.append(is_selected)
-                list_item = xbmcgui.ListItem(
-                    label=i18n_ids.get(static_id),
-                    iconImage=fanart)
-                list_item.setProperty('fanart_image', fanart)
-                xbmcplugin.addDirectoryItem(
-                    handle=self.addon.handle,
-                    url=build_url({'action': action, 'type': static_id}),
-                    listitem=list_item,
-                    isFolder=True)
+            # determine action route
+            action = actions.get(static_id, actions.get('default'))
+            # determine if the item should be selected
+            is_selected = static_id == self.cache.get(
+                cache_id='main_menu_selection')
+            preselect_items.append(is_selected)
+            list_item = xbmcgui.ListItem(
+                label=i18n_ids.get(static_id),
+                iconImage=fanart)
+            list_item.setProperty('fanart_image', fanart)
+            xbmcplugin.addDirectoryItem(
+                handle=self.addon.handle,
+                url=build_url({'action': action, 'type': static_id}),
+                listitem=list_item,
+                isFolder=True)
         return preselect_items
 
     def generate_main_menu_entries(

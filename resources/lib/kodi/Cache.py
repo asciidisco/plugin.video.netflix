@@ -8,6 +8,7 @@
 
 import xbmcgui
 from resources.lib.utils import noop
+from resources.lib.constants import ADDON_ID
 try:
     import cPickle as pickle
 except ImportError:
@@ -17,22 +18,18 @@ except ImportError:
 class Cache(object):
     """Generic caching layer"""
 
-    def __init__(self, addon_id, log=noop, omit_setup=False):
+    def __init__(self, log=noop, omit_setup=False):
         """
-        Stores the addon_id & log references
         Sets the cache keyword
         Sets up the cache backends (if not told otherwise)
 
-        :param addon_id: Addon identifier
-        :type addon_id: str
         :param log: Log function
         :type log: fn
         :param omit_setup: Prevent cache backends from being initialized
         :type log: bool
         """
         self.log = log
-        self.addon_id = addon_id
-        self.keyword = addon_id + 'memcache'
+        self.keyword = ADDON_ID + 'memcache'
         self.window = {}
         self.l1_cache = {}
         if omit_setup is False:
