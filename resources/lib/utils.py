@@ -10,7 +10,10 @@ import hashlib
 import platform
 from functools import wraps
 from types import FunctionType
+from urllib import urlencode
 import xbmc
+import requests
+from resources.lib.constants import ANALYTICS_URL
 
 
 def noop(*args, **_):
@@ -139,3 +142,38 @@ def strip_title(title=''):
         repl=r'',
         string=title_ascii).lower().replace('-', '')
     return title_stripped
+
+
+def track_event(tid, cid, event):
+    """Send a tracking event request
+
+    :param tid: Projects tracking id
+    :type tid: str
+    :param cid: Unique customer id
+    :type cid: str
+    :param event: The idetifier of the event
+    :type event: str
+    """
+    # query params
+    query_params = {
+        'tid': tid,
+        'cid': cid,
+        't': 'event',
+        'ec': event,
+        'v': '1',
+    }
+    # post data
+    data = {
+        'id': tid,
+        'cid': cid,
+        't': 'event',
+        'ec': event,
+        'v': '1',
+    }
+    # build request url
+    url = ANALYTICS_URL + '?' + urlencode(query=query_params)
+    # send request
+    requests.post(
+        url=url,
+        data=data,
+        headers={'User-Agent': get_user_agent()})

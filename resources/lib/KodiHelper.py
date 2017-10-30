@@ -18,13 +18,12 @@ from resources.lib.kodi.Rpc import Rpc
 from resources.lib.kodi.Cache import Cache
 from resources.lib.kodi.Addon import Addon
 from resources.lib.kodi.Dialogs import Dialogs
-from resources.lib.UniversalAnalytics import Tracker
 from resources.lib.kodi.Settings import Settings
 from resources.lib.kodi.ListItem import ListItem
-from resources.lib.utils import get_user_agent, strip_title
+from resources.lib.utils import get_user_agent, strip_title, track_event
 from resources.lib.constants import (
-    VIEW_EPISODE, VIEW_FOLDER, VIEW_SEASON,
-    SERVER_CERT, ADDON_ID, MSL_DATA_PATH)
+    VIEW_EPISODE, VIEW_FOLDER, VIEW_SEASON, TRACKING_ID,
+    SERVER_CERT, MSL_DATA_PATH)
 
 
 class KodiHelper(object):
@@ -726,8 +725,7 @@ class KodiHelper(object):
             c_id = self.settings.get(key='tracking_id', fallback=uuid4().hex)
             self.settings.set(key='tracking_id', value=c_id)
             # send the tracking event
-            tracker = Tracker.create('UA-46081640-5', client_id=c_id)
-            tracker.send('event', event)
+            track_event(tid=TRACKING_ID, cid=c_id, event=event)
 
     @classmethod
     def __compare_titles(cls, orig, compare):

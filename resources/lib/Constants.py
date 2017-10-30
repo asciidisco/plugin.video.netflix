@@ -43,3 +43,7 @@ SERVER_CERT = (
     'BA6iJ981/aforXbd2vZlRXO/2S+Maa2mHULzsD+S5l4/YGpSt7PnkCe25F+nAovtl/ogZgjMe'
     'EdFyd/9YMYjOS4krYmwp3yJ7m9ZzYCQ6I8RQN4x/yLlHG5RH/+WNLNUs6JAZ0fFdCmw='
 )
+
+# analytics
+ANALYTICS_URL = 'https://www.google-analytics.com/collect'
+TRACKING_ID = 'UA-46081640-5'
