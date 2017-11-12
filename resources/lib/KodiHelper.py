@@ -1114,7 +1114,6 @@ class KodiHelper(object):
             play_item.setArt(art)
         play_item.setInfo('video', infoLabels)
 
-        # check for content in kodi db
         if str(infoLabels) != 'None':
             if infoLabels['mediatype'] == 'episode':
                 id = self.showtitle_to_id(title=infoLabels['tvshowtitle'])
@@ -1123,14 +1122,24 @@ class KodiHelper(object):
                     showseason=infoLabels['season'],
                     showepisode=infoLabels['episode'])
                 if details is not False:
+                    trakt = self.get_traktids_by_showid(
+                        showid=id,
+                        showseason=infoLabels['season'],
+                        showepisode=infoLabels['episode'],
+                        tvdbid = id[2])
                     play_item.setInfo('video', details[0])
                     play_item.setArt(details[1])
+                    ids = json.dumps(trakt)
+                    xbmcgui.Window(10000).setProperty('script.trakt.ids', ids)                    
             if infoLabels['mediatype'] != 'episode':
                 id = self.movietitle_to_id(title=infoLabels['title'])
                 details = self.get_movie_content_by_id(movieid=id)
                 if details is not False:
+                    trakt = self.get_traktids_by_movieid(movieid=id)		
                     play_item.setInfo('video', details[0])
                     play_item.setArt(details[1])
+                    ids = json.dumps(trakt)
+                    xbmcgui.Window(10000).setProperty('script.trakt.ids', ids)
 
         resolved = xbmcplugin.setResolvedUrl(
             handle=self.plugin_handle,
@@ -1468,7 +1477,7 @@ class KodiHelper(object):
             "jsonrpc": "2.0",
             "method": "VideoLibrary.GetTVShows",
             "params": {
-                "properties": ["title", "genre"]
+                "properties": ["title", "genre", "imdbnumber"]
             },
             "id": "libTvShows"
         }
@@ -1497,10 +1506,109 @@ class KodiHelper(object):
                     if '(' in titlegiven:
                         titlegiven = titlegiven.split('(')[0]
                     if titledb == titlegiven:
-                        return tvshow['tvshowid'], tvshow['genre']
+                        return tvshow['tvshowid'], tvshow['genre'], tvshow['imdbnumber']
             return '-1', ''
         except Exception:
             return '-1', ''
+
+    def get_traktids_by_showid(self, showid, showseason, showepisode, tvdbid):
+        showseason = int(showseason)
+        showepisode = int(showepisode)
+        props = ["season", "episode", "showtitle"]
+        query = {
+                "jsonrpc": "2.0",
+                "method": "VideoLibrary.GetEpisodes",
+                "params": {
+                    "properties": props,
+                    "tvshowid": int(showid[0])
+                },
+                "id": "1"
+                }
+        try:
+            rpc_result = xbmc.executeJSONRPC(
+                jsonrpccommand=json.dumps(query, encoding='utf-8'))
+            json_result = json.loads(rpc_result)
+            result = json_result.get('result', None)
+            if result is not None and 'episodes' in result:
+                result = result['episodes']
+                for episode in result:
+                    in_season = episode['season'] == showseason
+                    in_episode = episode['episode'] == showepisode
+                    if in_season and in_episode:
+                        traktids = {}
+                        if 'showtitle' in episode and len(episode['showtitle']) > 0:
+                        # Switch to ascii/lowercase and replace spaces
+                        # to - for the trakt-slug
+                            titledb = episode['showtitle'].encode('ascii', 'ignore')
+                            #titledb = titledb.lower().replace(' ', '-').replace(':', '-')
+                            titledb = re.sub(
+                                pattern=r'[?|$|!|:|#|\.|\,|\']',
+                                repl=r'',
+                                string=titledb).lower().replace(' ', '-')							
+                            traktids.update({
+                                'slug': titledb,
+								'episode' : showepisode,
+								'season': showseason,
+                                'tvdb': tvdbid})
+                        return traktids
+            return False
+        except Exception:
+            return False
+			
+    def get_traktids_by_movieid(self, movieid):
+        query = {
+                "jsonrpc": "2.0",
+                "method": "VideoLibrary.GetMovieDetails",
+                "params": {
+                    "movieid": movieid,
+                    "properties": [
+                        "originaltitle",
+                        "title",
+                        "year",						
+                        "imdbnumber"]
+                },
+                "id": "libMovies"
+            }
+        try:
+            rpc_result = xbmc.executeJSONRPC(
+                jsonrpccommand=json.dumps(query, encoding='utf-8'))
+            json_result = json.loads(rpc_result)
+            result = json_result.get('result', None)
+            if result is not None and 'moviedetails' in result:
+                result = result.get('moviedetails', {})
+                traktids = {}
+
+                if 'originaltitle' in result and len(result['originaltitle']) > 0:
+                    # Switch to ascii/lowercase, replace spaces
+                    # to - and add - to the end for the trakt-slug
+                    titledb = result['originaltitle'].encode('ascii', 'ignore')
+                    #titledb = titledb.lower().replace(' ', '-').replace(':', '').join(('','-'))
+                    titledb = re.sub(
+                        pattern=r'[?|$|!|:|#|\.|\,|\']',
+                        repl=r'',
+                        string=titledb).lower().replace(' ', '-').join(('','-'))				
+                    if 'year' in result and range(result['year']) > 0:
+                        slugyear = result['year']
+                        traktslug = titledb + str(slugyear)
+                        traktids.update({'slug': traktslug})					
+                elif 'title' in result and len(result['title']) > 0:
+                    # Switch to ascii/lowercase, replace spaces
+                    # to - and add - to the end for the trakt-slug
+                    titledb = result['title'].encode('ascii', 'ignore')
+                    titledb = re.sub(
+                        pattern=r'[?|$|!|:|#|\.|\,|\']',
+                        repl=r'',
+                        string=titledb).lower().replace(' ', '-').join(('','-'))					
+                    if 'year' in result and range(result['year']) > 0:
+                        slugyear = result['year']
+                        traktslug = titledb + str(slugyear)
+                        traktids.update({'slug': traktslug})
+                if 'imdbnumber' in result and len(result['imdbnumber']) > 0:
+                    traktids.update({'imdb': result['imdbnumber']})
+                return traktids
+            return False
+        except Exception:
+            return False
 
     def get_show_content_by_id(self, showid, showseason, showepisode):
         showseason = int(showseason)
@@ -1566,7 +1674,7 @@ class KodiHelper(object):
                 result = result.get('moviedetails', {})
                 infos = {}
                 if 'genre' in result and len(result['genre']) > 0:
-                    infos.update({'genre': json_result['genre']})
+                    infos.update({'genre': result['genre']})
                 if 'plot' in result and len(result['plot']) > 0:
                     infos.update({'plot': result['plot']})
                 art = {}
