@@ -1126,7 +1126,7 @@ class KodiHelper(object):
                         showid=id,
                         showseason=infoLabels['season'],
                         showepisode=infoLabels['episode'],
-                        tvdbid = id[2])
+                        tvdbid=id[2])
                     play_item.setInfo('video', details[0])
                     play_item.setArt(details[1])
                     ids = json.dumps(trakt)
@@ -1540,7 +1540,6 @@ class KodiHelper(object):
                         # Switch to ascii/lowercase and replace spaces
                         # to - for the trakt-slug
                             titledb = episode['showtitle'].encode('ascii', 'ignore')
-                            #titledb = titledb.lower().replace(' ', '-').replace(':', '-')
                             titledb = re.sub(
                                 pattern=r'[?|$|!|:|#|\.|\,|\']',
                                 repl=r'',
@@ -1582,7 +1581,6 @@ class KodiHelper(object):
                     # Switch to ascii/lowercase, replace spaces
                     # to - and add - to the end for the trakt-slug
                     titledb = result['originaltitle'].encode('ascii', 'ignore')
-                    #titledb = titledb.lower().replace(' ', '-').replace(':', '').join(('','-'))
                     titledb = re.sub(
                         pattern=r'[?|$|!|:|#|\.|\,|\']',
                         repl=r'',
