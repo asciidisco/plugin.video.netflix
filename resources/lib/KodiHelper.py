@@ -1547,14 +1547,14 @@ class KodiHelper(object):
                                 string=titledb).lower().replace(' ', '-')							
                             traktids.update({
                                 'slug': titledb,
-								'episode' : showepisode,
+								'episode': showepisode,
 								'season': showseason,
                                 'tvdb': tvdbid})
                         return traktids
             return False
         except Exception:
             return False
-			
+
     def get_traktids_by_movieid(self, movieid):
         query = {
                 "jsonrpc": "2.0",
