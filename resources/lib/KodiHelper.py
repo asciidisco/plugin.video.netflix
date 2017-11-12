@@ -1114,6 +1114,7 @@ class KodiHelper(object):
             play_item.setArt(art)
         play_item.setInfo('video', infoLabels)
 
+        # check for content in kodi db
         if str(infoLabels) != 'None':
             if infoLabels['mediatype'] == 'episode':
                 id = self.showtitle_to_id(title=infoLabels['tvshowtitle'])
