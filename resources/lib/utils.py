@@ -11,11 +11,9 @@ from functools import wraps
 from types import FunctionType
 import xbmc
 
-
 def noop(**kwargs):
     """Takes everything, does nothing, classic no operation function"""
     return kwargs
-
 
 def log(func):
     """
@@ -49,6 +47,54 @@ def log(func):
     wrapped.__doc__ = func.__doc__
     return wrapped
 
+# enhanced dictionary class for handling nested dict paths
+class dd(dict):
+    def __init__(self,d=None,root=None,root_key=None):
+        dict.__init__(self,d) if (d is not None) else dict.__init__(self)
+        self.root = root
+        self.root_key = root_key
+        self._link_root()
+    def __getitem__(self,key):
+        try:
+            ret = dict.__getitem__(self,key)
+            if not isinstance(ret,dd) and isinstance(ret,dict):
+                ret = dd(ret)
+                dict.__setitem__(self,key,ret)
+        except KeyError:
+            ret = dd(root=self,root_key=key)
+        return ret
+    def __setitem__(self,key,value):
+        if not isinstance(value,dd) and isinstance(value,dict):
+            dict.__setitem__(self,key,dd(d=value))
+        else:
+            dict.__setitem__(self,key,value)
+        self._link_root()
+    def __len__(self):
+        if self.has_substance():
+            return dict.__len__(self)
+        else:
+            return 0
+    def _link_root(self):
+        if self and (self.root is not None) and (self.root_key is not None):
+            if not self.root[self.root_key]:
+                self.root[self.root_key] = self
+            elif isinstance(self.root[self.root_key],dict):
+                self.root[self.root_key].update(self)
+            else:
+                raise Exception("dd - root key is already set")
+            self.root = None
+            self.root_key = None
+    def has_substance(self):
+        for value in self.values():
+            if value is not None:
+                if isinstance(value,dd):
+                    return value.has_substance()
+                else:
+                    return True
+        return False
+    def update(self,*argv,**kwargs):
+        dict.update(self,*argv,**kwargs)
+        self._link_root()
 
 def get_user_agent():
     """

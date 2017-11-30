@@ -8,6 +8,8 @@
 
 import json
 import BaseHTTPServer
+from sys import exc_info
+from types import FunctionType
 from urlparse import urlparse, parse_qs
 from resources.lib.KodiHelper import KodiHelper
 from resources.lib.utils import get_class_methods
@@ -64,6 +66,33 @@ class NetflixHttpRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         return self.wfile.write(json.dumps({
             'method': method,
             'result': result}))
+
+    def do_POST(self):
+        """ POST requst handler (internal POST requests - JSON)"""
+        url = urlparse(self.path)
+        params = parse_qs(url.query)
+        method = params.get('method', [None])[0]
+        # no existing method given
+        if method not in METHODS:
+            self.send_error(404, 'Method "{}" not found. Available methods: {}'.format(str(method),str(METHODS)))
+            return
+
+        length = int(self.headers['content-length'])
+        post = self.rfile.read(length)
+        try:
+            data = json.loads(post)
+        except:
+            exc = exc_info()
+            self.send_error(406, 'Exception parsing JSON - {} {}'.format(exc[0],exc[1]))
+            return
+
+        # call method & get the result
+        result = getattr(RES_HANDLER, method)(params=params, data=data)
+        self.send_response(200)
+        self.send_header('Content-type', 'application/json')
+        self.end_headers()
+        self.wfile.write(json.dumps({'method': method, 'result': result}))
+        return
 
     def log_message(self, *args):
         """Disable the BaseHTTPServer Log"""

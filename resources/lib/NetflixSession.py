@@ -15,7 +15,8 @@ from urllib import quote, unquote
 from re import compile as recompile
 from base64 import urlsafe_b64encode
 from requests import session, cookies
-from utils import noop, get_user_agent
+from utils import dd, noop, get_user_agent
+from Search import SearchParams, SearchResults
 try:
     import cPickle as pickle
 except:
@@ -50,6 +51,13 @@ class NetflixSession(object):
     """:obj:`list` of :obj:`str`
     Divide the users video lists into
     3 different categories (for easier digestion)"""
+
+    param_searchAPIV2 = {
+            #'withSize': False,
+            #'materialize': True,
+            'searchAPIV2': 'true'
+    }
+
 
     profiles = {}
     """:obj:`dict`
@@ -578,6 +586,123 @@ class NetflixSession(object):
                 'name': entry['context'],
                 'displayName': entry['displayName'],
                 'size': entry['length']
+            }
+        }
+
+    def parse_search_results (self, search_params, response_data):
+        """Parse the list of search results, rip out the parts we need
+           and extend it with detailed show informations
+
+        Parameters
+        ----------
+        response_data : :obj:`dict` of :obj:`str`
+            Parsed response JSON from the `fetch_search_results` call
+
+        Returns
+        -------
+        :obj:`dict` of :obj:`dict` of :obj:`str`
+            Search results in the format:
+
+            {
+                "70136140": {
+                    "boxarts": "https://art-s.nflximg....jpg",
+                    "detail_text": "Die legend\u00e4re und...",
+                    "id": "70136140",
+                    "season_id": "70109435",
+                    "synopsis": "Unter Befehl von...",
+                    "title": "Star Trek",
+                    "type": "show"
+                },
+                "70158329": {
+                    "boxarts": ...
+                }
+            }
+        """
+        search_results = SearchResults()
+        search_params = SearchParams(search_params)
+        response_data = dd(response_data)
+        terms = response_data['value']['search']['byTerm']
+        entities = response_data['value']['search']['byEntity']
+        references = response_data['value']['search']['byReference']
+
+        # collect search references
+        if terms:
+            for term in terms:
+                if isinstance(terms[term],dict):
+                    for response_type in terms[term]:
+                        if isinstance(terms[term][response_type],dict):
+                            for response_key,response_value in terms[term][response_type].iteritems():
+                                if isinstance(response_value,list) and (len(response_value)==3) and (response_value[0]=='search'):
+                                    search_results.add_result(type='terms', type_id=term, subtype_id=response_type, ref_id=response_value[2])
+        if entities:
+            for entity in entities:
+                if isinstance(entities[entity],dict):
+                    for ent_key,ent_val in entities[entity].iteritems():
+                        if isinstance(ent_val,list) and (len(ent_val)==3) and (ent_val[0]=='search'):
+                            search_results.add_result(type='entities', type_id=entity, ref_id=ent_val[2])
+        if ((not search_results) and references):
+            for ref_key,ref_value in references.iteritems():
+                if isinstance(ref_value,dict):
+                    search_results.add_result(type='references', type_id=ref_key, ref_id=ref_key)
+
+        # collect reference data
+        for reference in search_results:
+            search_results[reference]['length'] = references[reference].get('length',0)
+            if search_results[reference]['length'] == 0:
+                # carryover from last search
+                search_results[reference]['length'] = search_params['references'][reference].get('length',0)
+            search_results[reference]['count'] = 0
+            if search_results[reference]['length'] > 0:
+                for ref_key,ref_val in references[reference].iteritems():
+                    if isinstance(ref_val, dict):
+                        for ref_num_key,ref_num_val in ref_val.iteritems():
+                            if ref_num_key == u'reference':
+                                if isinstance(ref_num_val,list) and len(ref_num_val) > 1:
+                                    if ref_num_val[0] == u'videos':
+                                        try:
+                                            search_results[reference]['data']['videos'].append(int(ref_num_val[1]))
+                                            search_results[reference]['count'] += 1
+                                        except:
+                                            pass
+                            elif ref_num_key == u'summary':
+                                if isinstance(ref_num_val,dict):
+                                    if u'entityId' in ref_num_val and u'name' in ref_num_val:
+                                         search_results[reference]['data']['entities'].append(SearchResults.new_entity(type=ref_num_val.get(u'type',''),type_id=ref_num_val[u'entityId'],name=ref_num_val.get(u'name')))
+                                         search_results[reference]['count'] += 1
+
+        return search_results
+
+    def parse_show_list_entry(self, id, entry):
+        """Parse a show entry e.g. rip out the parts we need
+
+        Parameters
+        ----------
+        response_data : :obj:`dict` of :obj:`str`
+            Dictionary entry from the ´fetch_show_information´ call
+
+        id : :obj:`str`
+            Unique id of the video list
+
+        Returns
+        -------
+        entry : :obj:`dict` of :obj:`dict` of :obj:`str`
+            Show list entry in the format:
+
+            {
+                "3589e2c6-ca3b-48b4-a72d-34f2c09ffbf4_11568382": {
+                    "id": "3589e2c6-ca3b-48b4-a72d-34f2c09ffbf4_11568382",
+                    "title": "Enterprise",
+                    "boxarts": "https://art-s.nflximg.net/.../smth.jpg",
+                    "type": "show"
+                }
+            }
+        """
+        return {
+            id: {
+                'id': id,
+                'title': entry.get('title'),
+                'boxarts': entry['boxarts']['_342x192']['jpg']['url'],
+                'type': entry.get('summary', {}).get('type')
             }
         }
 
@@ -1350,7 +1475,7 @@ class NetflixSession(object):
             response=response,
             component='Video list ids')
 
-    def fetch_search_results(self, search_str, list_from=0, list_to=48):
+    def fetch_search_results (self, search_params):
         """
         Fetches the JSON which contains the results for the given search query
 
@@ -1367,34 +1492,52 @@ class NetflixSession(object):
 
         Returns
         -------
-        :obj:`dict` of :obj:`dict` of :obj:`str`
-            Raw Netflix API call response or api call error
+        :obj:`list` : :obj:`list` and :obj:`dict` of :obj:`dict` of :obj:`str`
+            Search params list and raw Netflix API call response or api call error
         """
-        # reusable query items
-        item_path = ['search', 'byTerm', '|' + search_str]
-        item_titles = ['titles', list_to]
-        item_pagination = [{'from': list_from, 'to': list_to}]
+        search_params = SearchParams(search_params)
+        paths = []
 
-        paths = [
-            item_path + item_titles + item_pagination + ['reference', ['summary', 'releaseYear', 'title', 'synopsis', 'regularSynopsis', 'evidence', 'queue', 'episodeCount', 'info', 'maturity', 'runtime', 'seasonCount', 'releaseYear', 'userRating', 'numSeasonsLabel', 'bookmarkPosition', 'watched', 'delivery', 'seasonList', 'current']],
-            item_path + item_titles + item_pagination + ['reference', 'bb2OGLogo', '_400x90', 'png'],
-            item_path + item_titles + item_pagination + ['reference', 'boxarts', '_342x192', 'jpg'],
-            item_path + item_titles + item_pagination + ['reference', 'boxarts', '_1280x720', 'jpg'],
-            item_path + item_titles + item_pagination + ['reference', 'storyarts', '_1632x873', 'jpg'],
-            item_path + item_titles + item_pagination + ['reference', 'interestingMoment', '_665x375', 'jpg'],
-            item_path + item_titles + item_pagination + ['reference', 'artWorkByType', 'BILLBOARD', '_1280x720', 'jpg'],
-            item_path + item_titles + item_pagination + ['reference', 'cast', {'from': 0, 'to': 15}, ['id', 'name']],
-            item_path + item_titles + item_pagination + ['reference', 'cast', 'summary'],
-            item_path + item_titles + item_pagination + ['reference', 'genres', {'from': 0, 'to': 5}, ['id', 'name']],
-            item_path + item_titles + item_pagination + ['reference', 'genres', 'summary'],
-            item_path + item_titles + item_pagination + ['reference', 'tags', {'from': 0, 'to': 9}, ['id', 'name']],
-            item_path + item_titles + item_pagination + ['reference', 'tags', 'summary'],
-            item_path + item_titles + [['referenceId', 'id', 'length', 'name', 'trackIds', 'requestId', 'regularSynopsis', 'evidence']]]
+        # references
+        if search_params['references']:
+            for reference,ref_params in search_params['references'].iteritems():
+                paths += [
+                    [u'search', u'byReference', reference, {u'from': ref_params['from'], u'to': ref_params['to']}, u'reference', [u'summary', u'title']],
+                    #[u'search', u'byReference', reference, {u'from': ref_params['from'], u'to': ref_params['to']}, u'reference', u'boxarts', u'_342x192', u'jpg']
+                ]
+        # terms
+        elif search_params['terms']:
+            for term,values in search_params['terms'].iteritems():
+                encoded_search_string = term
+                titles_from = values['titles']['from']
+                titles_to = values['titles']['to']
+                suggest_from = values['suggestions']['from']
+                suggest_to = values['suggestions']['to']
+                title_total = titles_to - titles_from
+                suggest_total = suggest_to - suggest_from
 
-        response = self._path_request(paths=paths)
-        return self._process_response(
-            response=response,
-            component='Search results')
+                paths += [
+                    [u'search', u'byTerm', encoded_search_string, u'titles', title_total, {u'from': titles_from, u'to': titles_to}, u'reference', [u'summary', u'title']],
+                    #[u'search', u'byTerm', encoded_search_string, u'titles', title_total, {u'from': titles_from, u'to': titles_to}, u'reference', u'boxarts', u'_342x192', u'jpg'],
+                    [u'search', u'byTerm', encoded_search_string, u'titles', title_total, [u'id', u'length', u'name', u'trackIds', u'requestId', u'referenceId']],
+                    [u'search', u'byTerm', encoded_search_string, u'suggestions', suggest_total, {u'from': suggest_from, u'to': suggest_to}, u'summary'],
+                    [u'search', u'byTerm', encoded_search_string, u'suggestions', suggest_total, [u'length', u'referenceId', u'trackId']]
+                ]
+
+        # entities
+        for entity,entity_params in search_params['entities'].iteritems():
+            entity_from = entity_params['from']
+            entity_to = entity_params['to']
+            entity_total = entity_to - entity_from
+            paths += [
+                [u'search', u'byEntity', entity, entity_total, {u'from': entity_from, u'to': entity_to}, u'reference', [u'summary', u'title']],
+                #[u'search', u'byEntity', entity, entity_total, {u'from': entity_from, u'to': entity_to}, u'reference', u'boxarts', u'_342x192', u'jpg'],
+                [u'search', u'byEntity', entity, entity_total, [u'id', u'length', u'name', u'trackIds', u'requestId', u'referenceId', u'header']]
+                #[u'search', u'byEntity', entity, entity_total, u'dvdresult', [u'id', u'title', u'synopsis', u'isSoftUpsell']]
+            ]
+
+        response = self._path_request(paths=paths, request_params=self.param_searchAPIV2)
+        return self._process_response(response=response, component='Search results')
 
     def fetch_video_list(self, list_id, list_from=0, list_to=None):
         """Fetches the JSON which contains the contents of a given video list
@@ -1441,6 +1584,119 @@ class NetflixSession(object):
             response=response,
             component='Video list')
         return processed_resp
+
+    def _sublist (self, list, length):
+        """Generate [length] slices of list
+
+        Parameters
+        ----------
+        list : :obj:`list`
+            list to be sliced
+
+        length : :obj:`int`
+            slice size
+
+        Yeilds
+        -------
+        :obj:`list`
+            slice
+        """
+        for i in range(0,len(list),length):
+            yield list[i:i+length]
+        return 
+
+    def _merge_video_information (self, target, source):
+        """Merge video information dicts into one
+
+        Parameters
+        ----------
+        target : :obj:`dict`
+            merge target
+
+        source : :obj:`dict`
+            merge source
+
+        Returns
+        -------
+        bool
+            result
+        """
+        for k,v in source.iteritems():
+            if k in target:
+                if isinstance(v,type(target[k])):
+                    if v != target[k]:
+                        if isinstance(v,dict):
+                            self._merge_video_information(target[k],v)
+                        elif isinstance(v,list) or isinstance(v,int):
+                            target[k] = target[k] + v
+                        else:
+                            # merge conflict
+                            raise Exception('Merge conflict: unable to merge value type ({})'.format(str(type(v))))
+                else:
+                    # merge conflict
+                    raise Exception('Merge conflict: incompatible types - {} {}'.format(str(type(v)),str(type(target[k]))))
+            else:
+                target[k] = v
+        return True
+
+    def fetch_video_list_information (self, video_ids, split=None):
+        """
+        Fetches the JSON which contains the detail information of a list of given video ids
+
+        Parameters
+        ----------
+        video_ids : :obj:`list` of :obj:`str`
+            List of video ids to fetch detail data for
+
+        Returns
+        -------
+        :obj:`dict` of :obj:`dict` of :obj:`str`
+            Raw Netflix API call response or api call error
+        """
+        video_list_information = {}
+        if split is not None:
+            # limit request size
+            video_ids_lists = self._sublist(video_ids, split)
+        else:
+            video_ids_lists = [video_ids]
+        for sublist_video_ids in video_ids_lists:
+            paths = []
+            for video_id in sublist_video_ids:
+                paths.append(['videos', video_id, ['summary', 'title', 'synopsis', 'regularSynopsis', 'evidence', 'queue', 'episodeCount', 'info',
+                              'maturity', 'runtime', 'seasonCount', 'releaseYear', 'userRating', 'numSeasonsLabel', 'bookmarkPosition', 'watched', 'delivery']])
+                paths.append(['videos', video_id, 'cast', {'from': 0, 'to': 15}, ['id', 'name']])
+                paths.append(['videos', video_id, 'cast', 'summary'])
+                paths.append(['videos', video_id, 'genres', {'from': 0, 'to': 5}, ['id', 'name']])
+                paths.append(['videos', video_id, 'genres', 'summary'])
+                paths.append(['videos', video_id, 'tags', {'from': 0, 'to': 9}, ['id', 'name']])
+                paths.append(['videos', video_id, 'tags', 'summary'])
+                paths.append(['videos', video_id, ['creators', 'directors'], {'from': 0, 'to': 49}, ['id', 'name']])
+                paths.append(['videos', video_id, ['creators', 'directors'], 'summary'])
+                paths.append(['videos', video_id, 'bb2OGLogo', '_400x90', 'png'])
+                paths.append(['videos', video_id, 'boxarts', '_342x192', 'jpg'])
+                paths.append(['videos', video_id, 'boxarts', '_1280x720', 'jpg'])
+                paths.append(['videos', video_id, 'storyarts', '_1632x873', 'jpg'])
+                paths.append(['videos', video_id, 'interestingMoment', '_665x375', 'jpg'])
+                paths.append(['videos', video_id, 'artWorkByType', 'BILLBOARD', '_1280x720', 'jpg'])
+            response = self._path_request(paths=paths)
+            result = self._process_response(response=response, component='fetch_video_list_information')
+            if 'error' in result:
+                if split is None or split > 5:
+                    error_code = int(result.get('code',0))
+                    if (error_code == 413) or (error_code == 500):
+                        # try again with smaller requests
+                        return self.fetch_video_list_information(video_ids, split=((len(sublist_video_ids) + 2 // 2) // 2))
+                return result
+            if split is not None:
+                try:
+                    self._merge_video_information(video_list_information, result)
+                except:
+                    exc = sys.exc_info()
+                    self.log(msg='Unable to merge video list information {} {}'.format(exc[0],exc[1]))
+            else:
+                video_list_information = result
+        return video_list_information
+
 
     def fetch_metadata(self, id):
         """
@@ -1593,7 +1849,7 @@ class NetflixSession(object):
             return True
         return False
 
-    def _path_request(self, paths):
+    def _path_request(self, paths, request_params=None):
         """
         Executes a post request against the shakti
         endpoint with Falcor style payload
@@ -1622,12 +1878,17 @@ class NetflixSession(object):
             'model': self.user_data['gpsModel']
         }
 
+        if request_params:
+            params.update(request_params)
+
         response = self._session_post(
             component='shakti',
             type='api',
             params=params,
             headers=headers,
-            data=data)
+            data=data
+        )
+
         if response:
             return response
         return None
@@ -1647,7 +1908,7 @@ class NetflixSession(object):
         bool
             Key has a size value or not
         """
-        return key == '$size' or key == 'size'
+        return key == '$size' or key == 'size' or key == u'$size' or key == u'size'
 
     def _get_api_url_for(self, component):
         """

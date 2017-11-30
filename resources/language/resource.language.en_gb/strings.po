@@ -267,3 +267,12 @@ msgstr ""
 msgctxt "#30062"
 msgid "Enable/disable adult pin. Active:"
 msgstr ""
+
+msgctxt "#30063"
+msgid "SUGGESTIONS"
+msgstr ""
+
+msgctxt "#30064"
+msgid "Search has expired. Please search again."
+msgstr ""
+
