@@ -1,0 +1,329 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Code Docs &mdash; plugin.video.netflix 0.12.8 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="genindex.html"/>
+        <link rel="search" title="Search" href="search.html"/>
+    <link rel="top" title="plugin.video.netflix 0.12.8 documentation" href="#"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="#" class="icon icon-home"> plugin.video.netflix
+          
+
+          
+            
+            <img src="_static/icon.png" class="logo" />
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.12.8
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <!-- Local TOC -->
+              <div class="local-toc"><ul>
+<li><a class="reference internal" href="#">Code Docs</a></li>
+<li><a class="reference internal" href="#indices-and-tables">Indices and tables</a></li>
+</ul>
+</div>
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="#">plugin.video.netflix</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="#">Docs</a> &raquo;</li>
+        
+      <li>Code Docs</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            
+              <!-- User defined GitHub URL -->
+              <a href="https://github.com/asciidisco/plugin.video.netflix" class="fa fa-github"> Edit on GitHub</a>
+            
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="module-resources.lib.utils">
+<span id="code-docs"></span><h1>Code Docs<a class="headerlink" href="#module-resources.lib.utils" title="Permalink to this headline">¶</a></h1>
+<p>General utils</p>
+<dl class="function">
+<dt id="resources.lib.utils.__get_mac_address">
+<code class="descclassname">resources.lib.utils.</code><code class="descname">__get_mac_address</code><span class="sig-paren">(</span><em>delay=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/resources/lib/utils.html#__get_mac_address"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#resources.lib.utils.__get_mac_address" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the users mac address</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>delay</strong> (<em>int</em>) &#8211; retry delay in sec</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">string &#8211; Devices MAC address</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="resources.lib.utils.get_class_methods">
+<code class="descclassname">resources.lib.utils.</code><code class="descname">get_class_methods</code><span class="sig-paren">(</span><em>class_item=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/resources/lib/utils.html#get_class_methods"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#resources.lib.utils.get_class_methods" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the class methods of agiven class object</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>class_item</strong> (<em>object</em>) &#8211; Class item to introspect</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">list &#8211; Class methods</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="resources.lib.utils.get_user_agent">
+<code class="descclassname">resources.lib.utils.</code><code class="descname">get_user_agent</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/resources/lib/utils.html#get_user_agent"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#resources.lib.utils.get_user_agent" title="Permalink to this definition">¶</a></dt>
+<dd><p>Determines the user agent string for the current platform.
+Needed to retrieve a valid ESN (except for Android, where the ESN can
+be generated locally)</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">str &#8211; User agent string</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="resources.lib.utils.log">
+<code class="descclassname">resources.lib.utils.</code><code class="descname">log</code><span class="sig-paren">(</span><em>func</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/resources/lib/utils.html#log"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#resources.lib.utils.log" title="Permalink to this definition">¶</a></dt>
+<dd><p>Log decarator that is used to annotate methods &amp; output everything to
+the Kodi debug log</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>delay</strong> (<em>int</em>) &#8211; retry delay in sec</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">string &#8211; Devices MAC address</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="resources.lib.utils.noop">
+<code class="descclassname">resources.lib.utils.</code><code class="descname">noop</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/resources/lib/utils.html#noop"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#resources.lib.utils.noop" title="Permalink to this definition">¶</a></dt>
+<dd><p>Takes everything, does nothing, classic no operation function</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="resources.lib.utils.uniq_id">
+<code class="descclassname">resources.lib.utils.</code><code class="descname">uniq_id</code><span class="sig-paren">(</span><em>delay=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/resources/lib/utils.html#uniq_id"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#resources.lib.utils.uniq_id" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a unique id based on the devices MAC address</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>delay</strong> (<em>int</em>) &#8211; Retry delay in sec</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">string &#8211; Unique secret</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="indices-and-tables">
+<h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h1>
+<ul class="simple">
+<li><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></li>
+<li><a class="reference internal" href="py-modindex.html"><span class="std std-ref">Module Index</span></a></li>
+<li><a class="reference internal" href="search.html"><span class="std std-ref">Search Page</span></a></li>
+</ul>
+</div>
+
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2017, libdev + jojo + asciidisco.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'0.12.8',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>
