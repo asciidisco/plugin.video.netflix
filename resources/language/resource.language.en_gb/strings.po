@@ -315,3 +315,7 @@ msgstr ""
 msgctxt "#30074"
 msgid "View for exported"
 msgstr ""
+
+msgctxt "#30075"
+msgid "Add exported items to my list"
+msgstr ""

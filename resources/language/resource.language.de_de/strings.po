@@ -303,3 +303,7 @@ msgstr "Prüfe alle X Minuten ob Startzeitpunkt erreicht"
 msgctxt "#30074"
 msgid "View for exported"
 msgstr "Ansicht für Exportiert"
+
+msgctxt "#30075"
+msgid "Add exported items to my list"
+msgstr "Exportierte Einträge zu Meine Liste hinzufügen"

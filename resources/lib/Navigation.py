@@ -612,6 +612,8 @@ class Navigation(object):
                     episodes=episodes,
                     build_url=self.build_url,
                     in_background=in_background)
+            if self.kodi_helper.get_setting('add_exported_to_list') == 'true':
+                self.add_to_list(video_id)
             return True
         self.kodi_helper.dialogs.show_no_metadata_notify()
         return False
