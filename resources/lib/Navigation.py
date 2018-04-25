@@ -186,6 +186,8 @@ class Navigation(object):
             return True
         elif action == 'export-new-episodes':
             return self.export_new_episodes(params.get('inbackground', False))
+        elif action == 'export-my-list':
+            return self.export_my_list()
         elif action == 'updatedb':
             # adds a title to the users list on Netflix
             self.library.updatedb_from_exported()
@@ -707,6 +709,28 @@ class Navigation(object):
             'method': 'fetch_metadata',
             'video_id': episode_id}))
         return show_metadata['video']['id']
+
+    @log
+    def export_my_list(self):
+        my_list_id = self.list_id_for_type('queue')
+        user_data = self._check_response(
+            self.call_netflix_service({'method': 'get_user_data'}))
+        my_list = self._check_response(
+            self.call_netflix_service({
+                'method': 'fetch_video_list',
+                'list_id': my_list_id,
+                'list_from': 0,
+                'list_to': 999,
+                'guid': user_data['guid'],
+                'cache': True}))
+        for video_id in my_list:
+            original_title = (my_list[video_id].get('title') or
+                              my_list[video_id].get('tvshowtitle'))
+            title = self.kodi_helper.dialogs.show_add_library_title_dialog(
+                original_title=original_title)
+            self.export_to_library(video_id=video_id, alt_title=title,
+                                   in_background=False)
+        return True
 
     @log
     def establish_session(self, account):

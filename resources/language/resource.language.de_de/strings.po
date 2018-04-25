@@ -307,3 +307,7 @@ msgstr "Ansicht für Exportiert"
 msgctxt "#30075"
 msgid "Add exported items to my list"
 msgstr "Exportierte Einträge zu Meine Liste hinzufügen"
+
+msgctxt "#30076"
+msgid "Export items from My List"
+msgstr "Einträge von Meine Liste exportieren"
