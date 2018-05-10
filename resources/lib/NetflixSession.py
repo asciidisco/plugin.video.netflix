@@ -10,6 +10,7 @@
 import os
 import sys
 import json
+import re
 from time import time
 from urllib import quote, unquote
 from re import compile as recompile
@@ -176,7 +177,8 @@ class NetflixSession(object):
         falkorCache = recompile(r"\{([^)]+)\}").findall(falkorCache)
         if not falkorCache:
             return profiles
-        falkorDict = json.loads('{' + falkorCache[0] + '}')
+        falkorCache = re.sub(r'"focalPoint":"{"([^}]*)}"', r'"focalPoint":{"\1}', falkorCache[0])
+        falkorDict = json.loads('{' + falkorCache + '}')
         _profiles = falkorDict['profiles']
 
         for guid in _profiles:
