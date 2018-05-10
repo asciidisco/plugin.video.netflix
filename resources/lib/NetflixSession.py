@@ -2010,21 +2010,24 @@ class NetflixSession(object):
         """
         # we generate an esn from device strings for android
         import subprocess
+        import re
         try:
             manufacturer = subprocess.check_output(
                 ['/system/bin/getprop', 'ro.product.manufacturer'])
             if manufacturer:
                 esn = 'NFANDROID1-PRV-'
                 input = subprocess.check_output(
-                    ['/system/bin/getprop', 'ro.nrdp.modelgroup'])
+                    ['/system/bin/getprop', 'ro.nrdp.modelgroup']
+                    ).strip(' \t\n\r')
                 if not input:
                     esn += 'T-L3-'
                 else:
-                    esn += input.strip(' \t\n\r') + '-'
-                esn += '{:5}'.format(manufacturer.strip(' \t\n\r').upper())
+                    esn += input + '-'
+                esn += '{:=<5}'.format(manufacturer.strip(' \t\n\r').upper())
                 input = subprocess.check_output(
                     ['/system/bin/getprop', 'ro.product.model'])
                 esn += input.strip(' \t\n\r').replace(' ', '=').upper()
+                esn = re.sub(r'[^A-Za-z0-9=-]', '=', esn)
                 self.nx_common.log(msg='Android generated ESN:' + esn)
                 return esn
         except OSError as e:
