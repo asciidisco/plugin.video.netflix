@@ -93,15 +93,15 @@ class NetflixSession(object):
     """str: ESN - something like: NFCDCH-MC-D7D6F54LOPY8J416T72MQXX3RD20ME"""
 
     page_items = [
-        'authURL',
-        'BUILD_IDENTIFIER',
-        'ICHNAEA_ROOT',
-        'API_ROOT',
-        'API_BASE_URL',
-        'esn',
+        'models/userInfo/data/authURL',
+        'models/serverDefs/data/BUILD_IDENTIFIER',
+        'models/serverDefs/data/ICHNAEA_ROOT',
+        'models/serverDefs/data/API_ROOT',
+        'models/serverDefs/data/API_BASE_URL',
+        'models/esnGeneratorModel/data/esn',
         'gpsModel',
-        'countryOfSignup',
-        'membershipStatus'
+        'models/userInfo/data/countryOfSignup',
+        'models/userInfo/data/membershipStatus'
     ]
 
     def __init__(self, cookie_path, data_path, verify_ssl, nx_common):
@@ -141,16 +141,22 @@ class NetflixSession(object):
         self.nx_common.log(msg='Parsing inline data...')
         items = self.page_items if items is None else items
         user_data = {'gpsModel': 'harris'}
-        content = content.replace('\"', '\\"').encode('utf-8').decode('string_escape')
+        content = content.replace('\"', '\\"').decode('unicode_escape')
         # find <script/> tag witch contains the 'reactContext' globals
-        react_context = recompile(r"netflix\.reactContext\s*=\s*(.*?);\s*</script>").findall(content)
+        react_context = recompile(r"netflix\.reactContext\s*=\s*(.*?);\s*</script>").findall(content)[0]
+        # Hook for cleaning json when unloggued
+        react_context = react_context.replace('^(?!\s*$).+', '')
+        react_context_dict = json.loads(react_context, encoding='utf-8')
         # iterate over all wanted item keys & try to fetch them
         for item in items:
-            match = recompile(
-                '"' + item + '":(.*?)"(.+?)"').findall(react_context[0])
-            if len(match) > 0:
-                _match = match[0][1]
-                user_data.update({item: _match})
+            keys = item.split("/")
+            val = None
+            for key in keys:
+                val = val.get(key, None) if val else react_context_dict.get(key, None)
+                if not val:
+                    break
+            if val:
+                user_data.update({key: val})
         # fetch profiles & avatars
         profiles = self.get_profiles(content=content)
         # get guid of active user
@@ -175,7 +181,7 @@ class NetflixSession(object):
         falkorCache = recompile(r"netflix\.falkorCache\s*=\s*(.*?);\s*</script>").findall(content)
         if not falkorCache:
             return profiles
-        falkorDict = json.loads(falkorCache[0])
+        falkorDict = json.loads(falkorCache[0], encoding='utf-8')
         _profiles = falkorDict['profiles']
 
         for guid in _profiles:
@@ -240,7 +246,7 @@ class NetflixSession(object):
         if response:
             # parse out the needed inline information
             user_data, profiles = self.extract_inline_netflix_page_data(
-                content=response.text)
+                content=response.content)
             self.profiles = profiles
             # if we have profiles, cookie is still valid
             if self.profiles:
@@ -279,7 +285,7 @@ class NetflixSession(object):
         """
         page = self._session_get(component='profiles')
         user_data, profiles = self.extract_inline_netflix_page_data(
-            content=page.text)
+            content=page.content)
         login_payload = {
             'email': account.get('email'),
             'password': account.get('password'),
@@ -297,7 +303,7 @@ class NetflixSession(object):
         login_response = self._session_post(
             component='login',
             data=login_payload)
-        user_data = self._parse_page_contents(content=login_response.text)
+        user_data = self._parse_page_contents(content=login_response.content)
         account_hash = self._generate_account_hash(account=account)
         # we know that the login was successfull if we find ???
         if user_data.get('membershipStatus') == 'CURRENT_MEMBER':
@@ -1593,7 +1599,7 @@ class NetflixSession(object):
         response = self._session_get(component='profiles')
         if response:
             # parse out the needed inline information
-            page_data = self._parse_page_contents(content=response.text)
+            page_data = self._parse_page_contents(content=response.content)
             if page_data is None:
                 return False
             account_hash = self._generate_account_hash(account=account)
