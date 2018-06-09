@@ -470,9 +470,14 @@ class MSL(object):
             return urls[key]
 
     def __parse_chunked_msl_response(self, message):
-        header = message.split('}}')[0] + '}}'
-        payloads = re.split(',\"signature\":\"[0-9A-Za-z=/+]+\"}', message.split('}}')[1])
-        payloads = [x + '}' for x in payloads][:-1]
+        try:
+            header = message.split('}}')[0] + '}}'
+            payloads = re.split(',\"signature\":\"[0-9A-Za-z=/+]+\"}', message.split('}}')[1])
+            payloads = [x + '}' for x in payloads][:-1]
+        except:
+            print 'Splitting message failed:'
+            print message
+            raise
 
         return {
             'header': header,
