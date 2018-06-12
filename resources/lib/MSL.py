@@ -23,7 +23,7 @@ import xml.etree.ElementTree as ET
 import subprocess
 try:
     sdkversion = int(subprocess.check_output(
-        ['/system/bin/getprop', 'ro.build.version.sdk']))
+        ['/system/bin/getprop', 'ro.build.version.xxxsdk']))
 except:
     sdkversion = 0 
 
