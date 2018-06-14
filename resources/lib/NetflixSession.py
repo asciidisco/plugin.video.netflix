@@ -1555,7 +1555,7 @@ class NetflixSession(object):
             response=response,
             component='Show information')
 
-    def fetch_seasons_for_show(self, id, list_from=0, list_to=30):
+    def fetch_seasons_for_show(self, id, list_from=0, list_to=500):
         """Fetches the JSON which contains the seasons of a given show
 
         Parameters
