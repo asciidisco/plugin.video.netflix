@@ -22,7 +22,7 @@ msgstr ""
 
 msgctxt "Addon Description"
 msgid "Netflix VOD Services Addon"
-msgstr "Addon do serviço de Video On Demand do Netflix"
+msgstr "Addon do Netflix, um serviço de Video On Demand"
 
 msgctxt "Addon Disclaimer"
 msgid "Some parts of this addon may not be legal in your country of residence - please check with your local laws before installing."
