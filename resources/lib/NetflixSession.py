@@ -1555,7 +1555,7 @@ class NetflixSession(object):
             response=response,
             component='Show information')
 
-    def fetch_seasons_for_show(self, id, list_from=0, list_to=500):
+    def fetch_seasons_for_show(self, id, list_from=0, list_to=30):
         """Fetches the JSON which contains the seasons of a given show
 
         Parameters
@@ -1589,7 +1589,7 @@ class NetflixSession(object):
         response = self._path_request(paths=paths)
         return self._process_response(response=response, component='Seasons')
 
-    def fetch_episodes_by_season(self, season_id, list_from=-1, list_to=40):
+    def fetch_episodes_by_season(self, season_id, list_from=-1, list_to=500):
         """Fetches the JSON which contains the episodes of a given season
 
         TODO: Add more metadata
