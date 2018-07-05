@@ -34,6 +34,7 @@ else:
 
 class MSL(object):
     # Is a handshake already performed and the keys loaded
+    sequence_number = b''
     handshake_performed = False
     last_drm_context = ''
     last_playback_context = ''
