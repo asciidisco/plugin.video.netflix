@@ -125,7 +125,7 @@ class MSLCrypto():
         plaintext = Padding.pad(data, 16)
         # Encrypt the text
         cipher = AES.new(self.encryption_key, AES.MODE_CBC, iv)
-        citext = cipher.encrypt(plaintext)
+        citext = cipher.encrypt(plaintext.encode("utf-8"))
         encryption_envelope['ciphertext'] = base64.standard_b64encode(citext)
 
         return encryption_envelope;
