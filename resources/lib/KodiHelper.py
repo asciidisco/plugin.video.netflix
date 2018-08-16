@@ -526,6 +526,15 @@ class KodiHelper(object):
             url=build_url({'action': 'export-new-episodes','inbackground': True}),
             listitem=li,
             isFolder=False)
+        li = xbmcgui.ListItem(
+            label=self.get_local_string(30076),
+            iconImage=self.default_fanart)
+        li.setProperty('fanart_image', self.default_fanart)
+        xbmcplugin.addDirectoryItem(
+            handle=self.plugin_handle,
+            url=build_url({'action': 'export-my-list'}),
+            listitem=li,
+            isFolder=False)
         listing = content
         for video in listing[0]:
             year = self.library.get_exported_movie_year(title=video)

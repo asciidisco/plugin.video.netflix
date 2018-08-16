@@ -13,6 +13,7 @@
     <setting id="enablelibraryfolder" type="bool" label="30026" default="false"/>
     <setting id="customlibraryfolder" type="folder" label="30027" enable="eq(-1,true)" default="special://profile/addon_data/plugin.video.netflix" source="auto" option="writeable" subsetting="true"/>
     <setting id="customexportname" type="bool" label="30036" default="false"/>
+    <setting id="add_exported_to_list" type="bool" label="30075" default="false"/>
     <setting label="30065" type="lsep"/>
     <setting id="auto_update" type="enum" label="30064" lvalues="30066|30067|30068|30069|30070" default="0"/>
     <setting id="update_time" type="time" label="30071" visible="gt(-1,0)" default="00:00" subsetting="true"/>
