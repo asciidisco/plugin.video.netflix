@@ -460,7 +460,7 @@ class KodiHelper(object):
                     maturity = int(video.get('maturity', {}).get('level', 1001))
                 except Exception:
                     maturity = 0
-                params['pin'] = (True, False)[int(video.get('maturity', {}).get('level', 1001)) >= 1000]
+                params['pin'] = (True, False)[maturity >= 1000]
                 if 'tvshowtitle' in infos:
                     title = infos.get('tvshowtitle', '').encode('utf-8')
                     params['tvshowtitle'] = base64.urlsafe_b64encode(title)
