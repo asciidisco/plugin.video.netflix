@@ -64,6 +64,7 @@ class KodiHelper(object):
         self.library = library
         self.custom_export_name = nx_common.get_setting('customexportname')
         self.show_update_db = nx_common.get_setting('show_update_db')
+        self.default_icon = nx_common.get_addon_info('icon')
         self.default_fanart = nx_common.get_addon_info('fanart')
         self.setup_memcache()
         self.dialogs = Dialogs(
