@@ -464,7 +464,7 @@ class Library(object):
         progress.close()
         if in_background:
             self.kodi_helper.dialogs.show_episodes_added_notify(
-                title, len(episodes), self.kodi_helper.icon)
+                title, len(episodes), self.kodi_helper.default_icon)
         return show_dir
 
     def _create_progress_dialog(self, is_noop):
