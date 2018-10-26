@@ -19,6 +19,9 @@
     <summary lang="en_GB">Netflix</summary>
     <description lang="en_GB">Netflix VOD Services Addon</description>
     <disclaimer lang="en_GB">Some parts of this addon may not be legal in your country of residence - please check with your local laws before installing.</disclaimer>
+    <summary lang="es_ES">Netflix</summary>
+    <description lang="es_ES">Complemento para Servicios VOD Netflix</description>
+    <disclaimer lang="es_ES">Algunas partes de este complemento pueden no ser legales en su país de residencia - Por favor, consulte con las leyes locales antes de instalar.</disclaimer>
     <assets>
       <icon>resources/icon.png</icon>
       <fanart>resources/fanart.jpg</fanart>
