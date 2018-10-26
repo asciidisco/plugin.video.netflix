@@ -158,7 +158,7 @@ msgstr "ESN (establecido automáticamente, puede ser cambiado manualmente)"
 
 msgctxt "#30035"
 msgid "Inputstream Addon Settings..."
-msgstr "Configurando el Addon Inputstream..."
+msgstr "Configurar complemento Inputstream..."
 
 msgctxt "#30036"
 msgid "Always use the original title on export"
@@ -316,7 +316,7 @@ msgctxt "#30074"
 msgid "View for exported"
 msgstr "Vista para exportar"
 
-vmsgctxt "#30075"
+msgctxt "#30075"
 msgid "Ask to skip intro and recap"
 msgstr "Solicitar omitir introducción o recapitulación"
 
