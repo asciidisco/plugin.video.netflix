@@ -7,8 +7,8 @@ msgstr ""
 "Project-Id-Version: plugin.video.netflix\n"
 "Report-Msgid-Bugs-To: https://github.com/asciidisco/plugin.video.netflix\n"
 "POT-Creation-Date: 2017-07-24 16:15+0000\n"
-"PO-Revision-Date: 2018-06-02 19:13+0200\n"
-"Last-Translator: danielchc\n"
+"PO-Revision-Date: 2018-10-26 11:00+0200\n"
+"Last-Translator: roliverosc\n"
 "Language-Team: Spanish\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -18,15 +18,15 @@ msgstr ""
 
 msgctxt "Addon Summary"
 msgid "Netflix"
-msgstr ""
+msgstr "Netflix"
 
 msgctxt "Addon Description"
 msgid "Netflix VOD Services Addon"
-msgstr "Addon para Netflix"
+msgstr "Complemento para los Servicios VOD Netflix"
 
 msgctxt "Addon Disclaimer"
 msgid "Some parts of this addon may not be legal in your country of residence - please check with your local laws before installing."
-msgstr "Algunas partes de este addon puede que sean ilegales en tu país de residencia, por favor, consulta con tus autoridades locales antes de instalarlo."
+msgstr "Algunas partes de este complemento pueden no ser legales en su país de residencia - Por favor, consulte con las leyes locales antes de instalar."
 
 msgctxt "#30001"
 msgid "Recommendations"
@@ -34,7 +34,7 @@ msgstr "Recomendaciones"
 
 msgctxt "#30002"
 msgid "Adult Pin"
-msgstr "Pin del Control Parental"
+msgstr "Pin para Control Parental"
 
 msgctxt "#30003"
 msgid "Search term"
@@ -46,15 +46,15 @@ msgstr "Contraseña"
 
 msgctxt "#30005"
 msgid "E-mail"
-msgstr ""
+msgstr "E-mail"
 
 msgctxt "#30006"
 msgid "Adult verification failed"
-msgstr "La comprobación del control parental ha fallado"
+msgstr "Error en verificación de control parental"
 
 msgctxt "#30007"
 msgid "Please Check your adult pin"
-msgstr "Por favor, comprueba que el pin del control parental es correcto"
+msgstr "Por favor, compruebe que el pin de control parental sea correcto"
 
 msgctxt "#30008"
 msgid "Login failed"
@@ -62,7 +62,7 @@ msgstr "Error al iniciar sesión"
 
 msgctxt "#30009"
 msgid "Please Check your credentials"
-msgstr "Por favor, comprueba que el e-mail y la contraseña son correctos"
+msgstr "Por favor, compruebe que el e-mail y la contraseña sean correctos"
 
 msgctxt "#30010"
 msgid "Genres"
@@ -122,19 +122,19 @@ msgstr "Biblioteca"
 
 msgctxt "#30026"
 msgid "Enable custom library folder"
-msgstr "Activar un directorio para la biblioteca personalizado"
+msgstr "Habilitar directorio para biblioteca personalizada"
 
 msgctxt "#30027"
 msgid "Custom library path"
-msgstr "Directorio personalizado de la biblioteca"
+msgstr "Directorio biblioteca personalizada"
 
 msgctxt "#30028"
 msgid "Playback error"
-msgstr "Ocurrió un error en la reproducción"
+msgstr "Error en la reproducción"
 
 msgctxt "#30029"
 msgid "Missing Inputstream addon"
-msgstr "No se encuentra el addon Inputstream"
+msgstr "Addon Inputstream no encontrado"
 
 msgctxt "#30030"
 msgid "Remove from library"
@@ -146,7 +146,7 @@ msgstr "Cambiar nombre de la biblioteca"
 
 msgctxt "#30032"
 msgid "Tracking"
-msgstr ""
+msgstr "En seguimiento"
 
 msgctxt "#30033"
 msgid "Use Dolby Sound"
@@ -154,11 +154,11 @@ msgstr "Usar Dolby Sound"
 
 msgctxt "#30034"
 msgid "ESN (set automatically, can be changed manually)"
-msgstr "ESN (establecido automáticamente, pero se puede cambiar de forma manual)"
+msgstr "ESN (establecido automáticamente, puede ser cambiado manualmente)"
 
 msgctxt "#30035"
 msgid "Inputstream Addon Settings..."
-msgstr "Configuración del addon Inputstream..."
+msgstr "Configurando el Addon Inputstream..."
 
 msgctxt "#30036"
 msgid "Always use the original title on export"
@@ -170,31 +170,31 @@ msgstr "Reproduciones"
 
 msgctxt "#30038"
 msgid "Enable custom views"
-msgstr ""
+msgstr "Habilitar vistas personalizadas"
 
 msgctxt "#30039"
 msgid "View for folders"
-msgstr "Vista para las carpetas"
+msgstr "Vista por carpetas"
 
 msgctxt "#30040"
 msgid "View for movies"
-msgstr "Vista para las películas"
+msgstr "Vista por películas"
 
 msgctxt "#30041"
 msgid "View for shows"
-msgstr "Vista para los shows"
+msgstr "Vista por series"
 
 msgctxt "#30042"
 msgid "View for seasons"
-msgstr "Vista para la temporadas"
+msgstr "Vista por temporadas"
 
 msgctxt "#30043"
 msgid "View for episodes"
-msgstr "Vista para los episodios"
+msgstr "Vista por episodios"
 
 msgctxt "#30044"
 msgid "View for profiles"
-msgstr "Vista para los perfiles"
+msgstr "Vista por perfiles"
 
 msgctxt "#30045"
 msgid "[COLOR cyan][B]-- NEXT PAGE --[/B][/COLOR]"
@@ -206,7 +206,7 @@ msgstr "El addon Inputstream no está activado"
 
 msgctxt "#30047"
 msgid "Finally remove?"
-msgstr "¿Estás seguro de eliminar?"
+msgstr "¿Está seguro de querer eliminar?"
 
 msgctxt "#30048"
 msgid "Exported"
@@ -218,7 +218,7 @@ msgstr "Actualizar base de datos"
 
 msgctxt "#30050"
 msgid "Update successful"
-msgstr "Actualización correcta"
+msgstr "Actualización realizada correctamente"
 
 msgctxt "#30051"
 msgid "Request Error"
@@ -234,7 +234,7 @@ msgstr "Inicio de sesión automático"
 
 msgctxt "#30054"
 msgid "Enable Auto Login"
-msgstr "Activar inicio de sesión automático"
+msgstr "Habilitar inicio de sesión automático"
 
 msgctxt "#30055"
 msgid "Profile"
@@ -242,7 +242,7 @@ msgstr "Perfil"
 
 msgctxt "#30056"
 msgid "ID"
-msgstr ""
+msgstr "ID"
 
 msgctxt "#30057"
 msgid "Select profile in profile listing -> context menu"
@@ -266,7 +266,7 @@ msgstr "Actualizar dentro de la biblioteca"
 
 msgctxt "#30062"
 msgid "Enable/disable adult pin. Active:"
-msgstr "Habilitar /deshabilitar el pin de Control Parental. Activo:"
+msgstr "Habilitar/deshabilitar pin para Control Parental. Activo:"
 
 msgctxt "#30063"
 msgid "new episodes added to library"
@@ -314,4 +314,48 @@ msgstr "Comprobar cada X minutos si la actualización está programada"
 
 msgctxt "#30074"
 msgid "View for exported"
-msgstr "Ver para exportar"
+msgstr "Vista para exportar"
+
+vmsgctxt "#30075"
+msgid "Ask to skip intro and recap"
+msgstr "Solicitar omitir introducción o recapitulación"
+
+msgctxt "#30076"
+msgid "Skip intro"
+msgstr "Saltar introducción"
+
+msgctxt "#30077"
+msgid "Skip recap"
+msgstr "Saltar recapitulación"
+
+msgctxt "#30078"
+msgid "Playback"
+msgstr "Reproducir"
+
+msgctxt "#30079"
+msgid "Skip automatically"
+msgstr "Omitir automáticamente"
+
+msgctxt "#30080"
+msgid "Don't pause when skipping"
+msgstr "No pausar al omitir"
+
+msgctxt "#30081"
+msgid "Save audio/subtitle preferences for this show"
+msgstr "Guardar preferencias de audio/subtítulos para esta Película"
+
+msgctxt "#30082"
+msgid "Save audio / subtitle settings for TV shows"
+msgstr "Guardar ajustes de audio/subtítulos para esta Serie TV"
+
+msgctxt "#30083"
+msgid "Save bookmarks for library items / mark as watched"
+msgstr "Guardar marcadores para elementos de biblioteca / marcar como visto"
+
+msgctxt "#30084"
+msgid "Enable HDR profiles"
+msgstr "Habilitar perfiles HDR"
+
+msgctxt "#30085"
+msgid "Enable DolbyVision profiles"
+msgstr "Habilitar perfiles DolbyVision"
