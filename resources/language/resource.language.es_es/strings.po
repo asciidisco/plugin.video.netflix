@@ -126,7 +126,7 @@ msgstr "Habilitar directorio para biblioteca personalizada"
 
 msgctxt "#30027"
 msgid "Custom library path"
-msgstr "Directorio biblioteca personalizada"
+msgstr "Ruta biblioteca personalizada"
 
 msgctxt "#30028"
 msgid "Playback error"
@@ -166,7 +166,7 @@ msgstr "Utilizar siempre el título original para exportar"
 
 msgctxt "#30037"
 msgid "Views"
-msgstr "Reproduciones"
+msgstr "Reproducciones"
 
 msgctxt "#30038"
 msgid "Enable custom views"
