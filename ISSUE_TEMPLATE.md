@@ -3,7 +3,7 @@
   - [ ] feature request
   - [ ] support request
 
-## General infomration
+## General information
 
 ### Prerequisites
 
@@ -39,9 +39,9 @@
 * [ ] Linux (ARM)
 * [ ] Android
 
-#### Additional informatin on the environment
+#### Additional information on the environment
 
-[Descripe your environment a bit more detailed, are you using LibreElec f.e.]
+[Describe your environment a bit more detailed, e.g. are you using LibreELEC]
 
 ## Debug log
 
@@ -55,4 +55,4 @@
 
 [Please add a screenshot if that helps understanding your problem]
 
-[You can erase any parts of this template not applicable to your Issue.]
+[You can erase any parts of this template not applicable to your issue.]
