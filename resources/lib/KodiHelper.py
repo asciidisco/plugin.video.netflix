@@ -983,7 +983,7 @@ class KodiHelper(object):
                     'dbinfo': {
                         'dbid': details[0]['dbid'],
                         'dbtype': details[0]['mediatype'],
-                        'playcount': details[0]['playcount']}})
+                        'playcount': details[0].get('playcount',0)}})
                 if infoLabels['mediatype'] == 'episode':
                     signal_data['dbinfo'].update({'tvshowid': id[0]})
 
