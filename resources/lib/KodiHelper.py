@@ -925,6 +925,10 @@ class KodiHelper(object):
         play_item = xbmcgui.ListItem(path=msl_manifest_url)
         play_item.setContentLookup(False)
         play_item.setMimeType('application/dash+xml')
+        # NOTE: This is required to avoid black/gibberish playback on Raspberry Pi
+        play_item.setProperty(
+            key='videoplayer.useomxplayer',
+            value='false')
         play_item.setProperty(
             key=is_helper.inputstream_addon + '.stream_headers',
             value='user-agent=' + get_user_agent())
