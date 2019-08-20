@@ -42,7 +42,7 @@ class NetflixCredentials(object):
             The users stored account data
         """
         # if everything is fine, we decode the values
-        if (email and '' != email) or (password and '' != password):
+        if (email and '' != email) and (password and '' != password):
             return {
                 'email': self.decode(enc=email),
                 'password': self.decode(enc=password)
