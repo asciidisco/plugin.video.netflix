@@ -22,3 +22,32 @@ class NetflixCredentialsTestCase(unittest.TestCase):
         self.assertEqual(password, decoded['password'])
         self.assertNotEqual(email, encoded['email'])
         self.assertNotEqual(password, encoded['password'])
+
+    def test_empty_email_will_not_encode(self):
+        email = ''
+        password = 'rubbish password'
+        cred = NetflixCredentials()
+        encoded = cred.encode_credentials(email, password)
+
+        self.assertEqual('', encoded['email'])
+        self.assertEqual('', encoded['password'])
+
+    def test_empty_password_will_not_encode(self):
+        email = 'tom'
+        password = ''
+        cred = NetflixCredentials()
+        encoded = cred.encode_credentials(email, password)
+
+        self.assertEqual('', encoded['email'])
+        self.assertEqual('', encoded['password'])
+
+    def test_empty_email_and_password_will_not_encode(self):
+        email = ''
+        password = ''
+        cred = NetflixCredentials()
+        encoded = cred.encode_credentials(email, password)
+
+        self.assertEqual('', encoded['email'])
+        self.assertEqual('', encoded['password'])
+
+
