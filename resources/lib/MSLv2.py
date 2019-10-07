@@ -39,36 +39,134 @@ class MSL(object):
     last_license_url = ''
     last_drm_context = ''
     last_playback_context = ''
+    sequence_number = None
 
     current_message_id = 0
     session = requests.session()
+
     rndm = random.SystemRandom()
-    tokens = []
-    base_url = 'https://www.netflix.com/nq/msl_v1/cadmium/'
+    tokens = {}
+    tokens['servicetokens'] = {}
+
+    base_url = 'https://api-global.netflix.com/nq/nrdjs/'
     endpoints = {
-        'manifest': base_url + 'pbo_manifests/%5E1.0.0/router',
-        'license': base_url + 'pbo_licenses/%5E1.0.0/router'
+        'boot' : 'http://nrdp51-appboot.netflix.com/appboot/NFANDROID2-PRV-SHIELDANDROIDTV?keyVersion=1',
+        'id': 'https://nrdp.nccp.netflix.com/nccp/controller/3.1/netflixid',
+        'profiles': 'https://api-global.netflix.com/msl/nrdjs/4.2.3?ab_ui_ver=darwin&nrdapp_version=2018.1.6.3',
+        'config': base_url + 'pbo_config/%5E1.0.0/router?ab_ui_ver=darwin&nrdapp_version=2018.1.6.3',
+        'tokens': base_url + 'pbo_tokens/%5E1.0.0/router',
+        'manifest': base_url + 'pbo_manifest/%5E1.0.0/router',
+        'license': base_url + 'pbo_license/%5E1.0.0/router'
+    }
+    mslheaders = {
+        'Accept-Encoding': 'deflate, gzip',
+        'Content-Encoding': 'msl_v1',
+        'Content-Type': 'application/json'
     }
 
     def __init__(self, nx_common):
 
-      """
-      The Constructor checks for already existing crypto Keys.
-      If they exist it will load the existing keys
-      """
-      self.nx_common = nx_common
+        """
+        The Constructor checks for already existing crypto Keys.
+        If they exist it will load the existing keys
+        """
+        self.nx_common = nx_common
 
-      self.locale_id = []
-      locale_id = nx_common.get_setting('locale_id')
-      self.locale_id.append(locale_id if locale_id else 'en-US')
+        self.locale_id = []
+        locale_id = nx_common.get_setting('locale_id')
+        self.locale_id.append(locale_id if locale_id else 'en-US')
 
-      self.crypto = MSLHandler(nx_common)
+        self.crypto = MSLHandler(nx_common)
 
-      if self.nx_common.file_exists(self.nx_common.data_path, 'msl_data.json'):
-          self.init_msl_data()
-      else:
-          self.crypto.fromDict(None)
-          self.__perform_key_handshake()
+        self.netflix_id = ''
+        self.secure_netflix_id = ''
+
+        if self.nx_common.file_exists(self.nx_common.data_path, 'msl_data.json'):
+            self.init_msl_data()
+        else:
+            self.crypto.fromDict(None)
+            self.__perform_key_handshake()
+
+        #self.__pre_msl_request()
+
+
+    def add_session_cookie(self, cookie_str):
+        result = {}
+        for item in cookie_str.split(';'):
+            item = item.strip()
+            if '=' not in item:
+                result[item.lower()] = None
+                continue
+            name, value = item.split('=', 1)
+            if result == {}:
+                result['name'] = name
+                result['value'] = value
+            else:
+                if name.lower() == 'expires':
+                    d = datetime.strptime(value, '%a,%d-%b-%Y %H:%M:%S %Z')
+                    value = (d - datetime(1970, 1, 1)).total_seconds()
+                result[name.lower()] = value
+
+        cookie = requests.cookies.create_cookie(**result)
+        self.session.cookies.set_cookie(cookie)
+
+    def __pre_msl_request(self):
+        tmpcrypto = MSLHandler(self.nx_common)
+
+        mf = {
+                "version": 2,
+                "url": "/manifest",
+                "languages": ["en-US", "en"],
+                "params": [{
+                        "viewableId": 81161638,
+                        "assets": {},
+                        "profiles": ["none-h264mpl30-dash", "playready-h264mpl30-dash", "playready-h264mpl31-dash", "playready-h264mpl40-dash", "playready-h264hpl30-dash", "playready-h264hpl31-dash", "playready-h264hpl40-dash", "playready-h264hpl22-dash", "hevc-main10-L30-dash-cenc", "hevc-main10-L31-dash-cenc", "hevc-main10-L40-dash-cenc", "hevc-main10-L41-dash-cenc", "hevc-main10-L30-dash-cenc-prk", "hevc-main10-L31-dash-cenc-prk", "hevc-main10-L40-dash-cenc-prk", "hevc-main10-L41-dash-cenc-prk", "hevc-hdr-main10-L30-dash-cenc-prk", "hevc-hdr-main10-L31-dash-cenc-prk", "hevc-hdr-main10-L40-dash-cenc-prk", "hevc-hdr-main10-L41-dash-cenc-prk", "heaac-2-dash", "simplesdh", "dfxp-ls-sdh", "nflx-cmisc", "BIF240", "BIF320"],
+                        "prefetch": False,
+                        "isBranching": False,
+                        "supportsWatermark": True,
+                        "supportsPreReleasePin": True,
+                        "mslRequired": True,
+                        "titleSpecificData": {
+                            "81161638": {
+                                "restrictedProfileGroup": "restrictAudioAndVideo",
+                                "unletterboxed": True,
+                                "isUIAutoPlay": True,
+                                "uiLabel": "videoMerch"
+                            }
+                        },
+                        "drmType": "widevine",
+                        "drmVersion": 0,
+                        "challenge": tmpcrypto.get_key_request('AAAANHBzc2gAAAAA7e+LqXnWSs6jyCfc1R0h7QAAABQIARIQAAAAAAPSZ0kAAAAAAAAAAA==')[0]['keydata']['keyrequest'],
+                        "usePsshBox": True,
+                        "videoOutputInfo": [{
+                                "type": "DigitalVideoOutputDescriptor",
+                                "outputType": "digitalOther",
+                                "isHdcpEngaged": True,
+                                "supportedHdcpVersions": ["2.2"]
+                            }
+                        ],
+                        "flavor": "STANDARD",
+                        "useHttpsStreams": True,
+                        "ipv6Only": False,
+                        "imageSubtitleHeight": 720,
+                        "useBetterTextUrls": True,
+                        "supportsUnequalizedDownloadables": True,
+                        "desiredVmaf": "plus_lts",
+                        "sdk": "2018.1.6.3",
+                        "platform": "2018.1.6.3",
+                        "application": "6.2.5-2789 R 2018.1 android-28-JPLAYER2 ninja_6==NVIDIA/darcy/darcy:9/PPR1.180610.011/4086636_1604.6430:userdebug/test-keys",
+                        "uiversion": "UI-release-20190925_12029_3-gibbon-r100-darwinql-nrdjs=v3.1.11_1_gbb9afc1-15430=1,16807=4,14248=5"
+                    }
+                ]
+            }
+
+        request_data = self.__generate_msl_request_data(json.dumps(mf))
+        resp = self.session.post(url=self.endpoints['manifest'], data=request_data, headers=self.mslheaders)
+        resp = self.__parse_chunked_msl_response(resp.text)
+        headerdata = self.__decrypt_headerdata(resp['header'])
+        print 'XXX Pre-Manifest header response'
+        print headerdata
+        self.__update_service_tokens(headerdata['servicetokens'])
 
     def load_manifest(self, viewable_id, dolby, hevc, hdr, dolbyvision, vp9):
         """
@@ -87,38 +185,39 @@ class MSL(object):
         manifest_request_data = {
             'version': 2,
             'url': '/manifest',
-            'id': id,
-            'esn': esn,
             'languages': self.locale_id,
-            'uiVersion': 'shakti-v25d2fa21',
-            'clientVersion': '6.0011.474.011',
             'params': {
-                'type': 'standard',
-                'viewableId': [viewable_id],
-                'flavor': 'PRE_FETCH',
-                'drmType': 'widevine',
-                'drmVersion': 25,
-                'usePsshBox': True,
+                'viewableId': viewable_id,
+                'assets': {},
+                'prefetch': False,
                 'isBranching': False,
-                'useHttpsStreams': False,
-                'imageSubtitleHeight': 1080,
-                'uiVersion': 'shakti-vb45817f4',
-                'clientVersion': '6.0011.511.011',
-                'supportsPreReleasePin': True,
                 'supportsWatermark': True,
-                'showAllSubDubTracks': False,
+                'supportsPreReleasePin': True,
+                'mslRequired': True,
                 'titleSpecificData': {},
+                'drmType': 'widevine',
+                'drmVersion': 0,
+                'usePsshBox': True,
                 'videoOutputInfo': [{
                     'type': 'DigitalVideoOutputDescriptor',
-                    'outputType': 'unknown',
-                    'supportedHdcpVersions': [],
-                    'isHdcpEngaged': hdcp
+                    'outputType': 'digitalOther',
+                    'supportedHdcpVersions': ['2.2'],
+                    'isHdcpEngaged': True
                 }],
-                'preferAssistiveAudio': False,
-                'isNonMember': False
+                'flavor': 'PRE_FETCH',
+                'useHttpsStreams': False,
+                'ipv6Only': False,
+                'imageSubtitleHeight': 720,
+                'useBetterTextUrls': True,
+                'supportsUnequalizedDownloadables': True,
+                'desiredVmaf': 'plus_lts',
+                'sdk': '2018.1.6.3',
+                'platform': '2018.1.6.3',
+                'application': '6.2.5-2789 R 2018.1 android-28-JPLAYER2 ninja_6==NVIDIA/darcy/darcy:9/PPR1.180610.011/4086636_1604.6430:userdebug/test-keys',
+                'uiversion': 'UI-release-20190923_11998_2-gibbon-r100-darwinql-nrdjs=v3.1.10_1_gd7dacdc-15430=1,16807=4,14248=5'
             }
         }
-        manifest_request_data['params']['titleSpecificData'][viewable_id] = { 'unletterboxed': False }
+        manifest_request_data['params']['titleSpecificData'][viewable_id] = { 'restrictedProfileGroup': 'restrictAudioAndVideo', 'unletterboxed': True }
 
         profiles = ['playready-h264mpl30-dash', 'playready-h264mpl31-dash', 'playready-h264mpl40-dash', 'playready-h264hpl30-dash', 'playready-h264hpl31-dash', 'playready-h264hpl40-dash', 'heaac-2-dash', 'BIF240', 'BIF320']
 
@@ -214,12 +313,14 @@ class MSL(object):
             profiles.append('ddplus-5.1-dash')
 
         manifest_request_data["params"]["profiles"] = profiles
-        #print manifest_request_data
 
-        request_data = self.__generate_msl_request_data(manifest_request_data)
+        request_data = self.__generate_msl_request_data(json.dumps(manifest_request_data))
 
         try:
-            resp = self.session.post(self.endpoints['manifest'], request_data)
+            resp = self.session.post(url=self.endpoints['manifest'], data=request_data, headers=self.mslheaders)
+            self.nx_common.log(msg="Manifest response");
+            self.nx_common.log(msg=resp)
+            self.nx_common.log(msg=resp.text)
         except:
             resp = None
             exc = sys.exc_info()
@@ -242,8 +343,13 @@ class MSL(object):
                 #self.nx_common.log(
                 #    msg='Parsed chunked Response: ' + json.dumps(resp))
                 data = self.__decrypt_payload_chunks(resp['payloads'])
+		headerdata = self.__decrypt_headerdata(resp['header'])
+                print 'XXX Manifest header response'
+                print headerdata
+
                 return self.__tranform_to_dash(data)
         return False
+
 
     def get_license(self, challenge, sid):
         """
@@ -257,32 +363,30 @@ class MSL(object):
         license_request_data = {
             'version': 2,
             'url': self.last_license_url,
-            'id': id,
-            'esn': esn,
             'languages': self.locale_id,
-            'uiVersion': 'shakti-v25d2fa21',
-            'clientVersion': '6.0011.511.011',
             'params': [{
                 'sessionId': sid,
                 'clientTime': int(id / 10000),
                 'challengeBase64': challenge,
-                'xid': str(id + 1610)
+                'xid': str(id + 1610),
+                'playbackType': 'standard',
+                'sdk': '2018.1.6.3',
+                'platform': '2018.1.6.3',
+                'application': '6.2.5-2789 R 2018.1 android-28-JPLAYER2 ninja_6==NVIDIA/darcy/darcy:9/PPR1.180610.011/4086636_1604.6430:userdebug/test-keys',
+                'uiversion': 'UI-release-20190925_12029_3-gibbon-r100-darwinql-nrdjs=v3.1.11_1_gbb9afc1-15430=1,16807=4,14248=5'
             }],
             'echo': 'sessionId'
         }
-        #print license_request_data
 
-        request_data = self.__generate_msl_request_data(license_request_data)
+        request_data = self.__generate_msl_request_data(json.dumps(license_request_data))
 
         try:
-            resp = self.session.post(self.endpoints['license'], request_data)
+            resp = self.session.post(self.endpoints['license'], data=request_data, headers=self.mslheaders)
         except:
             resp = None
             exc = sys.exc_info()
             self.nx_common.log(
                 msg='[MSL][POST] Error {} {}'.format(exc[0], exc[1]))
-
-        print resp
 
         if resp:
             try:
@@ -301,6 +405,14 @@ class MSL(object):
                         msg='Error getting license: ' + json.dumps(data))
                     return False
         return False
+
+    def __decrypt_headerdata(self, header):
+        headerdata = json.JSONDecoder().decode(header)['headerdata']
+        decoded_headerdata = base64.standard_b64decode(headerdata)
+        encryption_envelope = json.JSONDecoder().decode(decoded_headerdata)
+        plaintext = self.crypto.decrypt(base64.standard_b64decode(encryption_envelope['iv']),
+           base64.standard_b64decode(encryption_envelope.get('ciphertext')))
+        return json.JSONDecoder().decode(plaintext)
 
     def __decrypt_payload_chunks(self, payloadchunks):
         decrypted_payload = ''
@@ -324,10 +436,16 @@ class MSL(object):
                 data = base64.standard_b64decode(data)
             decrypted_payload += data
 
+        if decrypted_payload.startswith('<?xml'):
+            return decrypted_payload
+
         decrypted_payload = json.JSONDecoder().decode(decrypted_payload)
 
         if 'result' in decrypted_payload:
             return decrypted_payload['result']
+
+        print('XXX decrypted payload')
+        print(decrypted_payload);
 
         decrypted_payload = decrypted_payload[1]['payload']
         if 'json' in decrypted_payload:
@@ -514,7 +632,7 @@ class MSL(object):
                 tag='Representation',
                 nflxProfile=content_profile)
 
-            base_url = downloadable[content_profile]['downloadUrls'].values()[0]
+            base_url = downloadable[content_profile]['urls'][0].get('url')
             ET.SubElement(rep, 'BaseURL').text = base_url
 
         xml = ET.tostring(root, encoding='utf-8', method='xml')
@@ -531,6 +649,12 @@ class MSL(object):
         for url in urls:
             return url['url']
 
+    def __update_service_tokens(self, servicetokens):
+        for token in servicetokens:
+            tokendata = json.JSONDecoder().decode(base64.standard_b64decode(token['tokendata']))
+            print('Updating servive token: ' + tokendata['name'])
+            self.tokens['servicetokens'][tokendata['name']] = token;
+
     def __parse_chunked_msl_response(self, message):
         header = message.split('}}')[0] + '}}'
         payloads = re.split(',\"signature\":\"[0-9A-Za-z=/+]+\"}', message.split('}}')[1])
@@ -541,21 +665,22 @@ class MSL(object):
             'payloads': payloads
         }
 
-    def __generate_msl_request_data(self, data):
-        #self.__load_msl_data()
+    def __generate_msl_request_data(self, data, keyRequest=None, auth=None, pass_service=True):
         header_encryption_envelope = self.__encrypt(
-            plaintext=self.__generate_msl_header())
+            plaintext=self.__generate_msl_header(key_request=keyRequest, auth=auth, pass_service=pass_service))
         headerdata = base64.standard_b64encode(header_encryption_envelope)
         header = {
             'headerdata': headerdata,
             'signature': self.__sign(header_encryption_envelope),
-            'mastertoken': self.mastertoken,
+            'mastertoken': self.tokens['mastertoken'],
         }
 
         # Create FIRST Payload Chunks
+        gzip_compress = zlib.compressobj(5, zlib.DEFLATED, zlib.MAX_WBITS | 16)
         first_payload = {
+            'compressionalgo': 'GZIP',
             'messageid': self.current_message_id,
-            'data': base64.standard_b64encode(json.dumps(data)),
+            'data': base64.standard_b64encode(gzip_compress.compress(data) + gzip_compress.flush()),
             'sequencenumber': 1,
             'endofmsg': True
         }
@@ -572,9 +697,11 @@ class MSL(object):
     def __generate_msl_header(
             self,
             is_handshake=False,
-            is_key_request=False,
+            key_request=None,
+            auth = None,
             compressionalgo='GZIP',
-            encrypt=True):
+            encrypt=True,
+            pass_service=True):
         """
         Function that generates a MSL header dict
         :return: The base64 encoded JSON String of the header
@@ -590,32 +717,43 @@ class MSL(object):
             'handshake': is_handshake,
             'nonreplayable': False,
             'capabilities': {
-                'languages': self.locale_id,
-                'compressionalgos': compression_algos
+                'languages': ["en-US", "en", "de-DE"], #self.locale_id,
+                'compressionalgos': compression_algos,
+                'encoderformats': ['JSON']
             },
-            'recipient': 'Netflix',
-            'renewable': True,
+            'renewable': True if key_request or auth else False,
             'messageid': self.current_message_id,
-            'timestamp': time.time()
+            'timestamp': int(time.time())
         }
 
         # If this is a keyrequest act diffrent then other requests
-        if is_key_request:
-            header_data['keyrequestdata'] = self.crypto.get_key_request()
-        else:
-            if 'usertoken' in self.tokens:
-                pass
-            else:
-                account = self.nx_common.get_credentials()
-                # Auth via email and password
-                header_data['userauthdata'] = {
-                    'scheme': 'EMAIL_PASSWORD',
-                    'authdata': {
-                        'email': account['email'],
-                        'password': account['password']
-                    }
+        if key_request:
+            header_data.update(keyrequestdata=key_request)
+        if auth:
+            header_data['userauthdata'] = auth
+        elif 'useridtoken' in self.tokens:
+            header_data.update(useridtoken=self.tokens['useridtoken'])
+            if pass_service:
+                header_data.update(servicetokens=self.tokens['servicetokens'].values())
+        elif self.netflix_id != '':
+            header_data['userauthdata'] = {
+                "scheme": "NETFLIXID",
+                "authdata": {
+                    "netflixid": self.netflix_id,
+                    "securenetflixid": self.secure_netflix_id
                 }
+            }
+        elif not is_handshake:
+             account = self.nx_common.get_credentials()
+             header_data['userauthdata'] = {
+                 'scheme': 'EMAIL_PASSWORD',
+                 'authdata': {
+                     'email': account['email'],
+                     'password': account['password']
+                 }
+             }
 
+        print(json.dumps(header_data))
         return json.dumps(header_data)
 
     def __encrypt(self, plaintext):
@@ -642,7 +780,7 @@ class MSL(object):
           return False
 
         header = self.__generate_msl_header(
-            is_key_request=True,
+            key_request=self.crypto.get_key_request(),
             is_handshake=True,
             compressionalgo='',
             encrypt=False)
@@ -662,7 +800,7 @@ class MSL(object):
 
         try:
             resp = self.session.post(
-                url=self.endpoints['manifest'],
+                url=self.endpoints['boot'],
                 data=json.dumps(request, sort_keys=True))
         except:
             resp = None
@@ -682,6 +820,10 @@ class MSL(object):
             headerdata=json.JSONDecoder().decode(base_head)
             self.__set_master_token(headerdata['keyresponsedata']['mastertoken'])
             self.crypto.parse_key_response(headerdata)
+            self.__get_secure_netflix_id()
+            self.__pre_msl_request()
+            self.__get_pbo_device_attetation()
+            self.__get_pbo_token()
             self.__save_msl_data()
         else:
             self.nx_common.log(msg='Key Exchange failed')
@@ -691,6 +833,249 @@ class MSL(object):
         self.nx_common.log(msg='MSL Data exists. Use old Tokens.')
         self.__load_msl_data()
         self.handshake_performed = True
+
+    def __get_secure_netflix_id(self):
+        nccp_req = """<?xml version=\"1.0\" encoding=\"utf-8\"?>
+<nccp:request xmlns:nccp="http://www.netflix.com/eds/nccp/3.1">
+<nccp:header>
+  <nccp:softwareversion>6.2.5-2789 R 2018.1 android-28-JPLAYER2 ninja_6==NVIDIA/darcy/darcy:9/PPR1.180610.011/4086636_1604.6430:userdebug/test-keys</nccp:softwareversion>
+  <nccp:sdkversion>2018.1.6.3</nccp:sdkversion>
+  <nccp:certificationversion>0</nccp:certificationversion>
+  <nccp:preferredlanguages>
+    <nccp:appselectedlanguages/>
+    <nccp:platformselectedlanguages>
+      <nccp:language>
+        <nccp:index>0</nccp:index>
+        <nccp:bcp47>{lang}</nccp:bcp47>
+      </nccp:language>
+    </nccp:platformselectedlanguages>
+  </nccp:preferredlanguages>
+  <nccp:clientservertimes>
+    <nccp:servertime>{time}</nccp:servertime>
+    <nccp:clienttime>{time}</nccp:clienttime>
+  </nccp:clientservertimes>
+  <nccp:uiversion>UI-release-20190923_2-gibbon-zircon-signupwizard</nccp:uiversion>
+</nccp:header>
+<nccp:netflixid/>
+</nccp:request>""".format(lang=self.locale_id[0], time=int(time.time()))
+
+        request_data = self.__generate_msl_request_data(nccp_req, keyRequest=[{'scheme': 'WIDEVINE','keydata': {'keyrequest': ''}}])
+
+        resp = self.session.post(
+            url=self.endpoints['id'],
+            data=request_data,
+            verify=False)
+
+        self.nx_common.log(msg=resp)
+
+        if resp:
+            try:
+                resp.json()
+                self.nx_common.log(msg='Error getting Netflix IDs: ' + resp.text)
+                return False
+            except ValueError:
+                resp = self.__parse_chunked_msl_response(resp.text)
+                data = self.__decrypt_payload_chunks(resp['payloads'])
+                root = ET.fromstring(data)
+                result = root.find('{http://www.netflix.com/eds/nccp/3.1}result')
+                if result.attrib['method'] == 'netflixid':
+                  pair = result.find('{http://www.netflix.com/eds/nccp/3.1}netflixid')\
+                  .find('{http://www.netflix.com/eds/nccp/3.1}netflixiddata')\
+                  .find('{http://www.netflix.com/eds/nccp/3.1}netflixidpair')
+                  self.netflix_id = pair.find('{http://www.netflix.com/eds/nccp/3.1}netflixid').text
+                  self.secure_netflix_id = pair.find('{http://www.netflix.com/eds/nccp/3.1}securenetflixid').text
+                  self.add_session_cookie(self.netflix_id)
+                  self.add_session_cookie(self.secure_netflix_id)
+                  self.netflix_id = self.netflix_id.split(';')[0].split('=')[1]
+                  self.secure_netflix_id = self.secure_netflix_id.split(';')[0].split('=')[1]
+
+
+    def __get_pbo_device_attetation(self):
+        pbo_req = {
+            "version":2,
+            "url":"/generateSafetyNetNonce",
+            "languages":["de-DE","de","en-DE","en"],
+            "params":{
+                "sdk":"2018.1.6.3",
+                "platform":"2018.1.6.3",
+                "application":"6.2.5-2789 R 2018.1 android-28-JPLAYER2 ninja_6==NVIDIA/darcy/darcy:9/PPR1.180610.011/4086636_1604.6430:userdebug/test-keys",
+                "uiversion":"UI-release-20190923_2-gibbon-zircon-signupwizard-nrdjs=v3.1.11_1_gbb9afc1"
+            }
+        }
+
+        request_data = self.__generate_msl_request_data(json.dumps(pbo_req))
+
+        resp = self.session.post(
+            url=self.endpoints['tokens'],
+            data=request_data, headers=self.mslheaders)
+
+        attest = None
+
+        if resp:
+            try:
+                resp.json()
+                self.nx_common.log(msg='Error getting device attestation nonce: ' + resp.text)
+                return False
+            except ValueError:
+                resp = self.__parse_chunked_msl_response(resp.text)
+                data = self.__decrypt_payload_chunks(resp['payloads'])
+                self.nx_common.log(msg='Device attestation started')
+                attest = self.crypto.get_device_attestation(data['nonce'])
+                self.nx_common.log(msg='Device attestation done')
+                #self.nx_common.log(msg=attest)
+
+        if attest == None or len(attest) == 0:
+            return False;
+
+        pbo_req = {
+            "version": 2,
+            "url": "/verifySafetyNetAttestation",
+            "languages": ["de-DE", "de", "en-DE", "en"],
+            "params": {
+                "attestation": attest.decode('ascii'),
+                "version": "6.2.5",
+                "sdk": "2018.1.6.3",
+                "platform": "2018.1.6.3",
+                "application": "6.2.5-2789 R 2018.1 android-28-JPLAYER2 ninja_6==NVIDIA/darcy/darcy:9/PPR1.180610.011/4086636_1604.6430:userdebug/test-keys",
+                "uiversion": "UI-release-20190923_2-gibbon-zircon-signupwizard-nrdjs=v3.1.11_1_gbb9afc1"
+            }
+        }
+        request_data = self.__generate_msl_request_data(json.dumps(pbo_req))
+
+        resp = self.session.post(
+            url=self.endpoints['tokens'],
+            data=request_data, headers=self.mslheaders)
+
+        if resp:
+            try:
+                resp.json()
+                self.nx_common.log(msg='Error getting device attestation result: ' + resp.text)
+                return False
+            except ValueError:
+                resp = self.__parse_chunked_msl_response(resp.text)
+                data = self.__decrypt_payload_chunks(resp['payloads'])
+                print('Device attestation: ' + json.dumps(data))
+                headerdata = self.__decrypt_headerdata(resp['header'])
+                self.__update_service_tokens(headerdata['servicetokens'])
+
+        return True
+
+
+    def __get_pbo_token(self):
+        pbo_req = {
+            "version":2,
+            "url":"/ping",
+            "languages":["en-US","en"],
+            "params":{
+                "sdk":"2018.1.6.3",
+                "platform":"2018.1.6.3",
+                "application":"6.2.5-2789 R 2018.1 android-28-JPLAYER2 ninja_6==NVIDIA/darcy/darcy:9/PPR1.180610.011/4086636_1604.6430:userdebug/test-keys",
+                "uiversion":"UI-release-20190925_12029_3-gibbon-r100-darwinql-nrdjs=v3.1.11_1_gbb9afc1-15430=1,16807=4,14248=5"
+            }
+        }
+
+        crypto = MSLHandler(self.nx_common)
+        request_data = self.__generate_msl_request_data(json.dumps(pbo_req), keyRequest=crypto.get_key_request(), pass_service=False)
+
+        print(self.session.cookies)
+        resp = self.session.post(
+            url=self.endpoints['tokens'],
+            data=request_data, headers=self.mslheaders)
+
+        self.nx_common.log(msg=resp)
+
+        if resp:
+            try:
+                resp.json()
+                self.nx_common.log(msg='Error getting PBO Tokens: ' + resp.text)
+                return False
+            except ValueError:
+                resp = self.__parse_chunked_msl_response(resp.text)
+                headerdata = self.__decrypt_headerdata(resp['header'])
+                self.tokens.update(useridtoken=headerdata['useridtoken'])
+                self.__update_service_tokens(headerdata['servicetokens'])
+
+
+    def __get_pbo_config(self):
+        pbo_req = {
+            "version":2,
+            "url":"/config",
+            "languages":["en-US","en"],
+            "params":{
+                "device_type":"NFANDROID2-PRV-SHIELDANDROIDTV",
+                "sdk_version":"2018.1.6.3",
+                "sw_version":"6.2.5-2789 R 2018.1 android-28-JPLAYER2 ninja_6==NVIDIA/darcy/darcy:9/PPR1.180610.011/4086636_1604.6430:userdebug/test-keys",
+                "nrdjs":"v3.1.11-1-gbb9afc1",
+                "is4k":False,
+                "sdk":"2018.1.6.3","platform":"2018.1.6.3",
+                "application":"6.2.5-2789 R 2018.1 android-28-JPLAYER2 ninja_6==NVIDIA/darcy/darcy:9/PPR1.180610.011/4086636_1604.6430:userdebug/test-keys",
+                "uiversion":"UI-release-20190925_12029_3-gibbon-r100-darwinql-nrdjs=v3.1.11_1_gbb9afc1-15430=1,16807=4,14248=5"
+            }
+        }
+        request_data = self.__generate_msl_request_data(json.dumps(pbo_req))
+
+        print(self.session.cookies)
+        resp = self.session.post(
+            url=self.endpoints['config'],
+            data=request_data, headers=self.mslheaders)
+
+        self.nx_common.log(msg=resp)
+
+        if resp:
+            try:
+                resp.json()
+                self.nx_common.log(msg='Error getting PBO Config: ' + resp.text)
+                return False
+            except ValueError:
+                resp = self.__parse_chunked_msl_response(resp.text)
+                #print(resp)
+
+    def __get_login_user(self):
+        auth = {
+            "scheme": "SWITCH_PROFILE",
+            "authdata": {
+                'useridtoken': self.tokens['useridtoken'],
+                "profileguid": "[TODO: GUID here"
+            }
+        }
+
+        pbo_req = [
+            {},
+            {
+                "path":"/nrdjs/4.2.3",
+                "headers":{},
+                "payload":{
+                    "data":"{\"version\":2,\"url\":\"/getProfiles\",\"languages\":[\"en-US\",\"en\"],\"params\":{\"guid\":\"[TODO GUID here]\","
+                    "\"mintCookies\":true,\"msl\":true,\"fetchPartnerCookie\":false,\"streamingConfig\":{\"device_type\":\"NFANDROID2-PRV-SHIELDANDROIDTV\","
+                    "\"sdk_version\":\"2018.1.6.3\",\"sw_version\":\"6.2.5-2789 R 2018.1 android-28-JPLAYER2 ninja_6==NVIDIA/darcy/darcy:9/PPR1.180610.011/4086636_1604.6430:userdebug/test-keys\""
+                    ",\"nrdjs\":\"v3.1.11-1-gbb9afc1\",\"is4k\":false},\"sdk\":\"2018.1.6.3\",\"platform\":\"2018.1.6.3\","
+                    "\"application\":\"6.2.5-2789 R 2018.1 android-28-JPLAYER2 ninja_6==NVIDIA/darcy/darcy:9/PPR1.180610.011/4086636_1604.6430:userdebug/test-keys\","
+                    "\"uiversion\":\"UI-release-20190925_12029_3-gibbon-r100-darwinql-nrdjs=v3.1.11_1_gbb9afc1-15430=1,16807=4,14248=5\"}}"
+                }
+            }
+        ]
+
+        request_data = self.__generate_msl_request_data(json.dumps(pbo_req), auth=auth)
+
+        resp = self.session.post(
+            url=self.endpoints['profiles'],
+            data=request_data, headers=self.mslheaders)
+
+        self.nx_common.log(msg=resp)
+
+        if resp:
+            try:
+                resp.json()
+                self.nx_common.log(msg='Error login user: ' + resp.text)
+                return False
+            except ValueError:
+                resp = self.__parse_chunked_msl_response(resp.text)
+                headerdata = self.__decrypt_headerdata(resp['header'])
+                print("Profiles response headerdata")
+                print(headerdata)
+                self.tokens.update(useridtoken=headerdata['useridtoken'])
+                data = self.__decrypt_payload_chunks(resp['payloads'])
+                print('Profle payload: ' + json.dumps(data))
 
     def __load_msl_data(self):
         raw_msl_data = self.nx_common.load_file(
@@ -712,7 +1097,16 @@ class MSL(object):
             self.__perform_key_handshake()
             return
 
-        self.__set_master_token(msl_data['tokens']['mastertoken'])
+        self.tokens=msl_data['tokens']
+        self.__set_master_token(self.tokens['mastertoken'])
+
+        if msl_data['netflixids']:
+            self.netflix_id = msl_data['netflixids']['netflixid']
+            self.secure_netflix_id = msl_data['netflixids']['securenetflixid']
+
+        if msl_data['cookies']:
+            for c in msl_data['cookies']:
+               self.session.cookies.set(**c)
 
     def save_msl_data(self):
         self.__save_msl_data()
@@ -723,10 +1117,22 @@ class MSL(object):
         :return:
         """
         data = {
-            'tokens': {
-                'mastertoken': self.mastertoken
+            'tokens': self.tokens,
+            'netflixids': {
+                'netflixid': self.netflix_id,
+                'securenetflixid': self.secure_netflix_id
             }
         }
+        cookies = []
+        for c in self.session.cookies:
+            cookies.append({
+                "name": c.name,
+                "value": c.value,
+                "domain": c.domain,
+                "path": c.path,
+                "expires": c.expires
+            })
+        data.update(cookies=cookies);
         data.update(self.crypto.toDict())
 
         serialized_data = json.JSONEncoder().encode(data)
@@ -736,7 +1142,7 @@ class MSL(object):
             content=serialized_data)
 
     def __set_master_token(self, master_token):
-        self.mastertoken = master_token
+        self.tokens['mastertoken'] = master_token
         raw_token = master_token['tokendata']
         base_token = base64.standard_b64decode(raw_token)
         decoded_token = json.JSONDecoder().decode(base_token)

@@ -104,6 +104,9 @@ class MSLCrypto():
         sign_key_data = json.JSONDecoder().decode(sign_key_raw)
         self.sign_key = self.__base64key_decode(sign_key_data['k'])
 
+    def get_device_attestation(self, nonce):
+      return None
+
     def decrypt(self, iv, data):
         cipher = AES.new(self.encryption_key, AES.MODE_CBC, iv)
         return Padding.unpad(cipher.decrypt(data), 16)

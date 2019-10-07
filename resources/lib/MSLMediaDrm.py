@@ -12,7 +12,7 @@ class MSLMediaDrmCrypto:
         self.keySetId = None
         self.keyId = None
         self.hmacKeyId = None
-
+        self.nfak = '[safetynet api key here'
         try:
             self.cryptoSession = xbmcdrm.CryptoSession('edef8ba9-79d6-4ace-a3c8-27dcd51d21ed',
                                                        'AES/CBC/NoPadding', 'HmacSHA256')
@@ -32,8 +32,13 @@ class MSLMediaDrmCrypto:
 
     def __getKeyRequest(self, data):
          #No key update supported -> remove existing keys
+         if len(data) > 6 :
+           optParam = {'CDMID':'xi/+AAZ8Y+vXCfVDMwAzlw=='}
+         else:
+           optParam = {}
+
          self.cryptoSession.RemoveKeys()
-         keyRequest = self.cryptoSession.GetKeyRequest(data, 'application/xml', True, dict())
+         keyRequest = self.cryptoSession.GetKeyRequest(data, 'application/xml', True, optParam)
          if keyRequest:
              self.kodi_helper.log(msg='Widevine CryptoSession getKeyRequest successful with size:'
                                   + str(len(keyRequest)))
@@ -83,8 +88,13 @@ class MSLMediaDrmCrypto:
 
         return need_handshake
 
-    def get_key_request(self):
-        drmKeyRequest = self.__getKeyRequest(bytes([10, 122, 0, 108, 56, 43]))
+    def get_key_request(self, data=None):
+        if data:
+           init = base64.standard_b64decode(data)
+        else:
+           init = bytes([10, 122, 0, 108, 56, 43])
+
+        drmKeyRequest = self.__getKeyRequest(init)
 
         key_request = [{
         'scheme': 'WIDEVINE',
@@ -104,6 +114,13 @@ class MSLMediaDrmCrypto:
 
         self.keyId = base64.standard_b64decode(headerdata['keyresponsedata']['keydata']['encryptionkeyid'])
         self.hmacKeyId = base64.standard_b64decode(headerdata['keyresponsedata']['keydata']['hmackeyid'])
+
+    def get_device_attestation(self, nonce):
+        try:
+            return self.cryptoSession.GetDeviceAttestation(bytearray(nonce, 'ascii'), self.nfak)
+        except AttributeError:
+            self.kodi_helper.log(msg='Cryptosession::GetDeviceAttestation not implemented')
+            return None
 
     def decrypt(self, iv, data):
         decrypted = self.cryptoSession.Decrypt(self.keyId, data, iv)
