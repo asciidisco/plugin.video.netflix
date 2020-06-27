@@ -218,6 +218,7 @@ class MSL(object):
         if dolby:
             profiles.append('ddplus-2.0-dash')
             profiles.append('ddplus-5.1-dash')
+            profiles.append('ddplus-atmos-dash')
 
         manifest_request_data["params"]["profiles"] = profiles
         #print manifest_request_data
@@ -469,7 +470,8 @@ class MSL(object):
                 #self.nx_common.log(msg=stream)
                 is_dplus2 = stream['content_profile'] == 'ddplus-2.0-dash'
                 is_dplus5 = stream['content_profile'] == 'ddplus-5.1-dash'
-                if is_dplus2 or is_dplus5:
+                is_dplus_atmos = stream['content_profile'] == 'ddplus-atmos-dash'
+                if is_dplus2 or is_dplus5 or is_dplus_atmos:
                     codec = 'ec-3'
                 #self.nx_common.log(msg='codec is: ' + codec)
                 rep = ET.SubElement(
