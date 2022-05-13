@@ -13,7 +13,7 @@ mock==1.0.1
 requests==2.12.4
 pydes==2.0.1
 radon==2.1.1
-Sphinx==1.5.5
+Sphinx==3.0.4
 sphinx_rtd_theme==0.2.4
 m2r==0.1.12
 git+https://github.com/asciidisco/kodi-release-helper.git#egg=kodi-release-helper
