@@ -10,7 +10,7 @@ pyflakes==1.5.0
 git+https://github.com/romanvm/Kodistubs.git#egg=Kodistubs
 httpretty==0.8.14
 mock==1.0.1
-requests==2.12.4
+requests==2.31.0
 pydes==2.0.1
 radon==2.1.1
 Sphinx==1.5.5
