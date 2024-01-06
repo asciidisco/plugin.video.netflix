@@ -1,5 +1,5 @@
 pycrypto==2.6.1
-pycryptodomex==3.4.5
+pycryptodomex==3.19.1
 codeclimate-test-reporter==0.2.1
 nose==1.3.7
 pylint==1.6.5
